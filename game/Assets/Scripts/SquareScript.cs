@@ -19,8 +19,8 @@ public class SquareScript : MonoBehaviour
 		{
 			for (int j = 0; j < ySize; j++) 
 			{
-				var squareGameobject = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("SquareTileResource"), currentPosition, Quaternion.identity));;
-				s_map[i,j] = squareGameobject.GetComponent<SquareScript>();
+				var squareGameobject = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("SquareTileResource"), currentPosition, Quaternion.identity));
+				s_map[j,i] = squareGameobject.GetComponent<SquareScript>();
 				currentPosition = new Vector3(currentPosition.x, currentPosition.y + squareSize, 0);
 			}
 			currentPosition = new Vector3(currentPosition.x + squareSize, 0 , 0);
@@ -39,5 +39,19 @@ public class SquareScript : MonoBehaviour
 	void Update () 
 	{
 	
+	}
+
+	public static SquareScript GetSquare (int x, int y)
+	{
+		return s_map[x,y];
+	}
+
+	public SquareScript GetNextSquare (int x, int y)
+	{
+		x = Mathf.Min(x + m_x, s_map.GetLength(0)-1);
+		y = Mathf.Min(y + m_y, s_map.GetLength(1)-1);
+		x = Mathf.Max(x, 0);
+		y = Mathf.Max(y, 0);
+		return GetSquare(x,y);
 	}
 }
