@@ -7,17 +7,14 @@ public class SquareScript : MonoBehaviour
 	private static SquareScript[,] s_map;
 	private int m_x,m_y;
 
-	public static void Init()
+	public static void Init(int xSize, int ySize)
 	{
-		//HACK
-		var xSize = 5;
-		var ySize = 5;
-		s_map = new SquareScript[xSize, ySize];
+        s_map = new SquareScript[xSize, ySize];
 		var squareSize = 0.64f;
 		var currentPosition = Vector3.zero;
-		for (int i = 0; i < xSize; i++) 
+        for (int i = 0; i < xSize; i++) 
 		{
-			for (int j = 0; j < ySize; j++) 
+            for (int j = 0; j < ySize; j++) 
 			{
 				var squareGameobject = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("SquareTileResource"), currentPosition, Quaternion.identity));
 				s_map[j,i] = squareGameobject.GetComponent<SquareScript>();
@@ -26,6 +23,26 @@ public class SquareScript : MonoBehaviour
 			currentPosition = new Vector3(currentPosition.x + squareSize, 0 , 0);
 		}
 	}
+
+    public static void LoadFromPng(string filename)
+    {
+        var xSize = 12;
+        var ySize = 12; // png file will be larger so no error here (will handle map info later)
+
+        s_map = new SquareScript[xSize, ySize]; 
+        var squareSize = 0.64f;
+        var currentPosition = Vector3.zero;
+        for (int i = 0; i < xSize; i++)
+        {
+            for (int j = 0; j < ySize; j++)
+            {
+                var squareGameobject = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("SquareTileResource"), currentPosition, Quaternion.identity));
+                s_map[j, i] = squareGameobject.GetComponent<SquareScript>();
+                currentPosition = new Vector3(currentPosition.x, currentPosition.y + squareSize, 0);
+            }
+            currentPosition = new Vector3(currentPosition.x + squareSize, 0, 0);
+        }
+    }
 
 	// Use this for initialization
 	void Start () 
@@ -45,6 +62,11 @@ public class SquareScript : MonoBehaviour
 	{
 		return s_map[x,y];
 	}
+
+    public static void SetSquare(SquareScript square, int x, int y)
+    {
+        s_map[x, y] = square;
+    }
 
 	public SquareScript GetNextSquare (int x, int y)
 	{
