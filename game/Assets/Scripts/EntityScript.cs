@@ -102,9 +102,17 @@ public abstract class Entity
         }
     }
 
-    private void Destroy()
+    protected virtual void Destroy()
     {
-        throw new NotImplementedException();
+        this.Location.OccupyingEntity = null;
+        UnityEngine.Object.Destroy(this.Image, 0.5f);      
+    }
+
+    void DoMyWindow(int windowID)
+    {
+        if (GUI.Button(new Rect(10, 20, 100, 20), "Hello World"))
+            Debug.Log("Got a click");
+
     }
 }
 
@@ -132,6 +140,12 @@ public class PlayerEntity : Entity
         }
     }
 
+    protected override  void Destroy()
+    {
+        base.Destroy();
+        Debug.Log("Game Over");
+    }
+
     private void TakeLoot(SquareScript newLocation)
     {
         var loot = newLocation.TakeLoot();
@@ -140,6 +154,18 @@ public class PlayerEntity : Entity
             BlueCrystal += loot.BlueCrystal;
             loot.BlueCrystal = 0;
         }
+    }
+
+    public void ShootLaser(Vector3 mousePosition)
+    {
+        var destination = Input.mousePosition;
+
+        var laser = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("laser"), Entity.Player.Location.transform.position, Quaternion.identity));
+        var laserScript = laser.GetComponent<LaserScript>();
+        var MousePos = Input.mousePosition;
+        var translatedPosition = Camera.main.ScreenToWorldPoint(MousePos);
+        var vec2 = new Vector2(translatedPosition.x, translatedPosition.y);
+        laserScript.Init(vec2, Entity.Player.Location.transform.position, "Laser shot");    
     }
 }
 
@@ -165,6 +191,14 @@ public class EnemyEntity : Entity
     {
         if (WithinRange(Entity.Player))
         {
+            //Show hit action                        
+            var playerLocation =  Entity.Player.Location.transform.position;
+            var otherLocation = this.Location.transform.position;
+            var powPosition = new Vector3((playerLocation.x + otherLocation.x)/2, (playerLocation.y + otherLocation.y)/2, playerLocation.z );
+
+            var pow = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("pow"), powPosition, Quaternion.identity));
+            UnityEngine.Object.Destroy(pow, 0.3f);      
+            
             Attack(Entity.Player);
             Debug.Log("enemy attacks!");
         }

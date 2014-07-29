@@ -77,12 +77,8 @@ public class MapSceneScript : MonoBehaviour
 
             var destination = Input.mousePosition;
 
-            var laser = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("laser"), Entity.Player.Location.transform.position, Quaternion.identity));
-            var laserScript = laser.GetComponent<LaserScript>();
-            var MousePos = Input.mousePosition;
-            var translatedPosition = Camera.main.ScreenToWorldPoint(MousePos);
-            var vec2 =new Vector2(translatedPosition.x,translatedPosition.y);
-            laserScript.Init(vec2, Entity.Player.Location.transform.position, "Laser shot");           
+            Entity.Player.ShootLaser(destination);
+
         
 	}
 	}
