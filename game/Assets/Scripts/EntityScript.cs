@@ -8,18 +8,168 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 using System;
+using System.Collections.Generic;
+using UnityEngine;
+
+public enum MovementType { Walking, Flying }
 
 public abstract class Entity
 {
-    public int Health { get; set; }
-    public double AttackRange { get; set;}
-    public double MinDamage { get; set;}
-    public double MaxDamage { get; set;}
+    #region fields
+
+    private MovementType m_movementType;
+
+    #endregion
+
+    #region properties
+
+    public static PlayerEntity Player { get; set; }
+
+    public double Health { get; private set; }
+
+    public double AttackRange { get; private set; }
+
+    public double MinDamage { get; private set; }
+
+    public double MaxDamage { get; private set; }
+
+    public SquareScript Location { get; private set; }
+
+    public SpriteRenderer Image { get; private set; }
+
+    #endregion
+
+    public Entity(double health, double attackRange, double minDamage, double maxDamage, SquareScript location, SpriteRenderer image, MovementType movementType)
+    {
+        m_movementType = movementType;
+        Health = health;
+        AttackRange = attackRange;
+        MinDamage = minDamage;
+        MaxDamage = maxDamage;
+        Location = location;
+        Location.OccupyingEntity = this;
+        Image = image;
+    }
+
+    public virtual bool TryMoveTo(SquareScript newLocation)
+    {
+        if(!CanEnter(newLocation))
+        {
+            return false;
+        }
+        Location.OccupyingEntity = null;
+        newLocation.OccupyingEntity = this;
+        Location = newLocation;
+        Image.transform.position = Location.transform.position;
+        return true;
+    }
+
+    private bool CanEnter(SquareScript newLocation)
+    {
+ 	    if(m_movementType == MovementType.Walking)
+        {
+            return newLocation.TraversingCondition == Traversability.Walkable;
+        }
+        //else flying
+        return newLocation.TraversingCondition != Traversability.Blocking;
+    }
+
+    protected bool WithinRange(Entity ent)
+    {
+        return WithinRange(ent.Location);
+    }
+
+    protected bool WithinRange(SquareScript otherLocation)
+    {
+        return AttackRange > this.Location.transform.position.Distance(otherLocation.transform.position);
+    }
+
+    protected void Attack(Entity ent)
+    {
+        ent.Damage(Randomizer.NextDouble(MinDamage, MaxDamage));
+    }
+
+    private void Damage(double damage)
+    {
+        Health -= damage;
+        if (Health <= 0)
+        {
+            Destroy();
+        }
+    }
+
+    private void Destroy()
+    {
+        throw new NotImplementedException();
+    }
 }
 
-public class PlayerEntity
+public class PlayerEntity : Entity
 {
-    public double Energy { get; set; }
-    public double Oxygen { get; set; }
+    public double Energy { get; private set; }
+
+    public double Oxygen { get; private set; }
+
+    public PlayerEntity(double health, double attackRange, double minDamage, double maxDamage, SquareScript location, SpriteRenderer image, double energy, double oxygen) :
+        base(health, attackRange, minDamage, maxDamage, location, image, MovementType.Walking)
+    {
+        Energy = energy;
+        Oxygen = Oxygen;
+    }
+
+    public void Move(SquareScript newLocation)
+    {
+        if (TryMoveTo(newLocation))
+        {
+            EnemyEntity.EnemiesTurn();
+        }
+    }
 }
 
+public class EnemyEntity : Entity
+{
+    private static List<EnemyEntity> s_activeEntities = new List<EnemyEntity>();
+
+    public static void EnemiesTurn()
+    {
+        foreach (var enemy in s_activeEntities)
+        {
+            enemy.Act();
+        }
+    }
+
+    public EnemyEntity(double health, double attackRange, double minDamage, double maxDamage, SquareScript location, SpriteRenderer image, MovementType movementType) :
+        base(health, attackRange, minDamage, maxDamage, location, image, movementType)
+    {
+        s_activeEntities.Add(this);
+    }
+
+    public void Act()
+    {
+        if (WithinRange(Entity.Player))
+        {
+            Attack(Entity.Player);
+            Debug.Log("enemy attacks!");
+        }
+        else
+        {
+            MoveTowardsPlayer();
+        }
+    }
+
+    private void MoveTowardsPlayer()
+    {
+        var direction = new Vector2(Player.Location.transform.position.x - Location.transform.position.x, Location.transform.position.y - Player.Location.transform.position.y);
+        var absX = Math.Abs(direction.x);
+        var absY = Math.Abs(direction.y);
+        Debug.Log("Distance is: {0}, {1}".FormatWith(direction.x, direction.y));
+        if (absX > absY)
+        {
+            TryMoveTo(Location.GetNextSquare((int)(direction.x / absX), 0));
+        }
+        else
+        {
+            TryMoveTo(Location.GetNextSquare(0, (int)(direction.y / absY)));
+        }
+    }
+}

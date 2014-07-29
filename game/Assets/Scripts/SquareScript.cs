@@ -9,8 +9,12 @@ using System.Xml.Linq;
 using System.Xml;
 using UnityEngine;
 
+public enum Traversability { Walkable, Flyable, Blocking }
+
 public class SquareScript : MonoBehaviour 
 {
+    public Traversability TraversingCondition { get; set; }
+
 	public Entity OccupyingEntity { get; set; }
 	private static SquareScript[,] s_map;
 	private int m_x,m_y;
@@ -119,10 +123,19 @@ public class SquareScript : MonoBehaviour
         {
 			for (int i = 0; i < mapWidth; i++)
 			{
+                
 				var squareGameobject = CreateTile(currentPosition, tileNames[j*mapWidth + i]);
 				s_map[i, j] = squareGameobject.GetComponent<SquareScript>();
 				s_map[i, j].setLocation(i, j);
 				currentPosition = new Vector3(currentPosition.x + squareSize, currentPosition.y, 0);
+                if (i == 0 || j == 0 || j == mapHeight - 1 || i == mapWidth - 1)
+                {
+                    s_map[i, j].TraversingCondition = Traversability.Blocking;
+                }
+                else
+                {
+                    s_map[i, j].TraversingCondition = Traversability.Walkable;
+                }
             }
 			currentPosition = new Vector3(0, currentPosition.y + squareSize, 0);
 		}
