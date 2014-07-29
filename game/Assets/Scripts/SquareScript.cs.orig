@@ -13,19 +13,35 @@ public enum Traversability { Walkable, Flyable, Blocking }
 
 public class SquareScript : MonoBehaviour
 {
+<<<<<<< HEAD
+	private Traversability _tt;
+    public Traversability TraversingCondition 
+	{ 
+		get{ return _tt;}
+		set 
+		{
+			_tt = value;
+			Debug.Log("set " + m_x + " , " + m_y + "to " + value);
+		}
+	}
+	public Entity OccupyingEntity { get; set; }
+	private static SquareScript[,] s_map;
+	private int m_x,m_y;
+=======
     #region fields
 
     private static SquareScript[,] s_map;
 	private int m_x,m_y;
+	private static Dictionary<string, Sprite> s_sprites;
     private Loot m_droppedLoot;
     private SpriteRenderer m_lootRenderer;
-    private static SpriteRenderer s_squareMarker;
 
     #endregion
 
     #region properties
 
     public Traversability TraversingCondition { get; set; }
+>>>>>>> 46efaf1ee024a2a312dab51b9ee523ee3f326c1b
 
     public Entity OccupyingEntity { get; set; }
 
@@ -33,39 +49,64 @@ public class SquareScript : MonoBehaviour
 
     #region public methods
 
+    public static void Init(int xSize, int ySize)
+	{
+        s_map = new SquareScript[xSize, ySize];
+		var squareSize = 0.64f;
+		var currentPosition = Vector3.zero;
+        for (int i = 0; i < xSize; i++) 
+		{
+            for (int j = 0; j < ySize; j++) 
+			{
+				var squareGameobject = CreateTile(currentPosition, "SquareTileResource");
+				s_map[j,i] = squareGameobject.GetComponent<SquareScript>();
+				currentPosition = new Vector3(currentPosition.x, currentPosition.y + squareSize, 0);
+			}
+			currentPosition = new Vector3(currentPosition.x + squareSize, 0 , 0);
+		}
+<<<<<<< HEAD
+	}
+
+	private static GameObject CreateTile(Vector3 position, string tileResourceName)
+	{
+		var tile = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("SquareTileResource"), position, Quaternion.identity));
+		TileManager.SetTileFromLayerAndGid(tile, tileResourceName);
+		return tile;
+
+	}
+
     public static void LoadFromTMX(string filename)
     {
-        s_squareMarker = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("squareSelectionBox"), Vector2.zero, Quaternion.identity)).GetComponent<SpriteRenderer>();
-        //Unity does not support .Net 3.5 or higher, until we find a way to do that ...
-        //var mapWidth = ((IEnumerable)tiledMapXmlRoot.XPathEvaluate("/@width")).Cast<XAttribute>().Select(a => Int32.Parse(a.Value)).First();
-        //var mapHeight = ((IEnumerable)tiledMapXmlRoot.XPathEvaluate("/@height")).Cast<XAttribute>().Select(a => Int32.Parse(a.Value)).First();
-        //var tileNames = ((IEnumerable)tiledMapXmlRoot.XPathEvaluate("layer/data/tile/@gid")).Cast<XAttribute>().Select(a => "GameTiles_" + (Int32.Parse(a.Value) - 1)).ToList();
+		//Unity does not support .Net 3.5 or higher, until we find a way to do that ...
+		//var mapWidth = ((IEnumerable)tiledMapXmlRoot.XPathEvaluate("/@width")).Cast<XAttribute>().Select(a => Int32.Parse(a.Value)).First();
+		//var mapHeight = ((IEnumerable)tiledMapXmlRoot.XPathEvaluate("/@height")).Cast<XAttribute>().Select(a => Int32.Parse(a.Value)).First();
+		//var tileNames = ((IEnumerable)tiledMapXmlRoot.XPathEvaluate("layer/data/tile/@gid")).Cast<XAttribute>().Select(a => "GameTiles_" + (Int32.Parse(a.Value) - 1)).ToList();
 
-        var mapWidth = 0;
-        var mapHeight = 0;
+		var mapWidth = 0;
+		var mapHeight = 0;
 		var terrain = new List<string> ();
 		var entities = new List<string> ();
 		var markers = new List<string> ();
-        XmlTextReader reader = new XmlTextReader(filename);
-        while (reader.Read())
-        {
-            switch (reader.NodeType)
-            {
-                case XmlNodeType.Element: // The node is an element.
-                    if (reader.Name == "map")
-                    {
-                        while (reader.MoveToNextAttribute()) // Read the attributes.
-                        {
-                            if (reader.Name == "width")
-                            {
-                                mapWidth = Int32.Parse(reader.Value);
-                            }
-                            if (reader.Name == "height")
-                            {
-                                mapHeight = Int32.Parse(reader.Value);
-                            }
-                        }
-                    }
+		XmlTextReader reader = new XmlTextReader(filename);
+		while (reader.Read())
+		{
+			switch (reader.NodeType)
+			{
+			case XmlNodeType.Element: // The node is an element.
+				if (reader.Name == "map")
+				{
+					while (reader.MoveToNextAttribute()) // Read the attributes.
+					{
+						if (reader.Name == "width")
+						{
+							mapWidth = Int32.Parse(reader.Value);
+						}
+						if (reader.Name == "height")
+						{
+							mapHeight = Int32.Parse(reader.Value);
+						}
+					}
+				}
 							
 				else if (reader.Name == "layer" && reader.MoveToNextAttribute() && reader.Name == "name" && reader.Value == "Terrain") // Terrain layer
 				{
@@ -138,6 +179,79 @@ public class SquareScript : MonoBehaviour
 										
 									case XmlNodeType.EndElement: //Display the end of the element.
 										break;
+									}
+								}
+							}
+
+							break;
+
+						case XmlNodeType.Text: //Display the text in each element.
+							break;
+							
+						case XmlNodeType.EndElement: //Display the end of the element.
+							break;
+						}
+					}
+				}
+				
+				break;
+				
+			case XmlNodeType.Text: //Display the text in each element.
+				break;
+				
+			case XmlNodeType.EndElement: //Display the end of the element.
+				break;
+			}
+		}
+=======
+    }
+
+    public static void LoadFromTMX(string filename)
+    {
+        //Unity does not support .Net 3.5 or higher, until we find a way to do that ...
+        //var mapWidth = ((IEnumerable)tiledMapXmlRoot.XPathEvaluate("/@width")).Cast<XAttribute>().Select(a => Int32.Parse(a.Value)).First();
+        //var mapHeight = ((IEnumerable)tiledMapXmlRoot.XPathEvaluate("/@height")).Cast<XAttribute>().Select(a => Int32.Parse(a.Value)).First();
+        //var tileNames = ((IEnumerable)tiledMapXmlRoot.XPathEvaluate("layer/data/tile/@gid")).Cast<XAttribute>().Select(a => "GameTiles_" + (Int32.Parse(a.Value) - 1)).ToList();
+>>>>>>> 46efaf1ee024a2a312dab51b9ee523ee3f326c1b
+
+        var mapWidth = 0;
+        var mapHeight = 0;
+        var tileNames = new List<string>();
+        XmlTextReader reader = new XmlTextReader(filename);
+        s_sprites = Resources.LoadAll<Sprite>("Sprites").ToDictionary(sprite => sprite.name);
+        while (reader.Read())
+        {
+            switch (reader.NodeType)
+            {
+                case XmlNodeType.Element: // The node is an element.
+                    if (reader.Name == "map")
+                    {
+                        while (reader.MoveToNextAttribute()) // Read the attributes.
+                        {
+                            if (reader.Name == "width")
+                            {
+                                mapWidth = Int32.Parse(reader.Value);
+                            }
+                            if (reader.Name == "height")
+                            {
+                                mapHeight = Int32.Parse(reader.Value);
+                            }
+                        }
+                    }
+                    else if (reader.Name == "layer" && reader.MoveToNextAttribute() && reader.Name == "name" && reader.Value == "Entities") // Entities layer
+                    {
+                        while (reader.Read())
+                        {
+                            switch (reader.NodeType)
+                            {
+                                case XmlNodeType.Element: // The node is an element.
+                                    if (reader.Name == "tile")
+                                    {
+                                        while (reader.MoveToNextAttribute()) // Read the attributes.
+                                        {
+                                            if (reader.Name == "gid")
+                                            {
+                                                tileNames.Add(GetPrefabName(Int32.Parse(reader.Value)));
                                             }
                                         }
                                     }
@@ -168,11 +282,12 @@ public class SquareScript : MonoBehaviour
         var currentPosition = Vector3.zero;
         for (int j = mapHeight - 1; j >= 0; j--) // invert y axis
         {
-            for (int i = 0; i < mapWidth; i++)
-            {
+<<<<<<< HEAD
+			for (int i = 0; i < mapWidth; i++)
+			{
 				var squareGameobject = CreateTile(currentPosition, terrain[j*mapWidth + i]);
-                s_map[i, j] = squareGameobject.GetComponent<SquareScript>();
-                s_map[i, j].setLocation(i, j);
+				s_map[i, j] = squareGameobject.GetComponent<SquareScript>();
+				s_map[i, j].setLocation(i, j);
 
 				Debug.Log(entities[j*mapWidth + i].ToString());
 				if(SpriteManager7.GetSpriteByName(entities[j*mapWidth + i]) == SpriteManager7.Tentacle_Monster)
@@ -181,6 +296,23 @@ public class SquareScript : MonoBehaviour
 				}
 
 				currentPosition = new Vector3(currentPosition.x + squareSize, currentPosition.y, 0);
+=======
+            for (int i = 0; i < mapWidth; i++)
+            {
+
+                var squareGameobject = CreateTile(currentPosition, tileNames[j * mapWidth + i]);
+                s_map[i, j] = squareGameobject.GetComponent<SquareScript>();
+                s_map[i, j].setLocation(i, j);
+                currentPosition = new Vector3(currentPosition.x + squareSize, currentPosition.y, 0);
+                if (i == 0 || j == 0 || j == mapHeight - 1 || i == mapWidth - 1)
+                {
+                    s_map[i, j].TraversingCondition = Traversability.Blocking;
+                }
+                else
+                {
+                    s_map[i, j].TraversingCondition = Traversability.Walkable;
+                }
+>>>>>>> 46efaf1ee024a2a312dab51b9ee523ee3f326c1b
             }
             currentPosition = new Vector3(0, currentPosition.y + squareSize, 0);
         }
@@ -245,7 +377,8 @@ public class SquareScript : MonoBehaviour
     private static GameObject CreateTile(Vector3 position, string tileResourceName)
 	{
 		var tile = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("SquareTileResource"), position, Quaternion.identity));
-		TileManager.SetTileFromLayerAndGid(tile, tileResourceName);
+		var tileSpriteRenderer = tile.GetComponent<SpriteRenderer> ();
+		tileSpriteRenderer.sprite = s_sprites [tileResourceName];
 		return tile;
 	}
 
@@ -277,17 +410,25 @@ public class SquareScript : MonoBehaviour
 	// Update is called once per frame
 	void Update () 
 	{
+<<<<<<< HEAD
+	
+	}
 
-    }
+	private static void PlaceEntity(string spriteName, SquareScript square)
+	{
 
+	}
 
-    void OnMouseOver()
-    {
-		s_squareMarker.transform.position = transform.position;
+	public static SquareScript GetSquare (int x, int y)
+	{
+		return s_map[x,y];
+	}
+=======
+>>>>>>> 46efaf1ee024a2a312dab51b9ee523ee3f326c1b
+
     }
 
     #endregion
-	
 }
 
 public class TileManager
