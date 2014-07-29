@@ -8,7 +8,7 @@ public class MapSceneScript : MonoBehaviour
 	{
         //SquareScript.Init(5,5);
 		SquareScript.LoadFromTMX(@"Maps\testMap1.tmx");
-        var square = SquareScript.GetSquare(2, 2);
+        var square = SquareScript.GetSquare(5, 5);
 		Entity.Player = new PlayerEntity (10, 5, 3, 5,
             square,
             ((GameObject)MonoBehaviour.Instantiate(Resources.Load("PlayerSprite"),
@@ -16,7 +16,7 @@ public class MapSceneScript : MonoBehaviour
 		                                                         Quaternion.identity)).GetComponent<SpriteRenderer>(),
             10,
             10);
-        var enemy = CreateEnemy(0, 0);
+        var enemy = CreateEnemy(1, 1);
 	}
 
     private EnemyEntity CreateEnemy(int x, int y)
@@ -25,8 +25,9 @@ public class MapSceneScript : MonoBehaviour
         return new EnemyEntity(10, 1, 1, 2,
             square,
             ((GameObject)MonoBehaviour.Instantiate(Resources.Load("PlayerSprite"),
-                                                                     square.transform.position,
-                                                                 Quaternion.identity)).GetComponent<SpriteRenderer>());
+                                                                square.transform.position,
+                                                                Quaternion.identity)).GetComponent<SpriteRenderer>(),
+            MovementType.Walking);
     }
 	
 	// Update is called once per frame
@@ -57,7 +58,7 @@ public class MapSceneScript : MonoBehaviour
 		}
 		if(x != 0 || y != 0)
 		{
-			Entity.Player.MoveTo(Entity.Player.Location.GetNextSquare(x,y));
+            Entity.Player.Move(Entity.Player.Location.GetNextSquare(x, y));
 //			transform.position = new Vector3(m_playerSprite.transform.position.x, m_playerSprite.transform.position.y, transform.position.z);
 			yield return new WaitForSeconds(0.25f);
 		}

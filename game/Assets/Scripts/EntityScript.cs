@@ -11,8 +11,18 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum MovementType { Walking, Flying }
+
 public abstract class Entity
 {
+    #region fields
+
+    private MovementType m_movementType;
+
+    #endregion
+
+    #region properties
+
     public static PlayerEntity Player { get; set; }
 
     public double Health { get; private set; }
@@ -27,8 +37,11 @@ public abstract class Entity
 
     public SpriteRenderer Image { get; private set; }
 
-    public Entity(double health, double attackRange, double minDamage, double maxDamage, SquareScript location, SpriteRenderer image)
+    #endregion
+
+    public Entity(double health, double attackRange, double minDamage, double maxDamage, SquareScript location, SpriteRenderer image, MovementType movementType)
     {
+        m_movementType = movementType;
         Health = health;
         AttackRange = attackRange;
         MinDamage = minDamage;
@@ -38,12 +51,27 @@ public abstract class Entity
         Image = image;
     }
 
-    public virtual void MoveTo(SquareScript newLocation)
+    public virtual bool TryMoveTo(SquareScript newLocation)
     {
+        if(!CanEnter(newLocation))
+        {
+            return false;
+        }
         Location.OccupyingEntity = null;
         newLocation.OccupyingEntity = this;
         Location = newLocation;
         Image.transform.position = Location.transform.position;
+        return true;
+    }
+
+    private bool CanEnter(SquareScript newLocation)
+    {
+ 	    if(m_movementType == MovementType.Walking)
+        {
+            return newLocation.TraversingCondition == Traversability.Walkable;
+        }
+        //else flying
+        return newLocation.TraversingCondition != Traversability.Blocking;
     }
 
     protected bool WithinRange(Entity ent)
@@ -83,16 +111,18 @@ public class PlayerEntity : Entity
     public double Oxygen { get; private set; }
 
     public PlayerEntity(double health, double attackRange, double minDamage, double maxDamage, SquareScript location, SpriteRenderer image, double energy, double oxygen) :
-        base(health, attackRange, minDamage, maxDamage, location, image)
+        base(health, attackRange, minDamage, maxDamage, location, image, MovementType.Walking)
     {
         Energy = energy;
         Oxygen = Oxygen;
     }
 
-    public override void MoveTo(SquareScript newLocation)
+    public void Move(SquareScript newLocation)
     {
-        base.MoveTo(newLocation);
-        EnemyEntity.EnemiesTurn();
+        if (TryMoveTo(newLocation))
+        {
+            EnemyEntity.EnemiesTurn();
+        }
     }
 }
 
@@ -108,8 +138,8 @@ public class EnemyEntity : Entity
         }
     }
 
-    public EnemyEntity(double health, double attackRange, double minDamage, double maxDamage, SquareScript location, SpriteRenderer image) :
-        base(health, attackRange, minDamage, maxDamage, location, image)
+    public EnemyEntity(double health, double attackRange, double minDamage, double maxDamage, SquareScript location, SpriteRenderer image, MovementType movementType) :
+        base(health, attackRange, minDamage, maxDamage, location, image, movementType)
     {
         s_activeEntities.Add(this);
     }
@@ -135,11 +165,11 @@ public class EnemyEntity : Entity
         Debug.Log("Distance is: {0}, {1}".FormatWith(direction.x, direction.y));
         if (absX > absY)
         {
-            MoveTo(Location.GetNextSquare((int)(direction.x / absX), 0));
+            TryMoveTo(Location.GetNextSquare((int)(direction.x / absX), 0));
         }
         else
         {
-            MoveTo(Location.GetNextSquare(0, (int)(direction.y / absY)));
+            TryMoveTo(Location.GetNextSquare(0, (int)(direction.y / absY)));
         }
     }
 }
