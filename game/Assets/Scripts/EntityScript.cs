@@ -13,61 +13,81 @@ using UnityEngine;
 
 public abstract class Entity
 {
-	public static PlayerEntity Player { get; set; }
+    public static PlayerEntity Player { get; set; }
 
-	private double m_health; 
+    public double Health { get; private set; }
 
-    public double Health {
-				get {
-						return m_health;
-				}
-				set {
-						m_health = value;
-						if (m_health <= 0) {
-								Destroy ();
-						}
-				}
-		}
+    public double AttackRange { get; private set; }
 
-    public double AttackRange { get; set;}
-    public double MinDamage { get; set;}
-    public double MaxDamage { get; set;}
-	public SquareScript Location { get; set; }
-	public SpriteRenderer Image { get; set; }
+    public double MinDamage { get; private set; }
 
-	public virtual void MoveTo(SquareScript newLocation)
-	{
-		Location.OccupyingEntity = null;
-		newLocation.OccupyingEntity = this;
-		Location = newLocation;
-		Image.transform.position = Location.transform.position;
-	}
-	
-	protected bool WithinRange(Entity ent)
-	{
-		return WithinRange (ent.Location);
-	}
+    public double MaxDamage { get; private set; }
 
-	protected bool WithinRange(SquareScript otherLocation)
-	{
-		return AttackRange > this.Location.transform.position.Distance (otherLocation.transform.position);
-	}
+    public SquareScript Location { get; private set; }
 
-	protected void Attack(Entity ent)
-	{
-		ent.Health -= Randomizer.NextDouble(MinDamage, MaxDamage);
-	}
+    public SpriteRenderer Image { get; private set; }
 
-	void Destroy ()
-	{
-		throw new NotImplementedException ();
-	}
+    public Entity(double health, double attackRange, double minDamage, double maxDamage, SquareScript location, SpriteRenderer image)
+    {
+        Health = health;
+        AttackRange = attackRange;
+        MinDamage = minDamage;
+        MaxDamage = maxDamage;
+        Location = location;
+        Location.OccupyingEntity = this;
+        Image = image;
+    }
+
+    public virtual void MoveTo(SquareScript newLocation)
+    {
+        Location.OccupyingEntity = null;
+        newLocation.OccupyingEntity = this;
+        Location = newLocation;
+        Image.transform.position = Location.transform.position;
+    }
+
+    protected bool WithinRange(Entity ent)
+    {
+        return WithinRange(ent.Location);
+    }
+
+    protected bool WithinRange(SquareScript otherLocation)
+    {
+        return AttackRange > this.Location.transform.position.Distance(otherLocation.transform.position);
+    }
+
+    protected void Attack(Entity ent)
+    {
+        ent.Damage(Randomizer.NextDouble(MinDamage, MaxDamage));
+    }
+
+    private void Damage(double damage)
+    {
+        Health -= damage;
+        if (Health <= 0)
+        {
+            Destroy();
+        }
+    }
+
+    private void Destroy()
+    {
+        throw new NotImplementedException();
+    }
 }
 
 public class PlayerEntity : Entity
 {
-    public double Energy { get; set; }
-    public double Oxygen { get; set; }
+    public double Energy { get; private set; }
+
+    public double Oxygen { get; private set; }
+
+    public PlayerEntity(double health, double attackRange, double minDamage, double maxDamage, SquareScript location, SpriteRenderer image, double energy, double oxygen) :
+        base(health, attackRange, minDamage, maxDamage, location, image)
+    {
+        Energy = energy;
+        Oxygen = Oxygen;
+    }
 
     public override void MoveTo(SquareScript newLocation)
     {
@@ -78,33 +98,34 @@ public class PlayerEntity : Entity
 
 public class EnemyEntity : Entity
 {
-	private static List<EnemyEntity> s_activeEntities = new List<EnemyEntity>();
+    private static List<EnemyEntity> s_activeEntities = new List<EnemyEntity>();
 
-	public static void EnemiesTurn()
-	{
-		foreach (var enemy in s_activeEntities) 
-		{
-			enemy.Act();
-		}
-	}
+    public static void EnemiesTurn()
+    {
+        foreach (var enemy in s_activeEntities)
+        {
+            enemy.Act();
+        }
+    }
 
-    public EnemyEntity()
+    public EnemyEntity(double health, double attackRange, double minDamage, double maxDamage, SquareScript location, SpriteRenderer image) :
+        base(health, attackRange, minDamage, maxDamage, location, image)
     {
         s_activeEntities.Add(this);
     }
 
-	public void Act()
-	{
-		if (WithinRange (Entity.Player)) 
-		{
-			Attack(Entity.Player);
+    public void Act()
+    {
+        if (WithinRange(Entity.Player))
+        {
+            Attack(Entity.Player);
             Debug.Log("enemy attacks!");
-		}
+        }
         else
         {
             MoveTowardsPlayer();
         }
-	}
+    }
 
     private void MoveTowardsPlayer()
     {
@@ -112,7 +133,7 @@ public class EnemyEntity : Entity
         var absX = Math.Abs(direction.x);
         var absY = Math.Abs(direction.y);
         Debug.Log("Distance is: {0}, {1}".FormatWith(direction.x, direction.y));
-        if(absX > absY)
+        if (absX > absY)
         {
             MoveTo(Location.GetNextSquare((int)(direction.x / absX), 0));
             Debug.Log("move to: {0}, {1}".FormatWith((int)(direction.x / absX), 0));
@@ -124,5 +145,3 @@ public class EnemyEntity : Entity
         }
     }
 }
-
-
