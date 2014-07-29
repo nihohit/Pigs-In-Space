@@ -10,7 +10,7 @@ public class MapSceneScript : MonoBehaviour
 	void Start () 
 	{
         //SquareScript.Init(5,5);
-		SquareScript.LoadFromTMX(@"Maps\testMap1.tmx");
+		SquareScript.LoadFromTMX(@"Maps\testMap2.tmx");
 		m_currentSquare = SquareScript.GetSquare(2,2);
 		//instantiate a player sprite, and save the sprite renderer
 		m_playerSprite = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("PlayerSprite"), 

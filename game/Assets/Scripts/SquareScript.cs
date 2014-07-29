@@ -14,7 +14,6 @@ public class SquareScript : MonoBehaviour
 	public Entity OccupyingEntity { get; set; }
 	private static SquareScript[,] s_map;
 	private int m_x,m_y;
-	private static Dictionary<string, Sprite> s_sprites;
 
 	public static void Init(int xSize, int ySize)
 	{
@@ -37,7 +36,7 @@ public class SquareScript : MonoBehaviour
 	{
 		var tile = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("SquareTileResource"), position, Quaternion.identity));
 		var tileSpriteRenderer = tile.GetComponent<SpriteRenderer> ();
-		tileSpriteRenderer.sprite = s_sprites [tileResourceName];
+		tileSpriteRenderer.sprite = SpriteManager7.GetSpriteByName (tileResourceName);
 		return tile;
 
 	}
@@ -51,9 +50,10 @@ public class SquareScript : MonoBehaviour
 
 		var mapWidth = 0;
 		var mapHeight = 0;
-		var tileNames = new List<string> ();
+		var terrain = new List<string> ();
+		var entities = new List<string> ();
+		var markers = new List<string> ();
 		XmlTextReader reader = new XmlTextReader(filename);
-		s_sprites = Resources.LoadAll<Sprite>("Sprites").ToDictionary(sprite => sprite.name);
 		while (reader.Read())
 		{
 			switch (reader.NodeType)
@@ -73,6 +73,36 @@ public class SquareScript : MonoBehaviour
 						}
 					}
 				}
+
+				else if (reader.Name == "layer" && reader.MoveToNextAttribute() && reader.Name == "name" && reader.Value == "Terrain") // Terrain layer
+				{
+					while (reader.Read())
+					{
+						switch (reader.NodeType)
+						{
+						case XmlNodeType.Element: // The node is an element.
+							if (reader.Name == "tile")
+							{
+								while (reader.MoveToNextAttribute()) // Read the attributes.
+								{
+									if (reader.Name == "gid")
+									{
+										terrain.Add(SpriteManager7.ConvertLayerAndGidToSprintName("Terrain", reader.Value));
+									}
+								}
+							}
+							
+							break;
+							
+						case XmlNodeType.Text: //Display the text in each element.
+							break;
+							
+						case XmlNodeType.EndElement: //Display the end of the element.
+							break;
+						}
+					}
+				}
+
 				else if (reader.Name == "layer" && reader.MoveToNextAttribute() && reader.Name == "name" && reader.Value == "Entities") // Entities layer
 				{
 					while (reader.Read())
@@ -86,7 +116,36 @@ public class SquareScript : MonoBehaviour
 								{
 									if (reader.Name == "gid")
 									{
-										tileNames.Add(GetPrefabName(Int32.Parse(reader.Value)));
+										entities.Add(SpriteManager7.ConvertLayerAndGidToSprintName("Entities", reader.Value));
+									}
+								}
+							}
+							
+							break;
+							
+						case XmlNodeType.Text: //Display the text in each element.
+							break;
+							
+						case XmlNodeType.EndElement: //Display the end of the element.
+							break;
+						}
+					}
+				}
+
+				else if (reader.Name == "layer" && reader.MoveToNextAttribute() && reader.Name == "name" && reader.Value == "Markers") // Entities layer
+				{
+					while (reader.Read())
+					{
+						switch (reader.NodeType)
+						{
+						case XmlNodeType.Element: // The node is an element.
+							if (reader.Name == "tile")
+							{
+								while (reader.MoveToNextAttribute()) // Read the attributes.
+								{
+									if (reader.Name == "gid")
+									{
+										markers.Add(SpriteManager7.ConvertLayerAndGidToSprintName("Markers", reader.Value));
 									}
 								}
 							}
@@ -119,7 +178,7 @@ public class SquareScript : MonoBehaviour
         {
 			for (int i = 0; i < mapWidth; i++)
 			{
-				var squareGameobject = CreateTile(currentPosition, tileNames[j*mapWidth + i]);
+				var squareGameobject = CreateTile(currentPosition, terrain[j*mapWidth + i]);
 				s_map[i, j] = squareGameobject.GetComponent<SquareScript>();
 				s_map[i, j].setLocation(i, j);
 				currentPosition = new Vector3(currentPosition.x + squareSize, currentPosition.y, 0);
@@ -159,6 +218,11 @@ public class SquareScript : MonoBehaviour
 	
 	}
 
+	private static void PlaceEntity(string spriteName, SquareScript square)
+	{
+
+	}
+
 	public static SquareScript GetSquare (int x, int y)
 	{
 		return s_map[x,y];
@@ -182,5 +246,55 @@ public class SquareScript : MonoBehaviour
 		x = Mathf.Max(x, 0);
 		y = Mathf.Max(y, 0);
 		return GetSquare(x,y);
+	}
+}
+
+public class SpriteManager7 
+{
+	private static Dictionary<string, Sprite> s_sprites;
+	private static Sprite GetSprite(string spriteName)
+	{
+		if (s_sprites == null) 
+		{
+			s_sprites = Resources.LoadAll<Sprite>("Sprites").ToDictionary(sprite => sprite.name);
+		}
+		return s_sprites[spriteName];
+	}
+
+	public static Sprite Empty { get { return GetSprite("Terrain_0"); } }
+	public static Sprite Rock_Bottom_Right_Corner { get { return GetSprite("Terrain_1"); } }
+	public static Sprite Rock_Bottom_Left_Corner { get { return GetSprite("Terrain_2"); } }
+	public static Sprite Rock_Top_Right_Corner { get { return GetSprite("Terrain_3"); } }
+	public static Sprite Rock_Top_Left_Corner { get { return GetSprite("Terrain_4"); } }
+	public static Sprite Rock_Full1 { get { return GetSprite("Terrain_5"); } }
+	public static Sprite Rock_Full2 { get { return GetSprite("Terrain_6"); } }
+	public static Sprite Rock_Full3 { get { return GetSprite("Terrain_7"); } }
+	public static Sprite Rock_Full4 { get { return GetSprite("Terrain_8"); } }
+	public static Sprite Rock_Side_Bottom { get { return GetSprite("Terrain_9"); } }
+	public static Sprite Rock_Side_Left { get { return GetSprite("Terrain_10"); } }
+	public static Sprite Rock_Side_Top { get { return GetSprite("Terrain_11"); } }
+	public static Sprite Rock_Side_Right { get { return GetSprite("Terrain_12"); } }
+	public static Sprite Fuel_Cell { get { return GetSprite("Entities_0"); } }
+	public static Sprite Tentacle_Monster { get { return GetSprite("Entities_1"); } }	
+	public static Sprite Astronaut_Right { get { return GetSprite("Entities_2"); } }
+	public static Sprite Astronaut_Front { get { return GetSprite("Entities_3"); } }
+	public static Sprite Mouse_Hover { get { return GetSprite("Markers_0"); } }	
+	public static Sprite Blueish_Marker { get { return GetSprite("Markers_1"); } }
+	public static Sprite Green_Marker { get { return GetSprite("Markers_2"); }}
+
+	public static string ConvertLayerAndGidToSprintName(string layer, string gid)
+	{
+		var number_gid = Int32.Parse(gid);
+		return (number_gid > 0) ? layer + "_" + (number_gid - 1) : "Terrain_0";
+	}
+
+	public static Sprite GetSpriteByLayerAndGid(string layer, string gid)
+	{
+		return GetSprite(ConvertLayerAndGidToSprintName(layer, gid));
+	}
+
+	public static Sprite GetSpriteByName(string spriteName)
+	{
+		return GetSprite(spriteName);
 	}
 }
