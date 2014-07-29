@@ -54,6 +54,13 @@ public class MapSceneScript : MonoBehaviour
 
 		if (Input.GetMouseButtonUp(0)) { // left click	
 			//Get Mouse direction, let's assume it's right for now
+            //create laser object
+
+            var destination = Input.mousePosition;
+
+            var laser = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("laser"), m_playerSprite.transform.position, m_playerSprite.transform.rotation));
+            var laserScript = laser.GetComponent<LaserScript>();
+            //laserScript.Ini
 			var direction = transform.TransformDirection (Vector3.right);
 			RaycastHit2D hit = Physics2D.Raycast(m_playerSprite.transform.position, Vector3.right);
 			if (hit.collider != null) {
