@@ -13,13 +13,15 @@ using UnityEngine;
 
 public enum MovementType { Walking, Flying }
 
+#region Entity
+
 public abstract class Entity
 {
     #region fields
 
     private MovementType m_movementType;
 
-    #endregion
+    #endregion fields
 
     #region properties
 
@@ -37,7 +39,7 @@ public abstract class Entity
 
     public SpriteRenderer Image { get; private set; }
 
-    #endregion
+    #endregion properties
 
     public Entity(double health, double attackRange, double minDamage, double maxDamage, SquareScript location, SpriteRenderer image, MovementType movementType)
     {
@@ -53,7 +55,7 @@ public abstract class Entity
 
     public virtual bool TryMoveTo(SquareScript newLocation)
     {
-        if(!CanEnter(newLocation))
+        if (!CanEnter(newLocation))
         {
             return false;
         }
@@ -66,7 +68,11 @@ public abstract class Entity
 
     private bool CanEnter(SquareScript newLocation)
     {
- 	    if(m_movementType == MovementType.Walking)
+        if (newLocation.OccupyingEntity != null)
+        {
+            return false;
+        }
+        if (m_movementType == MovementType.Walking)
         {
             return newLocation.TraversingCondition == Traversability.Walkable;
         }
@@ -89,7 +95,7 @@ public abstract class Entity
         ent.Damage(Randomizer.NextDouble(MinDamage, MaxDamage));
     }
 
-    private void Damage(double damage)
+    protected virtual void Damage(double damage)
     {
         Health -= damage;
         if (Health <= 0)
@@ -104,27 +110,64 @@ public abstract class Entity
     }
 }
 
+#endregion
+
+#region PlayerEntity
+
 public class PlayerEntity : Entity
 {
     public double Energy { get; private set; }
 
     public double Oxygen { get; private set; }
 
+    public double BlueCrystal { get; private set; }
+
     public PlayerEntity(double health, double attackRange, double minDamage, double maxDamage, SquareScript location, SpriteRenderer image, double energy, double oxygen) :
         base(health, attackRange, minDamage, maxDamage, location, image, MovementType.Walking)
     {
         Energy = energy;
-        Oxygen = Oxygen;
+        Oxygen = oxygen;
+        UpdateUI("Health", Health);
+        UpdateUI("Oxygen", Oxygen);
+        UpdateUI("Energy", Energy);
+        UpdateUI("Blue Crystals", BlueCrystal);
     }
 
     public void Move(SquareScript newLocation)
     {
         if (TryMoveTo(newLocation))
         {
+            TakeLoot(newLocation);
             EnemyEntity.EnemiesTurn();
         }
     }
+
+    private void TakeLoot(SquareScript newLocation)
+    {
+        var loot = newLocation.TakeLoot();
+        if (loot != null)
+        {
+            BlueCrystal += loot.BlueCrystal;
+            loot.BlueCrystal = 0;
+        }
+        UpdateUI("Blue Crystals", BlueCrystal);
+    }
+
+    protected override void Damage(double damage)
+    {
+        base.Damage(damage);
+        UpdateUI("Health", Health);
+    }
+
+    private void UpdateUI(string updatedProperty, double updatedValue)
+    {
+        Camera.main.GetComponent<MapSceneScript>().UpdatePlayerState(updatedProperty, updatedValue);
+    }
 }
+
+#endregion
+
+#region EnemyEntity
 
 public class EnemyEntity : Entity
 {
@@ -173,3 +216,5 @@ public class EnemyEntity : Entity
         }
     }
 }
+
+#endregion

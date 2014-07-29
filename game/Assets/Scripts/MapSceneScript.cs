@@ -12,10 +12,18 @@ public class MapSceneScript : MonoBehaviour
 		Entity.Player = new PlayerEntity (10, 5, 3, 5,
             square,
             ((GameObject)MonoBehaviour.Instantiate(Resources.Load("PlayerSprite"),
-                                                                     square.transform.position, 
-		                                                         Quaternion.identity)).GetComponent<SpriteRenderer>(),
+                                                     	square.transform.position, 
+                                                 		Quaternion.identity)).GetComponent<SpriteRenderer>(),
             10,
             10);
+        SquareScript.GetSquare(10, 10).AddLoot(new Loot{
+            BlueCrystal = 10
+        });
+
+        SquareScript.GetSquare(8, 2).AddLoot(new Loot
+        {
+            BlueCrystal = 5
+        });
 	}
 
     public static EnemyEntity CreateEnemy(int x, int y)
@@ -23,9 +31,9 @@ public class MapSceneScript : MonoBehaviour
         var square = SquareScript.GetSquare(x, y);
         return new EnemyEntity(10, 1, 1, 2,
             square,
-            ((GameObject)MonoBehaviour.Instantiate(Resources.Load(SpriteManager7.Tentacle_Monster),
-                                                                square.transform.position,
-                                                                Quaternion.identity)).GetComponent<SpriteRenderer>(),
+		    ((GameObject)MonoBehaviour.Instantiate(Resources.Load("TentacleMonster"),
+                                                        square.transform.position,
+                                                        Quaternion.identity)).GetComponent<SpriteRenderer>(),
             MovementType.Walking);
     }
 	
@@ -70,6 +78,15 @@ public class MapSceneScript : MonoBehaviour
 				print("We have a hit!");
 				//hit.transform.position;
 			}
+	    }
 	}
-	}
+
+    public void UpdatePlayerState(string updatedProperty, double updatedValue)
+    {
+        var doubleToString = string.Format("{0:N1}", updatedValue);
+        var child = transform.FindChild(updatedProperty).GetComponent<GUIText>();
+        child.text = "{0}:{1}".FormatWith(updatedProperty, doubleToString);
+        child = transform.FindChild("{0}Shadow".FormatWith(updatedProperty)).GetComponent<GUIText>();
+        child.text = "{0}:{1}".FormatWith(updatedProperty, doubleToString);
+    }
 }
