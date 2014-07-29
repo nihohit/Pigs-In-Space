@@ -8,18 +8,140 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 public abstract class Entity
 {
-    public int Health { get; set; }
-    public double AttackRange { get; set;}
-    public double MinDamage { get; set;}
-    public double MaxDamage { get; set;}
+    public static PlayerEntity Player { get; set; }
+
+    public double Health { get; private set; }
+
+    public double AttackRange { get; private set; }
+
+    public double MinDamage { get; private set; }
+
+    public double MaxDamage { get; private set; }
+
+    public SquareScript Location { get; private set; }
+
+    public SpriteRenderer Image { get; private set; }
+
+    public Entity(double health, double attackRange, double minDamage, double maxDamage, SquareScript location, SpriteRenderer image)
+    {
+        Health = health;
+        AttackRange = attackRange;
+        MinDamage = minDamage;
+        MaxDamage = maxDamage;
+        Location = location;
+        Location.OccupyingEntity = this;
+        Image = image;
+    }
+
+    public virtual void MoveTo(SquareScript newLocation)
+    {
+        Location.OccupyingEntity = null;
+        newLocation.OccupyingEntity = this;
+        Location = newLocation;
+        Image.transform.position = Location.transform.position;
+    }
+
+    protected bool WithinRange(Entity ent)
+    {
+        return WithinRange(ent.Location);
+    }
+
+    protected bool WithinRange(SquareScript otherLocation)
+    {
+        return AttackRange > this.Location.transform.position.Distance(otherLocation.transform.position);
+    }
+
+    protected void Attack(Entity ent)
+    {
+        ent.Damage(Randomizer.NextDouble(MinDamage, MaxDamage));
+    }
+
+    private void Damage(double damage)
+    {
+        Health -= damage;
+        if (Health <= 0)
+        {
+            Destroy();
+        }
+    }
+
+    private void Destroy()
+    {
+        throw new NotImplementedException();
+    }
 }
 
-public class PlayerEntity
+public class PlayerEntity : Entity
 {
-    public double Energy { get; set; }
-    public double Oxygen { get; set; }
+    public double Energy { get; private set; }
+
+    public double Oxygen { get; private set; }
+
+    public PlayerEntity(double health, double attackRange, double minDamage, double maxDamage, SquareScript location, SpriteRenderer image, double energy, double oxygen) :
+        base(health, attackRange, minDamage, maxDamage, location, image)
+    {
+        Energy = energy;
+        Oxygen = Oxygen;
+    }
+
+    public override void MoveTo(SquareScript newLocation)
+    {
+        base.MoveTo(newLocation);
+        EnemyEntity.EnemiesTurn();
+    }
 }
 
+public class EnemyEntity : Entity
+{
+    private static List<EnemyEntity> s_activeEntities = new List<EnemyEntity>();
+
+    public static void EnemiesTurn()
+    {
+        foreach (var enemy in s_activeEntities)
+        {
+            enemy.Act();
+        }
+    }
+
+    public EnemyEntity(double health, double attackRange, double minDamage, double maxDamage, SquareScript location, SpriteRenderer image) :
+        base(health, attackRange, minDamage, maxDamage, location, image)
+    {
+        s_activeEntities.Add(this);
+    }
+
+    public void Act()
+    {
+        if (WithinRange(Entity.Player))
+        {
+            Attack(Entity.Player);
+            Debug.Log("enemy attacks!");
+        }
+        else
+        {
+            MoveTowardsPlayer();
+        }
+    }
+
+    private void MoveTowardsPlayer()
+    {
+        var direction = new Vector2(Player.Location.transform.position.x - Location.transform.position.x, Location.transform.position.y - Player.Location.transform.position.y);
+        var absX = Math.Abs(direction.x);
+        var absY = Math.Abs(direction.y);
+        Debug.Log("Distance is: {0}, {1}".FormatWith(direction.x, direction.y));
+        if (absX > absY)
+        {
+            MoveTo(Location.GetNextSquare((int)(direction.x / absX), 0));
+            Debug.Log("move to: {0}, {1}".FormatWith((int)(direction.x / absX), 0));
+        }
+        else
+        {
+            MoveTo(Location.GetNextSquare(0, (int)(direction.y / absY)));
+            Debug.Log("move to: {0}, {1}".FormatWith(0, (int)(direction.y / absY)));
+        }
+    }
+}
