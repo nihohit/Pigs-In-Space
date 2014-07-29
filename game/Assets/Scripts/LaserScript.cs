@@ -1,12 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class LaserScript : MonoBehaviour {
-
     /// <summary>
     ///  Script wrapper for shots moving across the screen
     /// </summary>
-    public class Shot : MonoBehaviour
+    public class LaserScript : MonoBehaviour
     {
         private bool m_started = false;
         private Vector2 m_movementFraction;
@@ -18,11 +16,11 @@ public class LaserScript : MonoBehaviour {
             m_endPoint = to;
             m_started = true;
             var differenceVector = to - from;
-            var angle = Vector2.Angle(new Vector2(0, 1), differenceVector);
-            if (differenceVector.x > 0)
-            {
-                angle = -angle;
-            }
+            var angle = Vector2.Angle(new Vector2(1, 0), differenceVector);
+            //if (differenceVector.y > 0)
+            //{
+            //    angle = -angle;
+            //}
             this.gameObject.transform.Rotate(new Vector3(0, 0, angle));
             m_movementFraction = differenceVector / 30;
             //TacticalState.TextureManager.UpdateEffectTexture(name, this.GetComponent<SpriteRenderer>());
@@ -31,7 +29,7 @@ public class LaserScript : MonoBehaviour {
         // Use this for initialization
         private void Start()
         {
-            Destroy(this.gameObject, 0.5f);
+            Destroy(this.gameObject, 0.6f);
         }
 
         // Update is called once per frame
@@ -45,9 +43,3 @@ public class LaserScript : MonoBehaviour {
             }
         }
     }
-}
-
-namespace Assets.scripts.TacticalBattleScene
-{
-  
-}

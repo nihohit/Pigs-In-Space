@@ -69,17 +69,13 @@ public class MapSceneScript : MonoBehaviour
 
             var destination = Input.mousePosition;
 
-            var laser = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("laser"), m_playerSprite.transform.position, m_playerSprite.transform.rotation));
+            var laser = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("laser"), Entity.Player.Location.transform.position, Quaternion.identity));
             var laserScript = laser.GetComponent<LaserScript>();
-            //laserScript.Ini
-			var direction = transform.TransformDirection (Vector3.right);
-			RaycastHit2D hit = Physics2D.Raycast(m_playerSprite.transform.position, Vector3.right);
-			if (hit.collider != null) {
-
-				Debug.Log("We have a hit!");
-				print(hit.collider.shapeCount);
-				//hit.transform.position;
-			}
+            var MousePos = Input.mousePosition;
+            var translatedPosition = Camera.main.ScreenToWorldPoint(MousePos);
+            var vec2 =new Vector2(translatedPosition.x,translatedPosition.y);
+            laserScript.Init(vec2, Entity.Player.Location.transform.position, "Laser shot");           
+        
 	}
 	}
 }
