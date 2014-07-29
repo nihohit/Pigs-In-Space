@@ -8,10 +8,18 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 using System;
-public class Entity
+
+public abstract class Entity
 {
-	public Entity ()
-	{
-	}
+    public int Health { get; set; }
+    public double AttackRange { get; set;}
+    public double MinDamage { get; set;}
+    public double MaxDamage { get; set;}
+}
+
+public class PlayerEntity
+{
+    public double Energy { get; set; }
+    public double Oxygen { get; set; }
 }
 
