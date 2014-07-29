@@ -8,18 +8,121 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 public abstract class Entity
 {
-    public int Health { get; set; }
+	public static PlayerEntity Player { get; set; }
+
+	private double m_health; 
+
+    public double Health {
+				get {
+						return m_health;
+				}
+				set {
+						m_health = value;
+						if (m_health <= 0) {
+								Destroy ();
+						}
+				}
+		}
+
     public double AttackRange { get; set;}
     public double MinDamage { get; set;}
     public double MaxDamage { get; set;}
+	public SquareScript Location { get; set; }
+	public SpriteRenderer Image { get; set; }
+
+	public virtual void MoveTo(SquareScript newLocation)
+	{
+		Location.OccupyingEntity = null;
+		newLocation.OccupyingEntity = this;
+		Location = newLocation;
+		Image.transform.position = Location.transform.position;
+	}
+	
+	protected bool WithinRange(Entity ent)
+	{
+		return WithinRange (ent.Location);
+	}
+
+	protected bool WithinRange(SquareScript otherLocation)
+	{
+		return AttackRange > this.Location.transform.position.Distance (otherLocation.transform.position);
+	}
+
+	protected void Attack(Entity ent)
+	{
+		ent.Health -= Randomizer.NextDouble(MinDamage, MaxDamage);
+	}
+
+	void Destroy ()
+	{
+		throw new NotImplementedException ();
+	}
 }
 
-public class PlayerEntity
+public class PlayerEntity : Entity
 {
     public double Energy { get; set; }
     public double Oxygen { get; set; }
+
+    public override void MoveTo(SquareScript newLocation)
+    {
+        base.MoveTo(newLocation);
+        EnemyEntity.EnemiesTurn();
+    }
 }
+
+public class EnemyEntity : Entity
+{
+	private static List<EnemyEntity> s_activeEntities = new List<EnemyEntity>();
+
+	public static void EnemiesTurn()
+	{
+		foreach (var enemy in s_activeEntities) 
+		{
+			enemy.Act();
+		}
+	}
+
+    public EnemyEntity()
+    {
+        s_activeEntities.Add(this);
+    }
+
+	public void Act()
+	{
+		if (WithinRange (Entity.Player)) 
+		{
+			Attack(Entity.Player);
+            Debug.Log("enemy attacks!");
+		}
+        else
+        {
+            MoveTowardsPlayer();
+        }
+	}
+
+    private void MoveTowardsPlayer()
+    {
+        var direction = new Vector2(Player.Location.transform.position.x - Location.transform.position.x, Location.transform.position.y - Player.Location.transform.position.y);
+        var absX = Math.Abs(direction.x);
+        var absY = Math.Abs(direction.y);
+        Debug.Log("Distance is: {0}, {1}".FormatWith(direction.x, direction.y));
+        if(absX > absY)
+        {
+            MoveTo(Location.GetNextSquare((int)(direction.x / absX), 0));
+            Debug.Log("move to: {0}, {1}".FormatWith((int)(direction.x / absX), 0));
+        }
+        else
+        {
+            MoveTo(Location.GetNextSquare(0, (int)(direction.y / absY)));
+            Debug.Log("move to: {0}, {1}".FormatWith(0, (int)(direction.y / absY)));
+        }
+    }
+}
+
 

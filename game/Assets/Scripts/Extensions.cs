@@ -26,5 +26,15 @@ public static class Extensions
 		}
 		throw new Exception ("item not found");
 	}
+
+	public static double Distance(this Vector3 point, Vector3 otherPoint)
+	{
+		return Math.Sqrt (Math.Pow (point.x - otherPoint.x, 2) + Math.Pow (point.y - otherPoint.y, 2) + Math.Pow (point.z - otherPoint.z, 2));
+	}
+
+    public static string FormatWith(this string str, params object[] parameters)
+    {
+        return String.Format(str, parameters);
+    }
 }
 
