@@ -79,6 +79,15 @@ public class MapSceneScript : MonoBehaviour
 				print("We have a hit!");
 				//hit.transform.position;
 			}
+	    }
 	}
-	}
+
+    public void UpdatePlayerState(string updatedProperty, double updatedValue)
+    {
+        var doubleToString = string.Format("{0:N1}", updatedValue);
+        var child = transform.FindChild(updatedProperty).GetComponent<GUIText>();
+        child.text = "{0}:{1}".FormatWith(updatedProperty, doubleToString);
+        child = transform.FindChild("{0}Shadow".FormatWith(updatedProperty)).GetComponent<GUIText>();
+        child.text = "{0}:{1}".FormatWith(updatedProperty, doubleToString);
+    }
 }
