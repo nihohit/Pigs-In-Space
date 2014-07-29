@@ -19,7 +19,7 @@ public abstract class Entity
 
     private MovementType m_movementType;
 
-    #endregion
+    #endregion fields
 
     #region properties
 
@@ -37,7 +37,7 @@ public abstract class Entity
 
     public SpriteRenderer Image { get; private set; }
 
-    #endregion
+    #endregion properties
 
     public Entity(double health, double attackRange, double minDamage, double maxDamage, SquareScript location, SpriteRenderer image, MovementType movementType)
     {
@@ -53,7 +53,7 @@ public abstract class Entity
 
     public virtual bool TryMoveTo(SquareScript newLocation)
     {
-        if(!CanEnter(newLocation))
+        if (!CanEnter(newLocation))
         {
             return false;
         }
@@ -66,7 +66,11 @@ public abstract class Entity
 
     private bool CanEnter(SquareScript newLocation)
     {
- 	    if(m_movementType == MovementType.Walking)
+        if (newLocation.OccupyingEntity != null)
+        {
+            return false;
+        }
+        if (m_movementType == MovementType.Walking)
         {
             return newLocation.TraversingCondition == Traversability.Walkable;
         }
@@ -110,6 +114,8 @@ public class PlayerEntity : Entity
 
     public double Oxygen { get; private set; }
 
+    public double BlueCrystal { get; private set; }
+
     public PlayerEntity(double health, double attackRange, double minDamage, double maxDamage, SquareScript location, SpriteRenderer image, double energy, double oxygen) :
         base(health, attackRange, minDamage, maxDamage, location, image, MovementType.Walking)
     {
@@ -121,7 +127,18 @@ public class PlayerEntity : Entity
     {
         if (TryMoveTo(newLocation))
         {
+            TakeLoot(newLocation);
             EnemyEntity.EnemiesTurn();
+        }
+    }
+
+    private void TakeLoot(SquareScript newLocation)
+    {
+        var loot = newLocation.TakeLoot();
+        if (loot != null)
+        {
+            BlueCrystal += loot.BlueCrystal;
+            loot.BlueCrystal = 0;
         }
     }
 }
