@@ -9,8 +9,9 @@ public class MapSceneScript : MonoBehaviour
 	// Use this for initialization
 	void Start () 
 	{
-        SquareScript.Init(5,5);
-		m_currentSquare = SquareScript.GetSquare(0,0);
+        //SquareScript.Init(5,5);
+		SquareScript.LoadFromTMX(@"C:\pigs\testMap1.tmx");
+		m_currentSquare = SquareScript.GetSquare(2,2);
 		//instantiate a player sprite, and save the sprite renderer
 		m_playerSprite = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("PlayerSprite"), 
 		                                                         m_currentSquare.transform.position, 
@@ -29,19 +30,19 @@ public class MapSceneScript : MonoBehaviour
 		var y = 0;
 		if (Input.GetKeyDown(KeyCode.UpArrow))
 		{
-			x = 1;
+			y = -1;
 		}
 		if (Input.GetKeyDown(KeyCode.DownArrow))
 		{
-			x = -1;
+			y = 1;
 		}
 		if (Input.GetKeyDown(KeyCode.LeftArrow))
 		{
-			y = -1;
+			x = -1;
 		}
 		if (Input.GetKeyDown(KeyCode.RightArrow))
 		{
-			y = 1;
+			x = 1;
 		}
 		if(x != 0 || y != 0)
 		{
