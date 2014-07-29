@@ -14,6 +14,7 @@ public class SquareScript : MonoBehaviour
 	public Entity OccupyingEntity { get; set; }
 	private static SquareScript[,] s_map;
 	private int m_x,m_y;
+	private static Dictionary<string, Sprite> s_sprites;
 
 	public static void Init(int xSize, int ySize)
 	{
@@ -34,7 +35,11 @@ public class SquareScript : MonoBehaviour
 
 	private static GameObject CreateTile(Vector3 position, string tileResourceName)
 	{
-		return ((GameObject)MonoBehaviour.Instantiate(Resources.Load(tileResourceName), position, Quaternion.identity));
+		var tile = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("SquareTileResource"), position, Quaternion.identity));
+		var tileSpriteRenderer = tile.GetComponent<SpriteRenderer> ();
+		tileSpriteRenderer.sprite = s_sprites [tileResourceName];
+		return tile;
+
 	}
 
     public static void LoadFromTMX(string filename)
@@ -48,6 +53,7 @@ public class SquareScript : MonoBehaviour
 		var mapHeight = 0;
 		var tileNames = new List<string> ();
 		XmlTextReader reader = new XmlTextReader(filename);
+		s_sprites = Resources.LoadAll<Sprite>("Sprites").ToDictionary(sprite => sprite.name);
 		while (reader.Read())
 		{
 			switch (reader.NodeType)
