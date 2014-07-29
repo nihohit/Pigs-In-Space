@@ -8,27 +8,25 @@ public class MapSceneScript : MonoBehaviour
 	{
         //SquareScript.Init(5,5);
 		SquareScript.LoadFromTMX(@"Maps\testMap1.tmx");
-		Entity.Player = new PlayerEntity ();
-		Entity.Player.Location = SquareScript.GetSquare(2,2);
-		//instantiate a player sprite, and save the sprite renderer
-		Entity.Player.Image = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("PlayerSprite"), 
-		                                                             Entity.Player.Location.transform.position, 
-		                                                         Quaternion.identity)).GetComponent<SpriteRenderer>();
+        var square = SquareScript.GetSquare(2, 2);
+		Entity.Player = new PlayerEntity (10, 5, 3, 5,
+            square,
+            ((GameObject)MonoBehaviour.Instantiate(Resources.Load("PlayerSprite"),
+                                                                     square.transform.position, 
+		                                                         Quaternion.identity)).GetComponent<SpriteRenderer>(),
+            10,
+            10);
         var enemy = CreateEnemy(0, 0);
 	}
 
-    private EnemyEntity CreateEnemy(int p1, int p2)
+    private EnemyEntity CreateEnemy(int x, int y)
     {
-        var enemy = new EnemyEntity();
-        enemy.Location = SquareScript.GetSquare(0, 0);
-        enemy.Image = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("PlayerSprite"),
-                                                                     Entity.Player.Location.transform.position,
-                                                                 Quaternion.identity)).GetComponent<SpriteRenderer>();
-        enemy.Health = 10;
-        enemy.MaxDamage = 2;
-        enemy.MinDamage = 1;
-        enemy.AttackRange = 1;
-        return enemy;
+        var square = SquareScript.GetSquare(x, y);
+        return new EnemyEntity(10, 1, 1, 2,
+            square,
+            ((GameObject)MonoBehaviour.Instantiate(Resources.Load("PlayerSprite"),
+                                                                     square.transform.position,
+                                                                 Quaternion.identity)).GetComponent<SpriteRenderer>());
     }
 	
 	// Update is called once per frame

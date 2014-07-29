@@ -136,12 +136,10 @@ public class EnemyEntity : Entity
         if (absX > absY)
         {
             MoveTo(Location.GetNextSquare((int)(direction.x / absX), 0));
-            Debug.Log("move to: {0}, {1}".FormatWith((int)(direction.x / absX), 0));
         }
         else
         {
             MoveTo(Location.GetNextSquare(0, (int)(direction.y / absY)));
-            Debug.Log("move to: {0}, {1}".FormatWith(0, (int)(direction.y / absY)));
         }
     }
 }
