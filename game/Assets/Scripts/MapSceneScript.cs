@@ -17,6 +17,14 @@ public class MapSceneScript : MonoBehaviour
             10,
             10);
         var enemy = CreateEnemy(1, 1);
+        SquareScript.GetSquare(10, 10).AddLoot(new Loot{
+            BlueCrystal = 10
+        });
+
+        SquareScript.GetSquare(8, 2).AddLoot(new Loot
+        {
+            BlueCrystal = 5
+        });
 	}
 
     private EnemyEntity CreateEnemy(int x, int y)

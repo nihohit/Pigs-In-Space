@@ -12,29 +12,28 @@ using UnityEngine;
 
 public static class Extensions
 {
-	public static Vector2 GetCoordinates<T>(this T[,] array, T searchedItem)
-	{
-		for (int i = 0; i < array.GetLength(0); i++) 
-		{
-			for (int j = 0; j < array.GetLength(1); j++) 
-			{
-				if(array[i,j].Equals(searchedItem))
-				{
-					return new Vector2(i,j);
-				}
-			}
-		}
-		throw new Exception ("item not found");
-	}
+    public static Vector2 GetCoordinates<T>(this T[,] array, T searchedItem)
+    {
+        for (int i = 0; i < array.GetLength(0); i++)
+        {
+            for (int j = 0; j < array.GetLength(1); j++)
+            {
+                if (array[i, j].Equals(searchedItem))
+                {
+                    return new Vector2(i, j);
+                }
+            }
+        }
+        throw new Exception("item not found");
+    }
 
-	public static double Distance(this Vector3 point, Vector3 otherPoint)
-	{
-		return Math.Sqrt (Math.Pow (point.x - otherPoint.x, 2) + Math.Pow (point.y - otherPoint.y, 2) + Math.Pow (point.z - otherPoint.z, 2));
-	}
+    public static double Distance(this Vector3 point, Vector3 otherPoint)
+    {
+        return Math.Sqrt(Math.Pow(point.x - otherPoint.x, 2) + Math.Pow(point.y - otherPoint.y, 2) + Math.Pow(point.z - otherPoint.z, 2));
+    }
 
     public static string FormatWith(this string str, params object[] parameters)
     {
         return String.Format(str, parameters);
     }
 }
-
