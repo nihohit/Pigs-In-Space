@@ -9,8 +9,20 @@ using System.Xml.Linq;
 using System.Xml;
 using UnityEngine;
 
+public enum Traversability { Walkable, Flyable, Blocking }
+
 public class SquareScript : MonoBehaviour 
 {
+	private Traversability _tt;
+    public Traversability TraversingCondition 
+	{ 
+		get{ return _tt;}
+		set 
+		{
+			_tt = value;
+			Debug.Log("set " + m_x + " , " + m_y + "to " + value);
+		}
+	}
 	public Entity OccupyingEntity { get; set; }
 	private static SquareScript[,] s_map;
 	private int m_x,m_y;
@@ -35,8 +47,7 @@ public class SquareScript : MonoBehaviour
 	private static GameObject CreateTile(Vector3 position, string tileResourceName)
 	{
 		var tile = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("SquareTileResource"), position, Quaternion.identity));
-		var tileSpriteRenderer = tile.GetComponent<SpriteRenderer> ();
-		tileSpriteRenderer.sprite = SpriteManager7.GetSpriteByName (tileResourceName);
+		TileManager.SetTileFromLayerAndGid(tile, tileResourceName);
 		return tile;
 
 	}
@@ -73,7 +84,7 @@ public class SquareScript : MonoBehaviour
 						}
 					}
 				}
-
+							
 				else if (reader.Name == "layer" && reader.MoveToNextAttribute() && reader.Name == "name" && reader.Value == "Terrain") // Terrain layer
 				{
 					while (reader.Read())
@@ -91,67 +102,66 @@ public class SquareScript : MonoBehaviour
 									}
 								}
 							}
-							
-							break;
-							
-						case XmlNodeType.Text: //Display the text in each element.
-							break;
-							
-						case XmlNodeType.EndElement: //Display the end of the element.
-							break;
-						}
-					}
-				}
 
-				else if (reader.Name == "layer" && reader.MoveToNextAttribute() && reader.Name == "name" && reader.Value == "Entities") // Entities layer
-				{
-					while (reader.Read())
-					{
-						switch (reader.NodeType)
-						{
-						case XmlNodeType.Element: // The node is an element.
-							if (reader.Name == "tile")
+							else if (reader.Name == "layer" && reader.MoveToNextAttribute() && reader.Name == "name" && reader.Value == "Entities") // Entities layer
 							{
-								while (reader.MoveToNextAttribute()) // Read the attributes.
+								while (reader.Read())
 								{
-									if (reader.Name == "gid")
+									switch (reader.NodeType)
 									{
-										entities.Add(SpriteManager7.ConvertLayerAndGidToSprintName("Entities", reader.Value));
+									case XmlNodeType.Element: // The node is an element.
+										if (reader.Name == "tile")
+										{
+											while (reader.MoveToNextAttribute()) // Read the attributes.
+											{
+												if (reader.Name == "gid")
+												{
+													entities.Add(SpriteManager7.ConvertLayerAndGidToSprintName("Entities", reader.Value));
+												}
+											}
+										}
+
+										else if (reader.Name == "layer" && reader.MoveToNextAttribute() && reader.Name == "name" && reader.Value == "Markers") // Entities layer
+										{
+											while (reader.Read())
+											{
+												switch (reader.NodeType)
+												{
+												case XmlNodeType.Element: // The node is an element.
+													if (reader.Name == "tile")
+													{
+														while (reader.MoveToNextAttribute()) // Read the attributes.
+														{
+															if (reader.Name == "gid")
+															{
+																markers.Add(SpriteManager7.ConvertLayerAndGidToSprintName("Markers", reader.Value));
+															}
+														}
+													}
+
+													break;
+													
+												case XmlNodeType.Text: //Display the text in each element.
+													break;
+													
+												case XmlNodeType.EndElement: //Display the end of the element.
+													break;
+												}
+											}
+										}
+										break;
+										
+									case XmlNodeType.Text: //Display the text in each element.
+										break;
+										
+									case XmlNodeType.EndElement: //Display the end of the element.
+										break;
 									}
 								}
 							}
-							
-							break;
-							
-						case XmlNodeType.Text: //Display the text in each element.
-							break;
-							
-						case XmlNodeType.EndElement: //Display the end of the element.
-							break;
-						}
-					}
-				}
 
-				else if (reader.Name == "layer" && reader.MoveToNextAttribute() && reader.Name == "name" && reader.Value == "Markers") // Entities layer
-				{
-					while (reader.Read())
-					{
-						switch (reader.NodeType)
-						{
-						case XmlNodeType.Element: // The node is an element.
-							if (reader.Name == "tile")
-							{
-								while (reader.MoveToNextAttribute()) // Read the attributes.
-								{
-									if (reader.Name == "gid")
-									{
-										markers.Add(SpriteManager7.ConvertLayerAndGidToSprintName("Markers", reader.Value));
-									}
-								}
-							}
-							
 							break;
-							
+
 						case XmlNodeType.Text: //Display the text in each element.
 							break;
 							
@@ -181,6 +191,13 @@ public class SquareScript : MonoBehaviour
 				var squareGameobject = CreateTile(currentPosition, terrain[j*mapWidth + i]);
 				s_map[i, j] = squareGameobject.GetComponent<SquareScript>();
 				s_map[i, j].setLocation(i, j);
+
+				Debug.Log(entities[j*mapWidth + i].ToString());
+				if(SpriteManager7.GetSpriteByName(entities[j*mapWidth + i]) == SpriteManager7.Tentacle_Monster)
+				{
+					MapSceneScript.CreateEnemy(i, j);
+				}
+
 				currentPosition = new Vector3(currentPosition.x + squareSize, currentPosition.y, 0);
             }
 			currentPosition = new Vector3(0, currentPosition.y + squareSize, 0);
@@ -249,6 +266,84 @@ public class SquareScript : MonoBehaviour
 	}
 }
 
+public class TileManager
+{
+	public static void EmptyTile(GameObject tile){SetTile(tile, SpriteManager7.Empty, Traversability.Walkable);}
+	public static void Rock_Bottom_Right_Corner(GameObject tile){SetTile(tile, SpriteManager7.Rock_Bottom_Right_Corner, Traversability.Blocking);}
+	public static void Rock_Bottom_Left_Corner(GameObject tile){SetTile(tile, SpriteManager7.Rock_Bottom_Left_Corner, Traversability.Blocking);}
+	public static void Rock_Top_Right_Corner(GameObject tile){SetTile(tile, SpriteManager7.Rock_Top_Right_Corner, Traversability.Blocking);}
+	public static void Rock_Top_Left_Corner(GameObject tile){SetTile(tile, SpriteManager7.Rock_Top_Left_Corner, Traversability.Blocking);}
+	public static void Rock_Side_Bottom(GameObject tile){SetTile(tile, SpriteManager7.Rock_Side_Bottom, Traversability.Blocking);}
+	public static void Rock_Side_Left(GameObject tile){SetTile(tile, SpriteManager7.Rock_Side_Left, Traversability.Blocking);}
+	public static void Rock_Side_Top(GameObject tile){SetTile(tile, SpriteManager7.Rock_Side_Top, Traversability.Blocking);}
+	public static void Rock_Side_Right(GameObject tile){SetTile(tile, SpriteManager7.Rock_Side_Right, Traversability.Blocking);}
+	public static void Rock_Crater(GameObject tile){SetTile(tile, SpriteManager7.Rock_Crater, Traversability.Blocking);}
+	public static void Spaceship_Top_Left(GameObject tile){SetTile(tile, SpriteManager7.Spaceship_Top_Left, Traversability.Blocking);}
+	public static void Spaceship_Top_Right(GameObject tile){SetTile(tile, SpriteManager7.Spaceship_Top_Right, Traversability.Blocking);}
+	public static void Spaceship_Bottom_Left(GameObject tile){SetTile(tile, SpriteManager7.Spaceship_Bottom_Left, Traversability.Blocking);}
+	public static void Spaceship_Bottom_Right(GameObject tile){SetTile(tile, SpriteManager7.Spaceship_Bottom_Right, Traversability.Blocking);}
+	public static void Fuel_Cell(GameObject tile){SetTile(tile, SpriteManager7.Fuel_Cell, Traversability.Walkable);}
+	public static void Tentacle_Monster(GameObject tile){SetTile(tile, SpriteManager7.Tentacle_Monster, Traversability.Blocking);}
+	public static void Astornaut(GameObject tile){SetTile(tile, SpriteManager7.Astronaut_Front, Traversability.Blocking);}
+	
+	public static void Rock_Full(GameObject tile)
+	{
+		switch (UnityEngine.Random.Range(0, 4)) 
+		{
+			case 0: 
+				SetTile(tile, SpriteManager7.Rock_Full1, Traversability.Blocking);
+			break;
+			case 1: 
+				SetTile(tile, SpriteManager7.Rock_Full2, Traversability.Blocking);
+			break;
+			case 2: 
+				SetTile(tile, SpriteManager7.Rock_Full3, Traversability.Blocking);
+			break;
+			case 3: 
+				SetTile(tile, SpriteManager7.Rock_Full4, Traversability.Blocking);
+			break;
+		}
+	}
+
+	public static void SetTile(GameObject tile, Sprite sprite, Traversability traversability)
+	{
+		var sr = tile.GetComponent<SpriteRenderer> ();
+		sr.sprite = sprite;
+		var script = tile.GetComponent<SquareScript>();
+		script.TraversingCondition = traversability;
+	}
+
+	public static void SetTileFromLayerAndGid(GameObject tile, string layerAndGid)
+	{
+		switch (layerAndGid) 
+		{
+		case "Terrain_0" : EmptyTile(tile); break;
+		case "Terrain_1" : Rock_Bottom_Right_Corner(tile); break;
+		case "Terrain_2" : Rock_Bottom_Left_Corner(tile); break;
+		case "Terrain_3" : Rock_Top_Right_Corner(tile); break;
+		case "Terrain_4" : Rock_Top_Left_Corner(tile); break;
+		case "Terrain_5" : 
+		case "Terrain_6" : 
+		case "Terrain_7" : 
+		case "Terrain_8" : Rock_Full(tile); break;
+		case "Terrain_9" : Rock_Side_Bottom(tile); break;
+		case "Terrain_10" : Rock_Side_Left(tile); break;
+		case "Terrain_11" : Rock_Side_Top(tile); break;
+		case "Terrain_12" : Rock_Side_Right(tile); break;
+		case "Terrain_13" : Rock_Crater(tile); break;
+		case "Terrain_14" : Spaceship_Top_Left(tile); break;
+		case "Terrain_15" : Spaceship_Top_Right(tile); break;
+		case "Terrain_16" : Spaceship_Bottom_Left(tile); break;
+		case "Terrain_17" : Spaceship_Bottom_Right(tile); break;
+		case "Entities_0" : EmptyTile(tile); break;
+		case "Entities_33" : Fuel_Cell(tile); break;
+		case "Entities_34" : Tentacle_Monster(tile); break;
+		case "Entities_35" : 
+		case "Entities_36" : Astornaut(tile); break;
+		}
+	}
+}
+
 public class SpriteManager7 
 {
 	private static Dictionary<string, Sprite> s_sprites;
@@ -274,6 +369,11 @@ public class SpriteManager7
 	public static Sprite Rock_Side_Left { get { return GetSprite("Terrain_10"); } }
 	public static Sprite Rock_Side_Top { get { return GetSprite("Terrain_11"); } }
 	public static Sprite Rock_Side_Right { get { return GetSprite("Terrain_12"); } }
+	public static Sprite Rock_Crater { get { return GetSprite("Terrain_13"); } }
+	public static Sprite Spaceship_Top_Left { get { return GetSprite("Terrain_14"); } }
+	public static Sprite Spaceship_Top_Right { get { return GetSprite("Terrain_15"); } }
+	public static Sprite Spaceship_Bottom_Left { get { return GetSprite("Terrain_16"); } }
+	public static Sprite Spaceship_Bottom_Right { get { return GetSprite("Terrain_17"); } }
 	public static Sprite Fuel_Cell { get { return GetSprite("Entities_0"); } }
 	public static Sprite Tentacle_Monster { get { return GetSprite("Entities_1"); } }	
 	public static Sprite Astronaut_Right { get { return GetSprite("Entities_2"); } }
@@ -285,7 +385,16 @@ public class SpriteManager7
 	public static string ConvertLayerAndGidToSprintName(string layer, string gid)
 	{
 		var number_gid = Int32.Parse(gid);
-		return (number_gid > 0) ? layer + "_" + (number_gid - 1) : "Terrain_0";
+		switch (layer) 
+		{
+			case "Terrain":
+			return (number_gid > 0) ? layer + "_" + (number_gid - 1) : "Terrain_0";
+
+			case "Entities":
+			return (number_gid > 0) ? layer + "_" + (number_gid - 33) : "Terrain_0";
+		}
+		return "Terrain_0";
+
 	}
 
 	public static Sprite GetSpriteByLayerAndGid(string layer, string gid)

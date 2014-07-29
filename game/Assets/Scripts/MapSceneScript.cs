@@ -3,20 +3,31 @@ using System.Collections;
 
 public class MapSceneScript : MonoBehaviour 
 {
-	private SpriteRenderer m_playerSprite;
-	private SquareScript m_currentSquare;
-
 	// Use this for initialization
 	void Start () 
 	{
         //SquareScript.Init(5,5);
 		SquareScript.LoadFromTMX(@"Maps\testMap2.tmx");
-		m_currentSquare = SquareScript.GetSquare(2,2);
-		//instantiate a player sprite, and save the sprite renderer
-		m_playerSprite = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("PlayerSprite"), 
-		                                                         m_currentSquare.transform.position, 
-		                                                         Quaternion.identity)).GetComponent<SpriteRenderer>();
+        var square = SquareScript.GetSquare(5, 5);
+		Entity.Player = new PlayerEntity (10, 5, 3, 5,
+            square,
+            ((GameObject)MonoBehaviour.Instantiate(Resources.Load("PlayerSprite"),
+                                                                     square.transform.position, 
+		                                                         Quaternion.identity)).GetComponent<SpriteRenderer>(),
+            10,
+            10);
 	}
+
+    public static EnemyEntity CreateEnemy(int x, int y)
+    {
+        var square = SquareScript.GetSquare(x, y);
+        return new EnemyEntity(10, 1, 1, 2,
+            square,
+            ((GameObject)MonoBehaviour.Instantiate(Resources.Load(SpriteManager7.Tentacle_Monster),
+                                                                square.transform.position,
+                                                                Quaternion.identity)).GetComponent<SpriteRenderer>(),
+            MovementType.Walking);
+    }
 	
 	// Update is called once per frame
 	void Update () 
@@ -46,8 +57,7 @@ public class MapSceneScript : MonoBehaviour
 		}
 		if(x != 0 || y != 0)
 		{
-			m_currentSquare = m_currentSquare.GetNextSquare(x,y);
-			m_playerSprite.transform.position = m_currentSquare.transform.position;
+            Entity.Player.Move(Entity.Player.Location.GetNextSquare(x, y));
 //			transform.position = new Vector3(m_playerSprite.transform.position.x, m_playerSprite.transform.position.y, transform.position.z);
 			yield return new WaitForSeconds(0.25f);
 		}
