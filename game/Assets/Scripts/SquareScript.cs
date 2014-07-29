@@ -206,7 +206,7 @@ public class SquareScript : MonoBehaviour
         if (m_droppedLoot == null)
         {
             m_droppedLoot = loot;
-            m_lootRenderer = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("BlueCrystal"),
+            m_lootRenderer = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("Crystals"),
                                                                      transform.position,
                                                                  Quaternion.identity)).GetComponent<SpriteRenderer>();
         }
