@@ -39,3 +39,6 @@ Game/Library/CurrentLayout.dwlt
 Game/ProjectSettings/
 Game/Assembly-CSharp.csproj
 Game/Library/CurrentLayout.dwlt
+game/Assets/UnityVS.meta
+game/Assets/UnityVS/*
+game/UnityVS.game.sln.DotSettings

@@ -48,7 +48,18 @@ public class MapSceneScript : MonoBehaviour
 		{
 			m_currentSquare = m_currentSquare.GetNextSquare(x,y);
 			m_playerSprite.transform.position = m_currentSquare.transform.position;
+//			transform.position = new Vector3(m_playerSprite.transform.position.x, m_playerSprite.transform.position.y, transform.position.z);
 			yield return new WaitForSeconds(0.25f);
 		}
+
+		if (Input.GetMouseButtonUp(1)) {
+			//Get Mouse direction, let's assume it's right for now
+			var direction = transform.TransformDirection (Vector3.right);
+			RaycastHit2D hit = Physics2D.Raycast(transform.position, -Vector2.up);
+			if (hit.collider != null) {
+				print("We have a hit!");
+				//hit.transform.position;
+			}
+	}
 	}
 }
