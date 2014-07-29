@@ -7,16 +7,15 @@ public class MapSceneScript : MonoBehaviour
 	void Start () 
 	{
         //SquareScript.Init(5,5);
-		SquareScript.LoadFromTMX(@"Maps\testMap1.tmx");
+		SquareScript.LoadFromTMX(@"Maps\testMap2.tmx");
         var square = SquareScript.GetSquare(5, 5);
 		Entity.Player = new PlayerEntity (10, 5, 3, 5,
             square,
             ((GameObject)MonoBehaviour.Instantiate(Resources.Load("PlayerSprite"),
-                                                                     square.transform.position, 
-		                                                         Quaternion.identity)).GetComponent<SpriteRenderer>(),
+                                                     	square.transform.position, 
+                                                 		Quaternion.identity)).GetComponent<SpriteRenderer>(),
             10,
             10);
-        var enemy = CreateEnemy(1, 1);
         SquareScript.GetSquare(10, 10).AddLoot(new Loot{
             BlueCrystal = 10
         });
@@ -27,14 +26,14 @@ public class MapSceneScript : MonoBehaviour
         });
 	}
 
-    private EnemyEntity CreateEnemy(int x, int y)
+    public static EnemyEntity CreateEnemy(int x, int y)
     {
         var square = SquareScript.GetSquare(x, y);
         return new EnemyEntity(10, 1, 1, 2,
             square,
-            ((GameObject)MonoBehaviour.Instantiate(Resources.Load("PlayerSprite"),
-                                                                square.transform.position,
-                                                                Quaternion.identity)).GetComponent<SpriteRenderer>(),
+		    ((GameObject)MonoBehaviour.Instantiate(Resources.Load("TentacleMonster"),
+                                                        square.transform.position,
+                                                        Quaternion.identity)).GetComponent<SpriteRenderer>(),
             MovementType.Walking);
     }
 	
@@ -80,6 +79,15 @@ public class MapSceneScript : MonoBehaviour
             Entity.Player.ShootLaser(destination);
 
         
+	    }
 	}
-	}
+
+    public void UpdatePlayerState(string updatedProperty, double updatedValue)
+    {
+        var doubleToString = string.Format("{0:N1}", updatedValue);
+        var child = transform.FindChild(updatedProperty).GetComponent<GUIText>();
+        child.text = "{0}:{1}".FormatWith(updatedProperty, doubleToString);
+        child = transform.FindChild("{0}Shadow".FormatWith(updatedProperty)).GetComponent<GUIText>();
+        child.text = "{0}:{1}".FormatWith(updatedProperty, doubleToString);
+    }
 }

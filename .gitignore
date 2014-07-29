@@ -42,3 +42,4 @@ Game/Library/CurrentLayout.dwlt
 game/Assets/UnityVS.meta
 game/Assets/UnityVS/*
 game/UnityVS.game.sln.DotSettings
+game/Assets/Scripts/*.orig

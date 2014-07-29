@@ -13,6 +13,8 @@ using UnityEngine;
 
 public enum MovementType { Walking, Flying }
 
+#region Entity
+
 public abstract class Entity
 {
     #region fields
@@ -93,7 +95,7 @@ public abstract class Entity
         ent.Damage(Randomizer.NextDouble(MinDamage, MaxDamage));
     }
 
-    private void Damage(double damage)
+    protected virtual void Damage(double damage)
     {
         Health -= damage;
         if (Health <= 0)
@@ -116,6 +118,10 @@ public abstract class Entity
     }
 }
 
+#endregion
+
+#region PlayerEntity
+
 public class PlayerEntity : Entity
 {
     public double Energy { get; private set; }
@@ -128,7 +134,11 @@ public class PlayerEntity : Entity
         base(health, attackRange, minDamage, maxDamage, location, image, MovementType.Walking)
     {
         Energy = energy;
-        Oxygen = Oxygen;
+        Oxygen = oxygen;
+        UpdateUI("Health", Health);
+        UpdateUI("Oxygen", Oxygen);
+        UpdateUI("Energy", Energy);
+        UpdateUI("Blue Crystals", BlueCrystal);
     }
 
     public void Move(SquareScript newLocation)
@@ -154,6 +164,18 @@ public class PlayerEntity : Entity
             BlueCrystal += loot.BlueCrystal;
             loot.BlueCrystal = 0;
         }
+        UpdateUI("Blue Crystals", BlueCrystal);
+    }
+
+    protected override void Damage(double damage)
+    {
+        base.Damage(damage);
+        UpdateUI("Health", Health);
+    }
+
+    private void UpdateUI(string updatedProperty, double updatedValue)
+    {
+        Camera.main.GetComponent<MapSceneScript>().UpdatePlayerState(updatedProperty, updatedValue);
     }
 
     public void ShootLaser(Vector3 mousePosition)
@@ -168,6 +190,10 @@ public class PlayerEntity : Entity
         laserScript.Init(vec2, Entity.Player.Location.transform.position, "Laser shot");    
     }
 }
+
+#endregion
+
+#region EnemyEntity
 
 public class EnemyEntity : Entity
 {
@@ -224,3 +250,5 @@ public class EnemyEntity : Entity
         }
     }
 }
+
+#endregion
