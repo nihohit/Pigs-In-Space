@@ -70,14 +70,15 @@ public class MapSceneScript : MonoBehaviour
 			yield return new WaitForSeconds(0.25f);
 		}
 
-		if (Input.GetMouseButtonUp(1)) {
+		if (Input.GetMouseButtonUp(0)) { // left click	
 			//Get Mouse direction, let's assume it's right for now
-			var direction = transform.TransformDirection (Vector3.right);
-			RaycastHit2D hit = Physics2D.Raycast(transform.position, -Vector2.up);
-			if (hit.collider != null) {
-				print("We have a hit!");
-				//hit.transform.position;
-			}
+            //create laser object
+
+            var destination = Input.mousePosition;
+
+            Entity.Player.ShootLaser(destination);
+
+        
 	    }
 	}
 

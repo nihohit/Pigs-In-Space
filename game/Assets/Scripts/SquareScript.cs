@@ -19,6 +19,7 @@ public class SquareScript : MonoBehaviour
 	private int m_x,m_y;
     private Loot m_droppedLoot;
     private SpriteRenderer m_lootRenderer;
+    private static SpriteRenderer s_squareMarker;
 
     #endregion
 
@@ -32,25 +33,9 @@ public class SquareScript : MonoBehaviour
 
     #region public methods
 
-    public static void Init(int xSize, int ySize)
-	{
-        s_map = new SquareScript[xSize, ySize];
-		var squareSize = 0.64f;
-		var currentPosition = Vector3.zero;
-        for (int i = 0; i < xSize; i++) 
-		{
-            for (int j = 0; j < ySize; j++) 
-			{
-				var squareGameobject = CreateTile(currentPosition, "SquareTileResource");
-				s_map[j,i] = squareGameobject.GetComponent<SquareScript>();
-				currentPosition = new Vector3(currentPosition.x, currentPosition.y + squareSize, 0);
-			}
-			currentPosition = new Vector3(currentPosition.x + squareSize, 0 , 0);
-		}
-    }
-
     public static void LoadFromTMX(string filename)
     {
+        s_squareMarker = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("squareSelectionBox"), Vector2.zero, Quaternion.identity)).GetComponent<SpriteRenderer>();
         //Unity does not support .Net 3.5 or higher, until we find a way to do that ...
         //var mapWidth = ((IEnumerable)tiledMapXmlRoot.XPathEvaluate("/@width")).Cast<XAttribute>().Select(a => Int32.Parse(a.Value)).First();
         //var mapHeight = ((IEnumerable)tiledMapXmlRoot.XPathEvaluate("/@height")).Cast<XAttribute>().Select(a => Int32.Parse(a.Value)).First();
@@ -293,6 +278,12 @@ public class SquareScript : MonoBehaviour
 	void Update () 
 	{
 
+    }
+
+
+    void OnMouseOver()
+    {
+		s_squareMarker.transform.position = transform.position;
     }
 
     #endregion
