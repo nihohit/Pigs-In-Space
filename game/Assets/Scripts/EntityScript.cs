@@ -277,10 +277,17 @@ public class PlayerEntity : AttackingEntity
 
 public class EnemyEntity : AttackingEntity, IHostileEntity
 {
+    private static int s_killed_Enemies = 0;
+
+    public static int KilledEnemies { get { return s_killed_Enemies; } }
+
+
+
     protected override void Destroy()
     {
         base.Destroy();
         EnemiesManager.Remove(this);
+        s_killed_Enemies++;
     }
 
     public EnemyEntity(double health, double attackRange, float minDamage, float maxDamage, SquareScript location, SpriteRenderer image, MovementType movementType) :
@@ -332,6 +339,11 @@ public class EnemyEntity : AttackingEntity, IHostileEntity
 public class Hive : Entity, IHostileEntity
 {
     private static double s_chanceToSpawn = 0.01;
+    private static int s_killed_Hives = 0;
+
+    public static int KilledHives { get { return s_killed_Hives; } }
+
+
 
     public Hive(double health, SquareScript location, SpriteRenderer image) :
         base(health, location, image)
@@ -343,6 +355,7 @@ public class Hive : Entity, IHostileEntity
     {
         base.Destroy();
         EnemiesManager.Remove(this);
+        s_killed_Hives++;
     }
 
     public void Act()
