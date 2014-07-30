@@ -485,6 +485,8 @@ public class TmxManager
             //case "34": MapSceneScript.CreateEnemy(x, y); break;
             case "35": break;
             case "36": break;
+            case "37": SquareScript.GetSquare(x, y).AddLoot(new Loot(UnityEngine.Random.Range(0, 10))); break;
+            case "38": MapSceneScript.CreateHive(x, y); break;
         }
     }
 }

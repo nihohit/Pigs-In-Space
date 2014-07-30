@@ -3,6 +3,12 @@
     public int BlueCrystal { get; set; }
 
     public bool fuelCell { get; set; }
+    public Loot() { }
+
+    public Loot(int blueCrystal)
+    {
+        BlueCrystal = blueCrystal;
+    }
 
     public void AddLoot(Loot loot)
     {

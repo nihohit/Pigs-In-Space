@@ -17,6 +17,45 @@ public enum MovementType { Walking, Flying }
 
 public abstract class Entity
 {
+    public static PlayerEntity Player  { get; set; }
+
+    public double Health { get; private set; }
+
+    public SquareScript Location { get; protected set; }
+
+    public SpriteRenderer Image { get; protected set; }
+
+    public Entity(double health, SquareScript location, SpriteRenderer image)
+    {
+        // TODO: Complete member initialization
+        this.Health = health;
+        this.Location = location;
+        this.Image = image;
+        Location.OccupyingEntity = this;
+    }
+
+    public virtual void Damage(double damage)
+    {
+        Health -= damage;
+        if (Health <= 0)
+        {
+            Destroy();
+        }
+    }
+
+    protected virtual void Destroy()
+    {
+        this.Location.OccupyingEntity = null;
+        UnityEngine.Object.Destroy(this.Image);
+    }
+}
+
+#endregion
+
+#region AttackingEntity
+
+public abstract class AttackingEntity : Entity
+{
     #region fields
 
     private MovementType m_movementType;
@@ -25,32 +64,21 @@ public abstract class Entity
 
     #region properties
 
-    public static PlayerEntity Player { get; set; }
-
-    public double Health { get; private set; }
-
     public double AttackRange { get; private set; }
 
     public float MinDamage { get; private set; }
 
     public float MaxDamage { get; private set; }
 
-    public SquareScript Location { get; private set; }
-
-    public SpriteRenderer Image { get; private set; }
-
     #endregion properties
 
-    public Entity(double health, double attackRange, float minDamage, float maxDamage, SquareScript location, SpriteRenderer image, MovementType movementType)
+    public AttackingEntity(double health, double attackRange, float minDamage, float maxDamage, SquareScript location, SpriteRenderer image, MovementType movementType) :
+        base(health, location, image)
     {
         m_movementType = movementType;
-        Health = health;
         AttackRange = attackRange;
         MinDamage = minDamage;
         MaxDamage = maxDamage;
-        Location = location;
-        Location.OccupyingEntity = this;
-        Image = image;
     }
 
     public virtual bool TryMoveTo(SquareScript newLocation)
@@ -90,24 +118,9 @@ public abstract class Entity
         return AttackRange > this.Location.transform.position.Distance(otherLocation.transform.position);
     }
 
-    protected void Attack(Entity ent)
+    protected void Attack(AttackingEntity ent)
     {
         ent.Damage(Randomizer.NextDouble(MinDamage, MaxDamage));
-    }
-
-    public virtual void Damage(double damage)
-    {
-        Health -= damage;
-        if (Health <= 0)
-        {
-            Destroy();
-        }
-    }
-
-    protected virtual void Destroy()
-    {
-        this.Location.OccupyingEntity = null;
-        UnityEngine.Object.Destroy(this.Image);      
     }
 }
 
@@ -115,8 +128,9 @@ public abstract class Entity
 
 #region PlayerEntity
 
-public class PlayerEntity : Entity
+public class PlayerEntity : AttackingEntity
 {
+
     private double m_maxEnergy = 10;
 
     public double Energy { get; private set; }
@@ -188,17 +202,17 @@ public class PlayerEntity : Entity
     {
         var destination = Input.mousePosition;
         Energy -= 2;
-        var laser = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("laser"), Entity.Player.Location.transform.position, Quaternion.identity));
+        var laser = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("laser"), Player.Location.transform.position, Quaternion.identity));
         var laserScript = laser.GetComponent<LaserScript>();
         var MousePos = Input.mousePosition;
         var translatedPosition = Camera.main.ScreenToWorldPoint(MousePos);
         var vec2 = new Vector2(translatedPosition.x, translatedPosition.y);
-        laserScript.Init(vec2, Entity.Player.Location.transform.position, "Laser shot", MinDamage, MaxDamage);
+        laserScript.Init(vec2, Player.Location.transform.position, "Laser shot", MinDamage, MaxDamage);
     }
 
     public void EndTurn()
     {
-        EnemyEntity.EnemiesTurn();
+        EnemiesManager.EnemiesTurn();
         Oxygen--;
         if (Oxygen <= 0)
         {
@@ -214,51 +228,41 @@ public class PlayerEntity : Entity
 
 #region EnemyEntity
 
-public class EnemyEntity : Entity
+public class EnemyEntity : AttackingEntity, IHostileEntity
 {
-    private static List<EnemyEntity> s_activeEntities = new List<EnemyEntity>();
-
-    public static void EnemiesTurn()
-    {
-        foreach (var enemy in s_activeEntities)
-        {
-            enemy.Act();
-        }
-    }
-
     protected override void Destroy()
     {
         base.Destroy();
-        s_activeEntities.Remove(this);
+        EnemiesManager.Remove(this);
     }
 
     public EnemyEntity(double health, double attackRange, float minDamage, float maxDamage, SquareScript location, SpriteRenderer image, MovementType movementType) :
         base(health, attackRange, minDamage, maxDamage, location, image, movementType)
     {
-        s_activeEntities.Add(this);
+        EnemiesManager.AddEnemy(this);
     }
 
     public void Act()
     {
-        if (WithinRange(Entity.Player))
+        if (WithinRange(Player))
         {
             //Show hit action                        
-            var playerLocation =  Entity.Player.Location.transform.position;
+            var Location = Player.Location.transform.position;
             var otherLocation = this.Location.transform.position;
-            var powPosition = new Vector3((playerLocation.x + otherLocation.x)/2, (playerLocation.y + otherLocation.y)/2, playerLocation.z );
+            var powPosition = new Vector3((Location.x + otherLocation.x)/2, (Location.y + otherLocation.y)/2, Location.z );
 
             var pow = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("pow"), powPosition, Quaternion.identity));
-            UnityEngine.Object.Destroy(pow, 0.3f);      
-            
-            Attack(Entity.Player);
+            UnityEngine.Object.Destroy(pow, 0.3f);
+
+            Attack(Player);
         }
         else
         {
-            MoveTowardsPlayer();
+            MoveTowards();
         }
     }
 
-    private void MoveTowardsPlayer()
+    private void MoveTowards()
     {
         var direction = new Vector2(Player.Location.transform.position.x - Location.transform.position.x, Location.transform.position.y - Player.Location.transform.position.y);
         var absX = Math.Abs(direction.x);
@@ -271,6 +275,30 @@ public class EnemyEntity : Entity
         {
             TryMoveTo(Location.GetNextSquare(0, (int)(direction.y / absY)));
         }
+    }
+}
+
+#endregion
+
+#region Hive
+
+public class Hive : Entity, IHostileEntity
+{
+    public Hive(double health, SquareScript location, SpriteRenderer image) :
+        base(health, location, image)
+    { 
+        EnemiesManager.AddEnemy(this);
+    }
+
+    protected override void Destroy()
+    {
+        base.Destroy();
+        EnemiesManager.Remove(this);
+    }
+
+    public void Act()
+    {
+
     }
 }
 
