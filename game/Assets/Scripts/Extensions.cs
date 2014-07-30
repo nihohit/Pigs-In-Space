@@ -56,7 +56,7 @@ public static class Extensions
         if ((first.GetNextSquare(0, 1) == second) ||
             (first.GetNextSquare(1, 0) == second) || 
             (first.GetNextSquare(-1,0 ) == second) ||
-            (first.GetNextSquare(0, -11) == second) )
+            (first.GetNextSquare(0, -1) == second) )
         {
             return true;
         }
