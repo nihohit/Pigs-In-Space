@@ -139,6 +139,8 @@ public class PlayerEntity : AttackingEntity
 
     public double BlueCrystal { get; private set; }
 
+    private bool m_hasFuelCell = false;
+
     public PlayerEntity(double health, double attackRange, float minDamage, float maxDamage, SquareScript location, SpriteRenderer image, double energy, double oxygen) :
         base(health, attackRange, minDamage, maxDamage, location, image, MovementType.Walking)
     {
@@ -168,6 +170,12 @@ public class PlayerEntity : AttackingEntity
         {
             BlueCrystal += loot.BlueCrystal;
             loot.BlueCrystal = 0;
+            if(loot.FuelCell)
+            {
+                m_hasFuelCell = true;
+                loot.FuelCell = false;
+                MapSceneScript.EnterEscapeMode();
+            }
         }
         UpdateUI("Blue Crystals", BlueCrystal);
     }
