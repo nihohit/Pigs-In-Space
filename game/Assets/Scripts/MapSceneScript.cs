@@ -42,6 +42,7 @@ public class MapSceneScript : MonoBehaviour
         var maxCameraY = minCameraY + 0.64f * SquareScript.Height() - 2 * camera.orthographicSize;
         CameraMin = new Vector2(minCameraX, minCameraY);
         CameraMax = new Vector2(maxCameraX, maxCameraY);
+        square.FogOfWar();
 	}
 
     public static EnemyEntity CreateTentacleMonster(int x, int y)

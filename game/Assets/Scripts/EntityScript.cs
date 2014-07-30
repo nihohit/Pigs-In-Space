@@ -26,6 +26,8 @@ public abstract class Entity
 
     public SpriteRenderer Image { get; protected set; }
 
+    protected bool m_active;
+
     public Entity(double health, SquareScript location, SpriteRenderer image)
     {
         // TODO: Complete member initialization
@@ -48,6 +50,11 @@ public abstract class Entity
     {
         this.Location.OccupyingEntity = null;
         UnityEngine.Object.Destroy(this.Image);
+    }
+
+    public virtual void SetActive(bool active)
+    {
+        m_active = active;
     }
 }
 
@@ -160,6 +167,7 @@ public class PlayerEntity : AttackingEntity
         if (TryMoveTo(newLocation))
         {
             TakeLoot(newLocation);
+            newLocation.FogOfWar();
             return true;
         }
         return false;
@@ -277,10 +285,17 @@ public class PlayerEntity : AttackingEntity
 
 public class EnemyEntity : AttackingEntity, IHostileEntity
 {
+    private static int s_killed_Enemies = 0;
+
+    public static int KilledEnemies { get { return s_killed_Enemies; } }
+
+
+
     protected override void Destroy()
     {
         base.Destroy();
         EnemiesManager.Remove(this);
+        s_killed_Enemies++;
     }
 
     public EnemyEntity(double health, double attackRange, float minDamage, float maxDamage, SquareScript location, SpriteRenderer image, MovementType movementType) :
@@ -291,21 +306,24 @@ public class EnemyEntity : AttackingEntity, IHostileEntity
 
     public void Act()
     {
-        if (WithinRange(Player))
+        if (m_active)
         {
-            //Show hit action                        
-            var Location = Player.Location.transform.position;
-            var otherLocation = this.Location.transform.position;
-            var powPosition = new Vector3((Location.x + otherLocation.x)/2, (Location.y + otherLocation.y)/2, Location.z );
+            if (WithinRange(Player))
+            {
+                //Show hit action                        
+                var Location = Player.Location.transform.position;
+                var otherLocation = this.Location.transform.position;
+                var powPosition = new Vector3((Location.x + otherLocation.x) / 2, (Location.y + otherLocation.y) / 2, Location.z);
 
-            var pow = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("pow"), powPosition, Quaternion.identity));
-            UnityEngine.Object.Destroy(pow, 0.3f);
+                var pow = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("pow"), powPosition, Quaternion.identity));
+                UnityEngine.Object.Destroy(pow, 0.3f);
 
-            Attack(Player);
-        }
-        else
-        {
-            MoveTowards();
+                Attack(Player);
+            }
+            else
+            {
+                MoveTowards();
+            }
         }
     }
 
@@ -332,6 +350,11 @@ public class EnemyEntity : AttackingEntity, IHostileEntity
 public class Hive : Entity, IHostileEntity
 {
     private static double s_chanceToSpawn = 0.01;
+    private static int s_killed_Hives = 0;
+
+    public static int KilledHives { get { return s_killed_Hives; } }
+
+
 
     public Hive(double health, SquareScript location, SpriteRenderer image) :
         base(health, location, image)
@@ -343,6 +366,7 @@ public class Hive : Entity, IHostileEntity
     {
         base.Destroy();
         EnemiesManager.Remove(this);
+        s_killed_Hives++;
     }
 
     public void Act()

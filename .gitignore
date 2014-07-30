@@ -38,8 +38,10 @@ Game/Assembly-CSharp.csproj
 Game/Library/CurrentLayout.dwlt
 Game/Assembly-CSharp.csproj
 Game/Library/CurrentLayout.dwlt
+Game/Build
 game/Assets/UnityVS.meta
 game/Assets/UnityVS/*
 game/UnityVS.game.sln.DotSettings
 *.orig
 *.orig*
+*.bak*
