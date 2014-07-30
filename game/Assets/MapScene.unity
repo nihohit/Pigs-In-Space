@@ -97,10 +97,11 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 171615664}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.70000029, y: -2.8499999, z: 40}
+  m_LocalPosition: {x: .0999999046, y: .650000095, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 305851788}
+  m_Father: {fileID: 0}
+  m_RootOrder: 7
 --- !u!132 &171615666
 GUIText:
   m_ObjectHideFlags: 0
@@ -192,8 +193,11 @@ Camera:
     m_Bits: 4294967295
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
+  m_TargetDisplay: 0
   m_HDR: 0
   m_OcclusionCulling: 1
+  m_StereoConvergence: 10
+  m_StereoSeparation: .0219999999
 --- !u!4 &305851788
 Transform:
   m_ObjectHideFlags: 0
@@ -203,16 +207,9 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 4.80000019, y: 3.5, z: -40}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children:
-  - {fileID: 1040007514}
-  - {fileID: 1650234454}
-  - {fileID: 374421959}
-  - {fileID: 559904379}
-  - {fileID: 1732972408}
-  - {fileID: 2004616480}
-  - {fileID: 587055146}
-  - {fileID: 171615665}
+  m_Children: []
   m_Father: {fileID: 0}
+  m_RootOrder: 8
 --- !u!114 &305851789
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -247,10 +244,11 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 374421958}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.70000029, y: -2.6500001, z: 40}
+  m_LocalPosition: {x: .0999999046, y: .849999905, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 305851788}
+  m_Father: {fileID: 0}
+  m_RootOrder: 2
 --- !u!132 &374421960
 GUIText:
   m_ObjectHideFlags: 0
@@ -320,10 +318,11 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 559904377}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.70000029, y: -2.6500001, z: 41}
+  m_LocalPosition: {x: .0999999046, y: .849999905, z: 1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 305851788}
+  m_Father: {fileID: 0}
+  m_RootOrder: 3
 --- !u!1 &587055145
 GameObject:
   m_ObjectHideFlags: 0
@@ -347,10 +346,11 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 587055145}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.70000029, y: -2.75, z: 40}
+  m_LocalPosition: {x: .0999999046, y: .75, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 305851788}
+  m_Father: {fileID: 0}
+  m_RootOrder: 6
 --- !u!132 &587055147
 GUIText:
   m_ObjectHideFlags: 0
@@ -397,10 +397,11 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1040007513}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.69999981, y: -2.54999995, z: 41}
+  m_LocalPosition: {x: .100000381, y: .950000048, z: 1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 305851788}
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
 --- !u!132 &1040007515
 GUIText:
   m_ObjectHideFlags: 0
@@ -447,10 +448,11 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1650234453}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.70000029, y: -2.54999995, z: 40}
+  m_LocalPosition: {x: .0999999046, y: .950000048, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 305851788}
+  m_Father: {fileID: 0}
+  m_RootOrder: 1
 --- !u!132 &1650234455
 GUIText:
   m_ObjectHideFlags: 0
@@ -497,10 +499,11 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1732972407}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.70000029, y: -2.75, z: 41}
+  m_LocalPosition: {x: .0999999046, y: .75, z: 1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 305851788}
+  m_Father: {fileID: 0}
+  m_RootOrder: 4
 --- !u!132 &1732972409
 GUIText:
   m_ObjectHideFlags: 0
@@ -547,10 +550,11 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 2004616479}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.70000029, y: -2.8499999, z: 41}
+  m_LocalPosition: {x: .0999999046, y: .650000095, z: 1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 305851788}
+  m_Father: {fileID: 0}
+  m_RootOrder: 5
 --- !u!132 &2004616481
 GUIText:
   m_ObjectHideFlags: 0

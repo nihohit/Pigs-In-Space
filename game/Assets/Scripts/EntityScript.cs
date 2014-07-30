@@ -140,6 +140,8 @@ public class PlayerEntity : AttackingEntity
 
     public double BlueCrystal { get; private set; }
 
+    private bool m_hasFuelCell = false;
+
     public PlayerEntity(double health, double attackRange, float minDamage, float maxDamage, SquareScript location, SpriteRenderer image, double energy, double oxygen) :
         base(health, attackRange, minDamage, maxDamage, location, image, MovementType.Walking)
     {
@@ -171,6 +173,12 @@ public class PlayerEntity : AttackingEntity
         {
             BlueCrystal += loot.BlueCrystal;
             loot.BlueCrystal = 0;
+            if(loot.FuelCell)
+            {
+                m_hasFuelCell = true;
+                loot.FuelCell = false;
+                MapSceneScript.EnterEscapeMode();
+            }
         }
         UpdateUI("Blue Crystals", BlueCrystal);
     }
@@ -208,6 +216,20 @@ public class PlayerEntity : AttackingEntity
         var vec2 = new Vector2(translatedPosition.x, translatedPosition.y);
         laserScript.Init(vec2, Player.Location.transform.position, "Laser shot", MinDamage, MaxDamage);
         return true;
+    }
+
+    public void MineAsteroid()
+    {
+        if ((Extensions.AreNeighbors(SquareScript.s_markedSquare, this.Location ) && 
+            SquareScript.s_markedSquare.GetComponent<SpriteRenderer>().sprite == SpriteManager7.Rock_Crystal))
+        {            
+            SquareScript.s_markedSquare.GetComponent<SpriteRenderer>().sprite = SpriteManager7.Empty;
+            var mineral = new Loot();
+            mineral.BlueCrystal = 5;           
+            SquareScript.s_markedSquare.AddLoot(mineral);
+            SquareScript.s_markedSquare.TraversingCondition = Traversability.Walkable;
+            EndTurn();
+        }           
     }
 
     public void EndTurn()
@@ -312,7 +334,7 @@ public class Hive : Entity, IHostileEntity
 
     private SquareScript ChooseRandomFreeSquare()
     {
-        return Location.GetNeighbours().Where(square => square.TraversingCondition == Traversability.Walkable && square.OccupyingEntity == null).ChooseRandomMemer();
+        return Location.GetNeighbours().Where(square => square.TraversingCondition == Traversability.Walkable && square.OccupyingEntity == null).ChooseRandomMember();
     }
 }
 

@@ -53,18 +53,32 @@ public static class Extensions
         return new Rect(startingPoint.x, startingPoint.y, size.x, size.y);
     }
 
-    public static T ChooseRandomMemer<T>(this IEnumerable<T> list)
+
+    public static T ChooseRandomMember<T>(this IEnumerable<T> list)
     {
         var totalCount = list.Count();
         double currentChecked = 0.0;
-        foreach(var member in list)
+        foreach (var member in list)
         {
             currentChecked++;
-            if(Randomizer.CheckChance(currentChecked / totalCount))
+            if (Randomizer.CheckChance(currentChecked / totalCount))
             {
                 return member;
             }
         }
         return default(T);
+    }
+
+    public static bool AreNeighbors(SquareScript first, SquareScript second)
+    {
+        if ((first.GetNextSquare(0, 1) == second) ||
+            (first.GetNextSquare(1, 0) == second) || 
+            (first.GetNextSquare(-1,0 ) == second) ||
+            (first.GetNextSquare(0, -1) == second) )
+        {
+            return true;
+        }
+
+        return false;
     }
 }
