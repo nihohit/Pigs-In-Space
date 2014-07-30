@@ -17,7 +17,7 @@ public class MapSceneScript : MonoBehaviour
                                                      	square.transform.position, 
                                                  		Quaternion.identity)).GetComponent<SpriteRenderer>(),
             10,
-            10);
+            1000);
 
         var minCameraX = 0f - 0.64f / 2 + camera.orthographicSize * camera.aspect;
         var minCameraY = 0f - 0.64f / 2 + camera.orthographicSize;
