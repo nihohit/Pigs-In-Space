@@ -31,9 +31,9 @@ public abstract class Entity
 
     public double AttackRange { get; private set; }
 
-    public double MinDamage { get; private set; }
+    public float MinDamage { get; private set; }
 
-    public double MaxDamage { get; private set; }
+    public float MaxDamage { get; private set; }
 
     public SquareScript Location { get; private set; }
 
@@ -41,7 +41,7 @@ public abstract class Entity
 
     #endregion properties
 
-    public Entity(double health, double attackRange, double minDamage, double maxDamage, SquareScript location, SpriteRenderer image, MovementType movementType)
+    public Entity(double health, double attackRange, float minDamage, float maxDamage, SquareScript location, SpriteRenderer image, MovementType movementType)
     {
         m_movementType = movementType;
         Health = health;
@@ -95,7 +95,7 @@ public abstract class Entity
         ent.Damage(Randomizer.NextDouble(MinDamage, MaxDamage));
     }
 
-    protected virtual void Damage(double damage)
+    public virtual void Damage(double damage)
     {
         Health -= damage;
         if (Health <= 0)
@@ -107,14 +107,7 @@ public abstract class Entity
     protected virtual void Destroy()
     {
         this.Location.OccupyingEntity = null;
-        UnityEngine.Object.Destroy(this.Image, 0.5f);      
-    }
-
-    void DoMyWindow(int windowID)
-    {
-        if (GUI.Button(new Rect(10, 20, 100, 20), "Hello World"))
-            Debug.Log("Got a click");
-
+        UnityEngine.Object.Destroy(this.Image);      
     }
 }
 
@@ -130,7 +123,7 @@ public class PlayerEntity : Entity
 
     public double BlueCrystal { get; private set; }
 
-    public PlayerEntity(double health, double attackRange, double minDamage, double maxDamage, SquareScript location, SpriteRenderer image, double energy, double oxygen) :
+    public PlayerEntity(double health, double attackRange, float minDamage, float maxDamage, SquareScript location, SpriteRenderer image, double energy, double oxygen) :
         base(health, attackRange, minDamage, maxDamage, location, image, MovementType.Walking)
     {
         Energy = energy;
@@ -146,11 +139,10 @@ public class PlayerEntity : Entity
         if (TryMoveTo(newLocation))
         {
             TakeLoot(newLocation);
-            EnemyEntity.EnemiesTurn();
         }
     }
 
-    protected override  void Destroy()
+    protected override void Destroy()
     {
         base.Destroy();
         Debug.Log("Game Over");
@@ -167,7 +159,7 @@ public class PlayerEntity : Entity
         UpdateUI("Blue Crystals", BlueCrystal);
     }
 
-    protected override void Damage(double damage)
+    public override void Damage(double damage)
     {
         base.Damage(damage);
         UpdateUI("Health", Health);
@@ -187,7 +179,7 @@ public class PlayerEntity : Entity
         var MousePos = Input.mousePosition;
         var translatedPosition = Camera.main.ScreenToWorldPoint(MousePos);
         var vec2 = new Vector2(translatedPosition.x, translatedPosition.y);
-        laserScript.Init(vec2, Entity.Player.Location.transform.position, "Laser shot");    
+        laserScript.Init(vec2, Entity.Player.Location.transform.position, "Laser shot", MinDamage, MaxDamage);
     }
 }
 
@@ -207,7 +199,13 @@ public class EnemyEntity : Entity
         }
     }
 
-    public EnemyEntity(double health, double attackRange, double minDamage, double maxDamage, SquareScript location, SpriteRenderer image, MovementType movementType) :
+    protected override void Destroy()
+    {
+        base.Destroy();
+        s_activeEntities.Remove(this);
+    }
+
+    public EnemyEntity(double health, double attackRange, float minDamage, float maxDamage, SquareScript location, SpriteRenderer image, MovementType movementType) :
         base(health, attackRange, minDamage, maxDamage, location, image, movementType)
     {
         s_activeEntities.Add(this);
@@ -226,7 +224,6 @@ public class EnemyEntity : Entity
             UnityEngine.Object.Destroy(pow, 0.3f);      
             
             Attack(Entity.Player);
-            Debug.Log("enemy attacks!");
         }
         else
         {
@@ -239,7 +236,6 @@ public class EnemyEntity : Entity
         var direction = new Vector2(Player.Location.transform.position.x - Location.transform.position.x, Location.transform.position.y - Player.Location.transform.position.y);
         var absX = Math.Abs(direction.x);
         var absY = Math.Abs(direction.y);
-        Debug.Log("Distance is: {0}, {1}".FormatWith(direction.x, direction.y));
         if (absX > absY)
         {
             TryMoveTo(Location.GetNextSquare((int)(direction.x / absX), 0));

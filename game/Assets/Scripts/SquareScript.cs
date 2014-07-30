@@ -280,7 +280,6 @@ public class SquareScript : MonoBehaviour
 
     }
 
-
     void OnMouseOver()
     {
 		s_squareMarker.transform.position = transform.position;

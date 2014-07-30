@@ -40,10 +40,10 @@ public class MapSceneScript : MonoBehaviour
 	// Update is called once per frame
 	void Update () 
 	{
-		StartCoroutine(Move ());
+		StartCoroutine(PlayerAction ());
     }
 
-	private IEnumerator Move ()
+	private IEnumerator PlayerAction ()
 	{
 		var x = 0;
 		var y = 0;
@@ -68,6 +68,7 @@ public class MapSceneScript : MonoBehaviour
             Entity.Player.Move(Entity.Player.Location.GetNextSquare(x, y));
 //			transform.position = new Vector3(m_playerSprite.transform.position.x, m_playerSprite.transform.position.y, transform.position.z);
 			yield return new WaitForSeconds(0.25f);
+            EnemyEntity.EnemiesTurn();
 		}
 
 		if (Input.GetMouseButtonUp(0)) { // left click	
@@ -77,8 +78,8 @@ public class MapSceneScript : MonoBehaviour
             var destination = Input.mousePosition;
 
             Entity.Player.ShootLaser(destination);
-
-        
+            yield return new WaitForSeconds(0.25f);
+            EnemyEntity.EnemiesTurn();
 	    }
 	}
 

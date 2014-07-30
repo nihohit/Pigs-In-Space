@@ -32,8 +32,22 @@ public static class Extensions
         return Math.Sqrt(Math.Pow(point.x - otherPoint.x, 2) + Math.Pow(point.y - otherPoint.y, 2) + Math.Pow(point.z - otherPoint.z, 2));
     }
 
+    public static float Distance(this Vector2 point, Vector2 otherPoint)
+    {
+        return Mathf.Sqrt(Mathf.Pow(point.x - otherPoint.x, 2) + Mathf.Pow(point.y - otherPoint.y, 2));
+    }
+
     public static string FormatWith(this string str, params object[] parameters)
     {
         return String.Format(str, parameters);
+    }
+
+    public static Rect Bounds(this BoxCollider2D collider)
+    {
+        var size = collider.size;
+        var sizeX = size.x / 2;
+        var sizeY = size.y / 2;
+        var startingPoint = (Vector2)collider.transform.position + new Vector2(-sizeX, -sizeY);
+        return new Rect(startingPoint.x, startingPoint.y, size.x, size.y);
     }
 }
