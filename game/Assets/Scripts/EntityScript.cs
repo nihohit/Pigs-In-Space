@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public enum MovementType { Walking, Flying }
 
@@ -147,12 +148,14 @@ public class PlayerEntity : AttackingEntity
         UpdateUI();
     }
 
-    public void Move(SquareScript newLocation)
+    public bool Move(SquareScript newLocation)
     {
         if (TryMoveTo(newLocation))
         {
             TakeLoot(newLocation);
+            return true;
         }
+        return false;
     }
 
     protected override void Destroy()
@@ -191,9 +194,12 @@ public class PlayerEntity : AttackingEntity
         Camera.main.GetComponent<MapSceneScript>().UpdatePlayerState(updatedProperty, updatedValue);
     }
 
-    public void ShootLaser(Vector3 mousePosition)
+    public bool ShootLaser(Vector3 mousePosition)
     {
-        var destination = Input.mousePosition;
+        if (Energy <2)
+        {
+            return false;
+        }
         Energy -= 2;
         var laser = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("laser"), Player.Location.transform.position, Quaternion.identity));
         var laserScript = laser.GetComponent<LaserScript>();
@@ -201,6 +207,7 @@ public class PlayerEntity : AttackingEntity
         var translatedPosition = Camera.main.ScreenToWorldPoint(MousePos);
         var vec2 = new Vector2(translatedPosition.x, translatedPosition.y);
         laserScript.Init(vec2, Player.Location.transform.position, "Laser shot", MinDamage, MaxDamage);
+        return true;
     }
 
     public void EndTurn()
@@ -277,10 +284,14 @@ public class EnemyEntity : AttackingEntity, IHostileEntity
 
 public class Hive : Entity, IHostileEntity
 {
+    private const int c_turnsToSpawn = 20;
+    private int m_turnsToSpawn;
+
     public Hive(double health, SquareScript location, SpriteRenderer image) :
         base(health, location, image)
     { 
         EnemiesManager.AddEnemy(this);
+        m_turnsToSpawn = c_turnsToSpawn;
     }
 
     protected override void Destroy()
@@ -291,7 +302,17 @@ public class Hive : Entity, IHostileEntity
 
     public void Act()
     {
+        m_turnsToSpawn--;
+        if(m_turnsToSpawn == 0)
+        {
+            MapSceneScript.CreateTentacleMonster(ChooseRandomFreeSquare());
+            m_turnsToSpawn = c_turnsToSpawn;
+        }
+    }
 
+    private SquareScript ChooseRandomFreeSquare()
+    {
+        return Location.GetNeighbours().Where(square => square.TraversingCondition == Traversability.Walkable && square.OccupyingEntity == null).ChooseRandomMemer();
     }
 }
 
