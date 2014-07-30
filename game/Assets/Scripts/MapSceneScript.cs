@@ -88,12 +88,16 @@ public class MapSceneScript : MonoBehaviour
 			//Get Mouse direction, let's assume it's right for now
             //create laser object
 
-            var destination = Input.mousePosition;
-
+            var destination = Input.mousePosition;            
             Entity.Player.ShootLaser(destination);
             yield return new WaitForSeconds(0.25f);
             Entity.Player.EndTurn();
 	    }
+
+        if (Input.GetMouseButtonUp(1))
+        {
+            Entity.Player.MineAsteroid();
+        }
 	}
 
     public void UpdatePlayerState(string updatedProperty, double updatedValue)

@@ -211,6 +211,18 @@ public class PlayerEntity : AttackingEntity
         laserScript.Init(vec2, Player.Location.transform.position, "Laser shot", MinDamage, MaxDamage);
     }
 
+    public void MineAsteroid()
+    {
+        if ((Extensions.AreNeighbors(SquareScript.s_markedSquare, this.Location ) && 
+            SquareScript.s_markedSquare.GetComponent<SpriteRenderer>().sprite == SpriteManager7.Rock_Crystal))
+        {            
+            SquareScript.s_markedSquare.GetComponent<SpriteRenderer>().sprite = SpriteManager7.Empty;
+            SquareScript.s_markedSquare.AddLoot(new Loot());
+            SquareScript.s_markedSquare.TraversingCondition = Traversability.Walkable;
+            EndTurn();
+        }           
+    }
+
     public void EndTurn()
     {
         EnemiesManager.EnemiesTurn();

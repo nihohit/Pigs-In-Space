@@ -20,6 +20,7 @@ public class SquareScript : MonoBehaviour
     private Loot m_droppedLoot;
     private SpriteRenderer m_lootRenderer;
     private static SpriteRenderer s_squareMarker;
+    public static SquareScript s_markedSquare;
 
     #endregion
 
@@ -286,6 +287,7 @@ public class SquareScript : MonoBehaviour
     void OnMouseOver()
     {
 		s_squareMarker.transform.position = transform.position;
+        s_markedSquare = this;
     }
 
     #endregion
