@@ -294,6 +294,7 @@ public class SquareScript : MonoBehaviour
         if (OccupyingEntity != null)
         {
             OccupyingEntity.Image.enabled = visible;
+            OccupyingEntity.SetActive(visible);
         }
         if (LootRenderer != null)
         {
