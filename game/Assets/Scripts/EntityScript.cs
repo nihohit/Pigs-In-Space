@@ -159,8 +159,10 @@ public class PlayerEntity : AttackingEntity
 
     protected override void Destroy()
     {
-        base.Destroy();
         Debug.Log("Game Over");
+        var gameOverThing = new GameObject();
+        gameOverThing.AddComponent<GameOverScript>();
+        //base.Destroy();
     }
 
     private void TakeLoot(SquareScript newLocation)
