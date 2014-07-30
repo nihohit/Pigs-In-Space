@@ -6,12 +6,13 @@ public class MapSceneScript : MonoBehaviour
     private Vector2 CameraMax= new Vector2(15.05f, 11.25f);        // The maximum x and y coordinates the camera can have.
     private Vector2 CameraMin = new Vector2(4.75f, 3.5f);        // The minimum x and y coordinates the camera can have.
 
+
 	// Use this for initialization
 	void Start () 
 	{
 		SquareScript.LoadFromTMX(@"Maps\testMap3.tmx");
         var square = SquareScript.GetSquare(5, 5);
-		Entity.Player = new PlayerEntity (10, 5, 3, 5,
+        Entity.Player = new PlayerEntity(10, 5, 3, 5,
             square,
             ((GameObject)MonoBehaviour.Instantiate(Resources.Load("PlayerSprite"),
                                                      	square.transform.position, 
@@ -37,13 +38,22 @@ public class MapSceneScript : MonoBehaviour
                                                         Quaternion.identity)).GetComponent<SpriteRenderer>(),
             MovementType.Walking);
     }
+
+    internal static Hive CreateHive(int x, int y)
+    {
+        var square = SquareScript.GetSquare(x, y);
+        return new Hive(10,
+            square,
+            ((GameObject)MonoBehaviour.Instantiate(Resources.Load("Hive"),
+                                                        square.transform.position,
+                                                        Quaternion.identity)).GetComponent<SpriteRenderer>());
+    }
 	
 	// Update is called once per frame
 	void Update () 
 	{
-CameraTrackPlayer();
-StartCoroutine(PlayerAction ());
-
+        CameraTrackPlayer();
+        StartCoroutine(PlayerAction ());
     }
 
 	private IEnumerator PlayerAction ()
@@ -93,13 +103,13 @@ StartCoroutine(PlayerAction ());
     public void UpdatePlayerState(string updatedProperty, double updatedValue)
     {
         var doubleToString = string.Format("{0:N1}", updatedValue);
-        var child = transform.FindChild(updatedProperty).GetComponent<GUIText>();
-        child.text = "{0}:{1}".FormatWith(updatedProperty, doubleToString);
-        child = transform.FindChild("{0}Shadow".FormatWith(updatedProperty)).GetComponent<GUIText>();
-        child.text = "{0}:{1}".FormatWith(updatedProperty, doubleToString);
+        var guiText = GameObject.Find(updatedProperty).GetComponent<GUIText>();
+        guiText.text = "{0}:{1}".FormatWith(updatedProperty, doubleToString);
+        guiText = GameObject.Find("{0}Shadow".FormatWith(updatedProperty)).GetComponent<GUIText>();
+        guiText.text = "{0}:{1}".FormatWith(updatedProperty, doubleToString);
     }
 
-    void CameraTrackPlayer ()
+    private void CameraTrackPlayer ()
     {
         const float xSmooth = 8f; // How smoothly the camera catches up with it's target movement in the x axis.
         const float ySmooth = 8f; // How smoothly the camera catches up with it's target movement in the y axis.
@@ -125,4 +135,8 @@ StartCoroutine(PlayerAction ());
         transform.position = new Vector3(targetX, targetY, transform.position.z);
     }
 
+    public static void EnterEscapeMode()
+    {
+        Debug.Log("escape mode");
+    }
 }
