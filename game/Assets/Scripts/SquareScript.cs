@@ -250,25 +250,20 @@ public class SquareScript : MonoBehaviour
 
         if(m_x > 0)
         {
-            if(m_y > 0)
-            {
-                neighbours.Add(GetSquare(m_x - 1, m_y - 1));
-            }
-            if (m_y < s_map.GetLength(1))
-            {
-                neighbours.Add(GetSquare(m_x - 1, m_y + 1));
-            }
+            neighbours.Add(GetSquare(m_x - 1, m_y));
         }
         if (m_x < s_map.GetLength(0))
         {
-            if (m_y > 0)
-            {
-                neighbours.Add(GetSquare(m_x + 1, m_y - 1));
-            }
-            if (m_y < s_map.GetLength(1))
-            {
-                neighbours.Add(GetSquare(m_x + 1, m_y + 1));
-            }
+            neighbours.Add(GetSquare(m_x + 1, m_y));
+        }
+
+        if (m_y > 0)
+        {
+            neighbours.Add(GetSquare(m_x, m_y - 1));
+        }
+        if (m_y < s_map.GetLength(1))
+        {
+            neighbours.Add(GetSquare(m_x, m_y + 1));
         }
 
         return neighbours;

@@ -53,7 +53,6 @@ public static class Extensions
         return new Rect(startingPoint.x, startingPoint.y, size.x, size.y);
     }
 
-
     public static T ChooseRandomMember<T>(this IEnumerable<T> list)
     {
         var totalCount = list.Count();
@@ -67,18 +66,5 @@ public static class Extensions
             }
         }
         return default(T);
-    }
-
-    public static bool AreNeighbors(SquareScript first, SquareScript second)
-    {
-        if ((first.GetNextSquare(0, 1) == second) ||
-            (first.GetNextSquare(1, 0) == second) || 
-            (first.GetNextSquare(-1,0 ) == second) ||
-            (first.GetNextSquare(0, -1) == second) )
-        {
-            return true;
-        }
-
-        return false;
     }
 }
