@@ -17,10 +17,9 @@ public static class EnemiesManager
         s_activeEntities.Add(enemy);
     }
 
-
     public static void EnemiesTurn()
     {
-        foreach (var enemy in s_activeEntities)
+        foreach (var enemy in s_activeEntities.ToArray())
         {
             enemy.Act();
         }

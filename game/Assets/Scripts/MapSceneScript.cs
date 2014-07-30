@@ -31,12 +31,17 @@ public class MapSceneScript : MonoBehaviour
         CameraMax = new Vector2(maxCameraX, maxCameraY);
 	}
 
-    public static EnemyEntity CreateEnemy(int x, int y)
+    public static EnemyEntity CreateTentacleMonster(int x, int y)
     {
-        var square = SquareScript.GetSquare(x, y);
+        return CreateTentacleMonster(SquareScript.GetSquare(x, y));
+        
+    }
+
+    public static EnemyEntity CreateTentacleMonster(SquareScript square)
+    {
         return new EnemyEntity(10, 1, 1, 2,
             square,
-		    ((GameObject)MonoBehaviour.Instantiate(Resources.Load("TentacleMonster"),
+            ((GameObject)MonoBehaviour.Instantiate(Resources.Load("TentacleMonster"),
                                                         square.transform.position,
                                                         Quaternion.identity)).GetComponent<SpriteRenderer>(),
             MovementType.Walking);
@@ -81,20 +86,25 @@ public class MapSceneScript : MonoBehaviour
 		}
 		if(x != 0 || y != 0)
 		{
-            Entity.Player.Move(Entity.Player.Location.GetNextSquare(x, y));
-            //transform.position = new Vector3(m_playerSprite.transform.position.x, m_playerSprite.transform.position.y, transform.position.z);
-			yield return new WaitForSeconds(0.25f);
-            Entity.Player.EndTurn();
+            if (Entity.Player.Move(Entity.Player.Location.GetNextSquare(x, y)))
+            {
+                //transform.position = new Vector3(m_playerSprite.transform.position.x, m_playerSprite.transform.position.y, transform.position.z);
+                yield return new WaitForSeconds(0.25f);
+                Entity.Player.EndTurn();
+            }
 		}
 
 		if (Input.GetMouseButtonUp(0)) { // left click	
 			//Get Mouse direction, let's assume it's right for now
             //create laser object
 
-            var destination = Input.mousePosition;            
-            Entity.Player.ShootLaser(destination);
-            yield return new WaitForSeconds(0.25f);
-            Entity.Player.EndTurn();
+            var destination = Input.mousePosition;
+
+            if (Entity.Player.ShootLaser(destination))
+            {
+                yield return new WaitForSeconds(0.25f);
+                Entity.Player.EndTurn();
+            }
 	    }
 
         if (Input.GetMouseButtonUp(1))

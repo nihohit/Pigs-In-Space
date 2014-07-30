@@ -244,6 +244,36 @@ public class SquareScript : MonoBehaviour
         return loot;
     }
 
+    public IEnumerable<SquareScript> GetNeighbours()
+    {
+        List<SquareScript> neighbours = new List<SquareScript>();
+
+        if(m_x > 0)
+        {
+            if(m_y > 0)
+            {
+                neighbours.Add(GetSquare(m_x - 1, m_y - 1));
+            }
+            if (m_y < s_map.GetLength(1))
+            {
+                neighbours.Add(GetSquare(m_x - 1, m_y + 1));
+            }
+        }
+        if (m_x < s_map.GetLength(0))
+        {
+            if (m_y > 0)
+            {
+                neighbours.Add(GetSquare(m_x + 1, m_y - 1));
+            }
+            if (m_y < s_map.GetLength(1))
+            {
+                neighbours.Add(GetSquare(m_x + 1, m_y + 1));
+            }
+        }
+
+        return neighbours;
+    }
+
     #endregion
 
     #region private methods
@@ -482,7 +512,7 @@ public class TmxManager
         switch (gid)
         {
             case "33": SquareScript.GetSquare(x, y).AddLoot(new Loot(16, true)); break;
-            //case "34": MapSceneScript.CreateEnemy(x, y); break;
+            case "34": MapSceneScript.CreateTentacleMonster(x, y); break;
             case "35": break;
             case "36": break;
             case "37": SquareScript.GetSquare(x, y).AddLoot(new Loot(UnityEngine.Random.Range(0, 10), false)); break;

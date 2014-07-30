@@ -8,7 +8,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 using System;
+using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public static class Extensions
 {
@@ -49,6 +51,22 @@ public static class Extensions
         var sizeY = size.y / 2;
         var startingPoint = (Vector2)collider.transform.position + new Vector2(-sizeX, -sizeY);
         return new Rect(startingPoint.x, startingPoint.y, size.x, size.y);
+    }
+
+
+    public static T ChooseRandomMember<T>(this IEnumerable<T> list)
+    {
+        var totalCount = list.Count();
+        double currentChecked = 0.0;
+        foreach (var member in list)
+        {
+            currentChecked++;
+            if (Randomizer.CheckChance(currentChecked / totalCount))
+            {
+                return member;
+            }
+        }
+        return default(T);
     }
 
     public static bool AreNeighbors(SquareScript first, SquareScript second)

@@ -8,4 +8,9 @@ public static class Randomizer
     {
         return min + s_random.NextDouble() * (max - min);
     }
+
+    internal static bool CheckChance(double chance)
+    {
+        return s_random.NextDouble() < chance;
+    }
 }
