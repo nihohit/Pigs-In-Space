@@ -5,20 +5,32 @@ public class MapSceneScript : MonoBehaviour
 {
     private Vector2 CameraMax= new Vector2(15.05f, 11.25f);        // The maximum x and y coordinates the camera can have.
     private Vector2 CameraMin = new Vector2(4.75f, 3.5f);        // The minimum x and y coordinates the camera can have.
+    private static bool gameover = false;
+    private const int c_startHealth = 15;
+    private const int c_startAttackRange = 5;
+    private const int c_startMinDamage = 3;
+    private const int c_startMaxDamage = 7;
+    private const int c_startOxygen = 200;
+    private const int c_startEnergy = 10;
+    private const int c_HiveHealth = 20;
 
+    public static void GameOver ()
+    {
+        gameover = true;
+    }
 
 	// Use this for initialization
 	void Start () 
 	{
 		SquareScript.LoadFromTMX(@"Maps\testMap3.tmx");
         var square = SquareScript.GetSquare(5, 5);
-        Entity.Player = new PlayerEntity(10, 5, 3, 5,
+        Entity.Player = new PlayerEntity(c_startHealth, c_startAttackRange, c_startMinDamage, c_startMaxDamage,
             square,
             ((GameObject)MonoBehaviour.Instantiate(Resources.Load("PlayerSprite"),
                                                      	square.transform.position, 
                                                  		Quaternion.identity)).GetComponent<SpriteRenderer>(),
-            10,
-            1000);
+            c_startEnergy,
+            c_startOxygen);
 
         var minCameraX = 0f - 0.64f / 2 + camera.orthographicSize * camera.aspect;
         var minCameraY = 0f - 0.64f / 2 + camera.orthographicSize;
@@ -47,7 +59,7 @@ public class MapSceneScript : MonoBehaviour
     internal static Hive CreateHive(int x, int y)
     {
         var square = SquareScript.GetSquare(x, y);
-        return new Hive(10,
+        return new Hive(c_HiveHealth,
             square,
             ((GameObject)MonoBehaviour.Instantiate(Resources.Load("Hive"),
                                                         square.transform.position,
@@ -57,8 +69,11 @@ public class MapSceneScript : MonoBehaviour
 	// Update is called once per frame
 	void Update () 
 	{
-        CameraTrackPlayer();
-        StartCoroutine(PlayerAction ());
+        if (!gameover)
+        {
+            CameraTrackPlayer();
+            StartCoroutine(PlayerAction());
+        }
     }
 
 	private IEnumerator PlayerAction ()
