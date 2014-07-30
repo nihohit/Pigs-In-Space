@@ -17,10 +17,10 @@ using System.Collections;
             m_started = true;
             var differenceVector = to - from;
             var angle = Vector2.Angle(new Vector2(1, 0), differenceVector);
-            //if (differenceVector.y > 0)
-            //{
-            //    angle = -angle;
-            //}
+            if (differenceVector.y < 0)
+            {
+                angle = -angle;
+            }
             this.gameObject.transform.Rotate(new Vector3(0, 0, angle));
             m_movementFraction = differenceVector / 30;
             //TacticalState.TextureManager.UpdateEffectTexture(name, this.GetComponent<SpriteRenderer>());
