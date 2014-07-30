@@ -1,11 +1,14 @@
-﻿using UnityEngine;
+﻿using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
 public class MapSceneScript : MonoBehaviour 
 {
     private Vector2 CameraMax= new Vector2(15.05f, 11.25f);        // The maximum x and y coordinates the camera can have.
     private Vector2 CameraMin = new Vector2(4.75f, 3.5f);        // The minimum x and y coordinates the camera can have.
-
+    private static Dictionary<Action, Marker> s_Markers = new Dictionary<Action, Marker>();
 
 	// Use this for initialization
 	void Start () 
@@ -137,6 +140,22 @@ public class MapSceneScript : MonoBehaviour
 
     public static void EnterEscapeMode()
     {
-        Debug.Log("escape mode");
+        var escapeGameEvents = s_Markers.Where(entry => entry.Value == Marker.OnEscape).Select(entry => entry.Key);
+        foreach(var gameEvent in escapeGameEvents)
+        {
+            gameEvent();
+        }
+    }
+
+    public static void SetEvent(Action action, Marker marker)
+    {
+        s_Markers.Add(action, marker);
     }
 }
+
+public enum Marker
+{
+    OnEscape,
+}
+
+

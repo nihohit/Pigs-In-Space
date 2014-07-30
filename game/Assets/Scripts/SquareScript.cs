@@ -171,8 +171,10 @@ public class SquareScript : MonoBehaviour
         {
             for (int i = 0; i < mapWidth; i++)
             {
+                Debug.Log(i + " , " + j);
                 TmxManager.HandleTerrain(terrain[j * mapWidth + i], i, j, currentPosition);
                 TmxManager.HandleEntity(entities[j * mapWidth + i], i, j);
+                TmxManager.HandleMarker(markers[j * mapWidth + i], i, j);
 				currentPosition = new Vector3(currentPosition.x + squareSize, currentPosition.y, 0);
             }
             currentPosition = new Vector3(0, currentPosition.y + squareSize, 0);
@@ -441,11 +443,6 @@ public class SpriteManager7
 	}
 }
 
-public class Marker
-{
-
-}
-
 public class TmxManager
 {
     public static void HandleTerrain(string gid, int x, int y, Vector3 universalLocation)
@@ -485,11 +482,19 @@ public class TmxManager
         switch (gid)
         {
             case "33": SquareScript.GetSquare(x, y).AddLoot(new Loot(16, true)); break;
-            case "34": MapSceneScript.CreateEnemy(x, y); break;
+            //case "34": MapSceneScript.CreateEnemy(x, y); break;
             case "35": break;
             case "36": break;
             case "37": SquareScript.GetSquare(x, y).AddLoot(new Loot(UnityEngine.Random.Range(0, 10), false)); break;
             case "38": MapSceneScript.CreateHive(x, y); break;
+        }
+    }
+
+    public static void HandleMarker(string gid, int x, int y)
+    {
+        switch (gid)
+        {
+            case "68": MapSceneScript.SetEvent(() => MapSceneScript.CreateEnemy(x, y), Marker.OnEscape); break;
         }
     }
 }
