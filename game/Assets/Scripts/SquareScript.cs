@@ -11,6 +11,8 @@ using UnityEngine;
 
 public enum Traversability { Walkable, Flyable, Blocking }
 
+#region SquareScript
+
 public class SquareScript : MonoBehaviour
 {
     #region fields
@@ -18,7 +20,7 @@ public class SquareScript : MonoBehaviour
     private static SquareScript[,] s_map;
 	private int m_x,m_y;
     private Loot m_droppedLoot;
-    private SpriteRenderer m_lootRenderer;
+    private SpriteRenderer m_fogOfWar;
     private static SpriteRenderer s_squareMarker;
     public static SquareScript s_markedSquare;
 
@@ -30,9 +32,19 @@ public class SquareScript : MonoBehaviour
 
     public Entity OccupyingEntity { get; set; }
 
+    public SpriteRenderer LootRenderer { get; private set; }
+
     #endregion
 
     #region public methods
+
+    void Awake()
+    {
+        m_fogOfWar = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("FogOfWar"),
+                                                                     transform.position,
+                                                                 Quaternion.identity)).GetComponent<SpriteRenderer>();
+        m_fogOfWar.enabled = false;
+    }
 
     public static void LoadFromTMX(string filename)
     {
@@ -187,7 +199,7 @@ public class SquareScript : MonoBehaviour
         {
             m_droppedLoot = loot;
             var prefabName = (m_droppedLoot.FuelCell) ? "FuelCell" : "Crystals";
-            m_lootRenderer = ((GameObject)MonoBehaviour.Instantiate(Resources.Load(prefabName),
+            LootRenderer = ((GameObject)MonoBehaviour.Instantiate(Resources.Load(prefabName),
                                                                      transform.position,
                                                                  Quaternion.identity)).GetComponent<SpriteRenderer>();
         }
@@ -240,7 +252,7 @@ public class SquareScript : MonoBehaviour
 
         var loot = m_droppedLoot;
         m_droppedLoot = null;
-        GameObject.Destroy(m_lootRenderer.gameObject);
+        GameObject.Destroy(LootRenderer.gameObject);
         return loot;
     }
 
@@ -248,30 +260,80 @@ public class SquareScript : MonoBehaviour
     {
         List<SquareScript> neighbours = new List<SquareScript>();
 
-        if(m_x > 0)
-        {
-            neighbours.Add(GetSquare(m_x - 1, m_y));
-        }
-        if (m_x < s_map.GetLength(0))
-        {
-            neighbours.Add(GetSquare(m_x + 1, m_y));
-        }
-
-        if (m_y > 0)
-        {
-            neighbours.Add(GetSquare(m_x, m_y - 1));
-        }
-        if (m_y < s_map.GetLength(1))
-        {
-            neighbours.Add(GetSquare(m_x, m_y + 1));
-        }
+        if(m_x > 0) neighbours.Add(GetSquare(m_x - 1, m_y));
+        if (m_x < s_map.GetLength(0)) neighbours.Add(GetSquare(m_x + 1, m_y));
+        if (m_y > 0) neighbours.Add(GetSquare(m_x, m_y - 1));
+        if (m_y < s_map.GetLength(1)) neighbours.Add(GetSquare(m_x, m_y + 1));
 
         return neighbours;
+    }
+
+    public void FogOfWar()
+    {
+        foreach (SquareScript tempSquare in s_map)
+        {
+            tempSquare.Visible(false);
+        }
+
+        foreach(var tempSquare in SeenFrom())
+        {
+            tempSquare.Visible(true);
+        }
     }
 
     #endregion
 
     #region private methods
+
+    private void Visible(bool visible)
+    {
+        m_fogOfWar.enabled = !visible;
+        if (OccupyingEntity != null)
+        {
+            OccupyingEntity.Image.enabled = visible;
+        }
+        if (LootRenderer != null)
+        {
+            LootRenderer.enabled = visible;
+        }
+    }
+
+    private IEnumerable<SquareScript> SeenFrom()
+    {
+        List<SquareScript> list = new List<SquareScript>();
+
+        int range = 10;
+        var amountOfSquaresToCheck = range * 4;
+        var angleSlice = 360.0f / amountOfSquaresToCheck;
+        for (float angle = 0; angle < 360; angle += angleSlice)
+        {
+            list.AddRange(FindVisibleSquares(angle));
+        }
+
+        return list;
+    }
+
+    private IEnumerable<SquareScript> FindVisibleSquares(float angle)
+    {
+        var layerMask = 1 << LayerMask.NameToLayer("Ground");
+
+        // return all colliders that the ray passes through
+        var rayHits = Physics2D.RaycastAll(transform.position, new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)), layerMask);
+        foreach (var rayHit in rayHits)
+        {
+            yield return rayHit.collider.gameObject.GetComponent<SquareScript>();
+            if (Blocking(rayHit.collider.gameObject.GetComponent<SquareScript>()))
+            {
+                yield break;
+            }
+        }
+    }
+
+    private bool Blocking(SquareScript square)
+    {
+        return square != null &&
+            square.TraversingCondition == Traversability.Blocking;
+    }
 
     private static GameObject CreateTile(Vector3 position, string tileResourceName)
 	{
@@ -320,6 +382,10 @@ public class SquareScript : MonoBehaviour
     #endregion
 	
 }
+
+#endregion
+
+#region TileManager
 
 public class TileManager
 {
@@ -401,6 +467,10 @@ public class TileManager
 	}
 }
 
+#endregion
+
+#region SpriteManager7
+
 public class SpriteManager7 
 {
 	private static Dictionary<string, Sprite> s_sprites;
@@ -468,6 +538,10 @@ public class SpriteManager7
 	}
 }
 
+#endregion
+
+#region TmxManager
+
 public class TmxManager
 {
     public static void HandleTerrain(string gid, int x, int y, Vector3 universalLocation)
@@ -523,3 +597,5 @@ public class TmxManager
         }
     }
 }
+
+#endregion

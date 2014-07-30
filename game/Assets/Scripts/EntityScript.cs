@@ -155,6 +155,7 @@ public class PlayerEntity : AttackingEntity
         if (TryMoveTo(newLocation))
         {
             TakeLoot(newLocation);
+            newLocation.FogOfWar();
             return true;
         }
         return false;
