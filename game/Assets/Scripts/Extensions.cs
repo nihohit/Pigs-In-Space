@@ -50,4 +50,17 @@ public static class Extensions
         var startingPoint = (Vector2)collider.transform.position + new Vector2(-sizeX, -sizeY);
         return new Rect(startingPoint.x, startingPoint.y, size.x, size.y);
     }
+
+    public static bool AreNeighbors(SquareScript first, SquareScript second)
+    {
+        if ((first.GetNextSquare(0, 1) == second) ||
+            (first.GetNextSquare(1, 0) == second) || 
+            (first.GetNextSquare(-1,0 ) == second) ||
+            (first.GetNextSquare(0, -11) == second) )
+        {
+            return true;
+        }
+
+        return false;
+    }
 }
