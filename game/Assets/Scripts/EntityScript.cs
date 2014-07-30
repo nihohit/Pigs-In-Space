@@ -217,7 +217,9 @@ public class PlayerEntity : AttackingEntity
             SquareScript.s_markedSquare.GetComponent<SpriteRenderer>().sprite == SpriteManager7.Rock_Crystal))
         {            
             SquareScript.s_markedSquare.GetComponent<SpriteRenderer>().sprite = SpriteManager7.Empty;
-            SquareScript.s_markedSquare.AddLoot(new Loot());
+            var mineral = new Loot();
+            mineral.BlueCrystal = 5;           
+            SquareScript.s_markedSquare.AddLoot(mineral);
             SquareScript.s_markedSquare.TraversingCondition = Traversability.Walkable;
             EndTurn();
         }           
