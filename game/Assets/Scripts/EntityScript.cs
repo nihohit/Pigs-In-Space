@@ -117,6 +117,8 @@ public abstract class Entity
 
 public class PlayerEntity : Entity
 {
+    private double m_maxEnergy = 10;
+
     public double Energy { get; private set; }
 
     public double Oxygen { get; private set; }
@@ -128,10 +130,7 @@ public class PlayerEntity : Entity
     {
         Energy = energy;
         Oxygen = oxygen;
-        UpdateUI("Health", Health);
-        UpdateUI("Oxygen", Oxygen);
-        UpdateUI("Energy", Energy);
-        UpdateUI("Blue Crystals", BlueCrystal);
+        UpdateUI();
     }
 
     public void Move(SquareScript newLocation)
@@ -165,6 +164,14 @@ public class PlayerEntity : Entity
         UpdateUI("Health", Health);
     }
 
+    private void UpdateUI()
+    {
+        UpdateUI("Health", Health);
+        UpdateUI("Oxygen", Oxygen);
+        UpdateUI("Energy", Energy);
+        UpdateUI("Blue Crystals", BlueCrystal);
+    }
+
     private void UpdateUI(string updatedProperty, double updatedValue)
     {
         Camera.main.GetComponent<MapSceneScript>().UpdatePlayerState(updatedProperty, updatedValue);
@@ -173,13 +180,26 @@ public class PlayerEntity : Entity
     public void ShootLaser(Vector3 mousePosition)
     {
         var destination = Input.mousePosition;
-
+        Energy -= 2;
         var laser = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("laser"), Entity.Player.Location.transform.position, Quaternion.identity));
         var laserScript = laser.GetComponent<LaserScript>();
         var MousePos = Input.mousePosition;
         var translatedPosition = Camera.main.ScreenToWorldPoint(MousePos);
         var vec2 = new Vector2(translatedPosition.x, translatedPosition.y);
         laserScript.Init(vec2, Entity.Player.Location.transform.position, "Laser shot", MinDamage, MaxDamage);
+    }
+
+    public void EndTurn()
+    {
+        EnemyEntity.EnemiesTurn();
+        Oxygen--;
+        if (Oxygen <= 0)
+        {
+            Destroy();
+        }
+        Energy++;
+        Energy = Math.Min(Energy, m_maxEnergy);
+        UpdateUI();
     }
 }
 

@@ -66,9 +66,9 @@ public class MapSceneScript : MonoBehaviour
 		if(x != 0 || y != 0)
 		{
             Entity.Player.Move(Entity.Player.Location.GetNextSquare(x, y));
-//			transform.position = new Vector3(m_playerSprite.transform.position.x, m_playerSprite.transform.position.y, transform.position.z);
+            //transform.position = new Vector3(m_playerSprite.transform.position.x, m_playerSprite.transform.position.y, transform.position.z);
 			yield return new WaitForSeconds(0.25f);
-            EnemyEntity.EnemiesTurn();
+            Entity.Player.EndTurn();
 		}
 
 		if (Input.GetMouseButtonUp(0)) { // left click	
@@ -79,7 +79,7 @@ public class MapSceneScript : MonoBehaviour
 
             Entity.Player.ShootLaser(destination);
             yield return new WaitForSeconds(0.25f);
-            EnemyEntity.EnemiesTurn();
+            Entity.Player.EndTurn();
 	    }
 	}
 
