@@ -524,7 +524,7 @@ public class TmxManager
     {
         switch (gid)
         {
-            case "68": MapSceneScript.SetEvent(() => MapSceneScript.CreateEnemy(x, y), Marker.OnEscape); break;
+            case "68": MapSceneScript.SetEvent(() => MapSceneScript.CreateTentacleMonster(x, y), Marker.OnEscape); break;
         }
     }
 }
