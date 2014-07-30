@@ -44,3 +44,4 @@ game/Assets/UnityVS/*
 game/UnityVS.game.sln.DotSettings
 *.orig
 *.orig*
+*.bak*

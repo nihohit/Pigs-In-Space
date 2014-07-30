@@ -32,10 +32,11 @@ public class SquareScript : MonoBehaviour
 
     public Entity OccupyingEntity { get; set; }
 
-
+<<<<<<< HEAD
     public SpriteRenderer LootRenderer { get; private set; }
-
+=======
     public Boolean IsShip { get; set; }
+>>>>>>> 8dbc2dee87aaa54d05c83d13e4d1214fc644ddea
 
     #endregion
 
@@ -294,7 +295,6 @@ public class SquareScript : MonoBehaviour
         if (OccupyingEntity != null)
         {
             OccupyingEntity.Image.enabled = visible;
-            OccupyingEntity.SetActive(visible);
         }
         if (LootRenderer != null)
         {
