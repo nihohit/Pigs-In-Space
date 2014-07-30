@@ -6,12 +6,13 @@ public class MapSceneScript : MonoBehaviour
     private Vector2 CameraMax= new Vector2(15.05f, 11.25f);        // The maximum x and y coordinates the camera can have.
     private Vector2 CameraMin = new Vector2(4.75f, 3.5f);        // The minimum x and y coordinates the camera can have.
 
+
 	// Use this for initialization
 	void Start () 
 	{
 		SquareScript.LoadFromTMX(@"Maps\testMap3.tmx");
         var square = SquareScript.GetSquare(5, 5);
-		Entity.Player = new PlayerEntity (10, 5, 3, 5,
+        Entity.Player = new PlayerEntity(10, 5, 3, 5,
             square,
             ((GameObject)MonoBehaviour.Instantiate(Resources.Load("PlayerSprite"),
                                                      	square.transform.position, 
@@ -37,13 +38,22 @@ public class MapSceneScript : MonoBehaviour
                                                         Quaternion.identity)).GetComponent<SpriteRenderer>(),
             MovementType.Walking);
     }
+
+    internal static Hive CreateHive(int x, int y)
+    {
+        var square = SquareScript.GetSquare(x, y);
+        return new Hive(10,
+            square,
+            ((GameObject)MonoBehaviour.Instantiate(Resources.Load("Hive"),
+                                                        square.transform.position,
+                                                        Quaternion.identity)).GetComponent<SpriteRenderer>());
+    }
 	
 	// Update is called once per frame
 	void Update () 
 	{
-CameraTrackPlayer();
-StartCoroutine(PlayerAction ());
-
+        CameraTrackPlayer();
+        StartCoroutine(PlayerAction ());
     }
 
 	private IEnumerator PlayerAction ()
@@ -120,5 +130,4 @@ StartCoroutine(PlayerAction ());
         // Set the camera's position to the target position with the same z component.
         transform.position = new Vector3(targetX, targetY, transform.position.z);
     }
-
 }
