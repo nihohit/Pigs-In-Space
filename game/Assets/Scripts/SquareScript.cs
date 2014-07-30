@@ -183,7 +183,8 @@ public class SquareScript : MonoBehaviour
         if (m_droppedLoot == null)
         {
             m_droppedLoot = loot;
-            m_lootRenderer = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("Crystals"),
+            var prefabName = (m_droppedLoot.FuelCell) ? "FuelCell" : "Crystals";
+            m_lootRenderer = ((GameObject)MonoBehaviour.Instantiate(Resources.Load(prefabName),
                                                                      transform.position,
                                                                  Quaternion.identity)).GetComponent<SpriteRenderer>();
         }
@@ -481,11 +482,11 @@ public class TmxManager
     {
         switch (gid)
         {
-            case "33": MapSceneScript.CreateEnemy(x, y); break;
+            case "33": SquareScript.GetSquare(x, y).AddLoot(new Loot(16, true)); break;
             //case "34": MapSceneScript.CreateEnemy(x, y); break;
             case "35": break;
             case "36": break;
-            case "37": SquareScript.GetSquare(x, y).AddLoot(new Loot(UnityEngine.Random.Range(0, 10))); break;
+            case "37": SquareScript.GetSquare(x, y).AddLoot(new Loot(UnityEngine.Random.Range(0, 10), false)); break;
             case "38": MapSceneScript.CreateHive(x, y); break;
         }
     }

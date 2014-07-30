@@ -2,12 +2,13 @@
 {
     public int BlueCrystal { get; set; }
 
-    public bool fuelCell { get; set; }
+    public bool FuelCell { get; set; }
     public Loot() { }
 
-    public Loot(int blueCrystal)
+    public Loot(int blueCrystal, bool fuelCell)
     {
         BlueCrystal = blueCrystal;
+        FuelCell = fuelCell;
     }
 
     public void AddLoot(Loot loot)

@@ -170,9 +170,10 @@ public class PlayerEntity : AttackingEntity
         {
             BlueCrystal += loot.BlueCrystal;
             loot.BlueCrystal = 0;
-            if(loot.fuelCell)
+            if(loot.FuelCell)
             {
                 m_hasFuelCell = true;
+                loot.FuelCell = false;
                 MapSceneScript.EnterEscapeMode();
             }
         }
