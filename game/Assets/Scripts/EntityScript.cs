@@ -154,7 +154,8 @@ public class PlayerEntity : AttackingEntity
     {
         if (BackToShip(newLocation))
         {
-            EndGame("You won"); 
+            EndGame("You won");
+            return false;
         }
         if (TryMoveTo(newLocation))
         {
