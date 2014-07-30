@@ -132,7 +132,7 @@ public abstract class AttackingEntity : Entity
 public class PlayerEntity : AttackingEntity
 {
 
-    private double m_maxEnergy = 10;
+    private double m_maxEnergy = 20;
 
     public double Energy { get; private set; }
 
@@ -152,6 +152,11 @@ public class PlayerEntity : AttackingEntity
 
     public bool Move(SquareScript newLocation)
     {
+        if (BackToShip(newLocation))
+        {
+            EndGame("You won");
+            return false;
+        }
         if (TryMoveTo(newLocation))
         {
             TakeLoot(newLocation);
@@ -160,12 +165,12 @@ public class PlayerEntity : AttackingEntity
         return false;
     }
 
+    /// <summary>
+    /// Game Over
+    /// </summary>
     protected override void Destroy()
     {
-        Debug.Log("Game Over");
-        var gameOverThing = new GameObject();
-        gameOverThing.AddComponent<GameOverScript>();
-        //base.Destroy();
+        EndGame("Game Over!");
     }
 
     private void TakeLoot(SquareScript newLocation)
@@ -245,6 +250,24 @@ public class PlayerEntity : AttackingEntity
         Energy++;
         Energy = Math.Min(Energy, m_maxEnergy);
         UpdateUI();
+    }
+
+    public Boolean BackToShip(SquareScript newLocation)
+    {
+        if (newLocation.IsShip && m_hasFuelCell)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public void EndGame(string Message)
+    {
+        var gameOverThing = new GameObject();
+        gameOverThing.AddComponent<GameOverScript>();
+        gameOverThing.GetComponent<GameOverScript>().Message = Message;
+
+        MapSceneScript.GameOver();        
     }
 }
 

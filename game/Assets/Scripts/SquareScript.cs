@@ -30,6 +30,8 @@ public class SquareScript : MonoBehaviour
 
     public Entity OccupyingEntity { get; set; }
 
+    public Boolean IsShip { get; set; }
+
     #endregion
 
     #region public methods
@@ -334,10 +336,10 @@ public class TileManager
 	public static void Rock_Side_Right(GameObject tile){SetTile(tile, SpriteManager7.Rock_Side_Right, Traversability.Blocking);}
 	public static void Rock_Crater(GameObject tile){SetTile(tile, SpriteManager7.Rock_Crater, Traversability.Blocking);}
     public static void Rock_Crystal(GameObject tile) { SetTile(tile, SpriteManager7.Rock_Crystal, Traversability.Blocking); }
-	public static void Spaceship_Top_Left(GameObject tile){SetTile(tile, SpriteManager7.Spaceship_Top_Left, Traversability.Blocking);}
-	public static void Spaceship_Top_Right(GameObject tile){SetTile(tile, SpriteManager7.Spaceship_Top_Right, Traversability.Blocking);}
-	public static void Spaceship_Bottom_Left(GameObject tile){SetTile(tile, SpriteManager7.Spaceship_Bottom_Left, Traversability.Blocking);}
-	public static void Spaceship_Bottom_Right(GameObject tile){SetTile(tile, SpriteManager7.Spaceship_Bottom_Right, Traversability.Blocking);}
+	public static void Spaceship_Top_Left(GameObject tile){SetTile(tile, SpriteManager7.Spaceship_Top_Left, Traversability.Blocking, true);}
+	public static void Spaceship_Top_Right(GameObject tile){SetTile(tile, SpriteManager7.Spaceship_Top_Right, Traversability.Blocking, true);}
+	public static void Spaceship_Bottom_Left(GameObject tile){SetTile(tile, SpriteManager7.Spaceship_Bottom_Left, Traversability.Blocking, true);}
+	public static void Spaceship_Bottom_Right(GameObject tile){SetTile(tile, SpriteManager7.Spaceship_Bottom_Right, Traversability.Blocking, true);}
 	public static void Fuel_Cell(GameObject tile){SetTile(tile, SpriteManager7.Fuel_Cell, Traversability.Walkable);}
 	public static void Tentacle_Monster(GameObject tile){SetTile(tile, SpriteManager7.Tentacle_Monster, Traversability.Blocking);}
 	public static void Astornaut(GameObject tile){SetTile(tile, SpriteManager7.Astronaut_Front, Traversability.Blocking);}
@@ -368,6 +370,15 @@ public class TileManager
 		var script = tile.GetComponent<SquareScript>();
 		script.TraversingCondition = traversability;
 	}
+
+    public static void SetTile(GameObject tile, Sprite sprite, Traversability traversability, Boolean IsSpaceShip)
+    {
+        var sr = tile.GetComponent<SpriteRenderer>();
+        sr.sprite = sprite;
+        var script = tile.GetComponent<SquareScript>();
+        script.TraversingCondition = traversability;
+        script.IsShip = IsSpaceShip;
+    }
 
 	public static void SetTileFromLayerAndGid(GameObject tile, string layerAndGid)
 	{
