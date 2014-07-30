@@ -152,6 +152,7 @@ public class MapSceneScript : MonoBehaviour
     {
         Hive.EnterEscapeMode();
         var escapeGameEvents = s_Markers.Where(entry => entry.Value == Marker.OnEscape).Select(entry => entry.Key);
+        foreach(var gameEvent in escapeGameEvents)
         {
             gameEvent();
         }
