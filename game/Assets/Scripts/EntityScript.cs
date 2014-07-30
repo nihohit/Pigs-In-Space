@@ -220,8 +220,8 @@ public class PlayerEntity : AttackingEntity
 
     public void MineAsteroid()
     {
-        if ((Extensions.AreNeighbors(SquareScript.s_markedSquare, this.Location ) && 
-            SquareScript.s_markedSquare.GetComponent<SpriteRenderer>().sprite == SpriteManager7.Rock_Crystal))
+        if (SquareScript.s_markedSquare.GetNeighbours().Contains(this.Location) && 
+            SquareScript.s_markedSquare.GetComponent<SpriteRenderer>().sprite == SpriteManager7.Rock_Crystal)
         {            
             SquareScript.s_markedSquare.GetComponent<SpriteRenderer>().sprite = SpriteManager7.Empty;
             var mineral = new Loot();
@@ -306,14 +306,12 @@ public class EnemyEntity : AttackingEntity, IHostileEntity
 
 public class Hive : Entity, IHostileEntity
 {
-    private const int c_turnsToSpawn = 20;
-    private int m_turnsToSpawn;
+    private static double s_chanceToSpawn = 0.01;
 
     public Hive(double health, SquareScript location, SpriteRenderer image) :
         base(health, location, image)
     { 
         EnemiesManager.AddEnemy(this);
-        m_turnsToSpawn = c_turnsToSpawn;
     }
 
     protected override void Destroy()
@@ -324,12 +322,15 @@ public class Hive : Entity, IHostileEntity
 
     public void Act()
     {
-        m_turnsToSpawn--;
-        if(m_turnsToSpawn == 0)
+        if (Randomizer.CheckChance(s_chanceToSpawn))
         {
             MapSceneScript.CreateTentacleMonster(ChooseRandomFreeSquare());
-            m_turnsToSpawn = c_turnsToSpawn;
         }
+    }
+
+    public static void EnterEscapeMode()
+    {
+        s_chanceToSpawn = 0.1;
     }
 
     private SquareScript ChooseRandomFreeSquare()

@@ -148,5 +148,6 @@ public class MapSceneScript : MonoBehaviour
     public static void EnterEscapeMode()
     {
         Debug.Log("escape mode");
+        Hive.EnterEscapeMode();
     }
 }
