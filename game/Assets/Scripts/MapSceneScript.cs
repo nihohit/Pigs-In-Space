@@ -41,9 +41,8 @@ public class MapSceneScript : MonoBehaviour
 	// Update is called once per frame
 	void Update () 
 	{
-CameraTrackPlayer();
-StartCoroutine(PlayerAction ());
-
+        CameraTrackPlayer();
+        StartCoroutine(PlayerAction ());
     }
 
 	private IEnumerator PlayerAction ()
@@ -95,7 +94,7 @@ StartCoroutine(PlayerAction ());
         guiText.text = "{0}:{1}".FormatWith(updatedProperty, doubleToString);
     }
 
-    void CameraTrackPlayer ()
+    private void CameraTrackPlayer ()
     {
         const float xSmooth = 8f; // How smoothly the camera catches up with it's target movement in the x axis.
         const float ySmooth = 8f; // How smoothly the camera catches up with it's target movement in the y axis.
@@ -119,6 +118,11 @@ StartCoroutine(PlayerAction ());
  
         // Set the camera's position to the target position with the same z component.
         transform.position = new Vector3(targetX, targetY, transform.position.z);
+    }
+
+    public static void EnterEscapeMode()
+    {
+        Debug.Log("escape mode");
     }
 
 }

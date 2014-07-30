@@ -125,6 +125,8 @@ public class PlayerEntity : Entity
 
     public double BlueCrystal { get; private set; }
 
+    private bool m_hasFuelCell = false;
+
     public PlayerEntity(double health, double attackRange, float minDamage, float maxDamage, SquareScript location, SpriteRenderer image, double energy, double oxygen) :
         base(health, attackRange, minDamage, maxDamage, location, image, MovementType.Walking)
     {
@@ -154,6 +156,11 @@ public class PlayerEntity : Entity
         {
             BlueCrystal += loot.BlueCrystal;
             loot.BlueCrystal = 0;
+            if(loot.fuelCell)
+            {
+                m_hasFuelCell = true;
+                MapSceneScript.EnterEscapeMode();
+            }
         }
         UpdateUI("Blue Crystals", BlueCrystal);
     }

@@ -481,8 +481,8 @@ public class TmxManager
     {
         switch (gid)
         {
-            case "33": break;
-            case "34": MapSceneScript.CreateEnemy(x, y); break;
+            case "33": MapSceneScript.CreateEnemy(x, y); break;
+            //case "34": MapSceneScript.CreateEnemy(x, y); break;
             case "35": break;
             case "36": break;
         }
