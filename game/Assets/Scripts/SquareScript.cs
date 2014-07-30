@@ -485,7 +485,7 @@ public class TmxManager
         switch (gid)
         {
             case "33": SquareScript.GetSquare(x, y).AddLoot(new Loot(16, true)); break;
-            //case "34": MapSceneScript.CreateEnemy(x, y); break;
+            case "34": MapSceneScript.CreateEnemy(x, y); break;
             case "35": break;
             case "36": break;
             case "37": SquareScript.GetSquare(x, y).AddLoot(new Loot(UnityEngine.Random.Range(0, 10), false)); break;
