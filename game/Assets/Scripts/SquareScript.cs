@@ -318,49 +318,34 @@ public class SpriteManager
 		return s_sprites[spriteName];
 	}
 
-	public static Sprite Empty { get { return GetSprite("Terrain_0"); } }
-	public static Sprite Rock_Bottom_Right_Corner { get { return GetSprite("Terrain_1"); } }
-	public static Sprite Rock_Bottom_Left_Corner { get { return GetSprite("Terrain_2"); } }
-	public static Sprite Rock_Top_Right_Corner { get { return GetSprite("Terrain_3"); } }
-	public static Sprite Rock_Top_Left_Corner { get { return GetSprite("Terrain_4"); } }
-	public static Sprite Rock_Full1 { get { return GetSprite("Terrain_5"); } }
-	public static Sprite Rock_Full2 { get { return GetSprite("Terrain_6"); } }
-	public static Sprite Rock_Full3 { get { return GetSprite("Terrain_7"); } }
-	public static Sprite Rock_Full4 { get { return GetSprite("Terrain_8"); } }
-	public static Sprite Rock_Side_Bottom { get { return GetSprite("Terrain_9"); } }
-	public static Sprite Rock_Side_Left { get { return GetSprite("Terrain_10"); } }
-	public static Sprite Rock_Side_Top { get { return GetSprite("Terrain_11"); } }
-	public static Sprite Rock_Side_Right { get { return GetSprite("Terrain_12"); } }
-	public static Sprite Rock_Crater { get { return GetSprite("Terrain_13"); } }
-	public static Sprite Spaceship_Top_Left { get { return GetSprite("Terrain_14"); } }
-	public static Sprite Spaceship_Top_Right { get { return GetSprite("Terrain_15"); } }
-	public static Sprite Spaceship_Bottom_Left { get { return GetSprite("Terrain_16"); } }
-	public static Sprite Spaceship_Bottom_Right { get { return GetSprite("Terrain_17"); } }
-    public static Sprite Rock_Crystal { get { return GetSprite("Terrain_18"); } }
-	public static Sprite Fuel_Cell { get { return GetSprite("Entities_0"); } }
-	public static Sprite Tentacle_Monster { get { return GetSprite("Entities_1"); } }	
-	public static Sprite Astronaut_Right { get { return GetSprite("Entities_2"); } }
-	public static Sprite Astronaut_Front { get { return GetSprite("Entities_3"); } }
-    public static Sprite Crystal { get { return GetSprite("Entities_4"); } }
-	public static Sprite Mouse_Hover { get { return GetSprite("Markers_0"); } }	
-	public static Sprite Blueish_Marker { get { return GetSprite("Markers_1"); } }
-	public static Sprite Green_Marker { get { return GetSprite("Markers_2"); }}
-    public static Sprite Tentacle_Marker { get { return GetSprite("Markers_3"); } }
-
-	public static string ConvertLayerAndGidToSprintName(string layer, string gid)
-	{
-		var number_gid = Int32.Parse(gid);
-		switch (layer) 
-		{
-			case "Terrain":
-			return (number_gid > 0) ? layer + "_" + (number_gid - 1) : "Terrain_0";
-
-			case "Entities":
-			return (number_gid > 0) ? layer + "_" + (number_gid - 33) : "Terrain_0";
-		}
-		return "Terrain_0";
-
-	}
+	public static Sprite Empty = GetSprite("Terrain_0"); 
+	public static Sprite Rock_Bottom_Right_Corner = GetSprite("Terrain_1");
+	public static Sprite Rock_Bottom_Left_Corner = GetSprite("Terrain_2");
+	public static Sprite Rock_Top_Right_Corner = GetSprite("Terrain_3");
+	public static Sprite Rock_Top_Left_Corner = GetSprite("Terrain_4");
+	public static Sprite Rock_Full1 = GetSprite("Terrain_5");
+	public static Sprite Rock_Full2 = GetSprite("Terrain_6");
+	public static Sprite Rock_Full3 = GetSprite("Terrain_7");
+	public static Sprite Rock_Full4 = GetSprite("Terrain_8");
+	public static Sprite Rock_Side_Bottom = GetSprite("Terrain_9");
+	public static Sprite Rock_Side_Left = GetSprite("Terrain_10");
+	public static Sprite Rock_Side_Top = GetSprite("Terrain_11");
+	public static Sprite Rock_Side_Right = GetSprite("Terrain_12");
+	public static Sprite Rock_Crater = GetSprite("Terrain_13");
+	public static Sprite Spaceship_Top_Left = GetSprite("Terrain_14");
+	public static Sprite Spaceship_Top_Right = GetSprite("Terrain_15");
+	public static Sprite Spaceship_Bottom_Left = GetSprite("Terrain_16");
+	public static Sprite Spaceship_Bottom_Right = GetSprite("Terrain_17");
+    public static Sprite Rock_Crystal = GetSprite("Terrain_18");
+	public static Sprite Fuel_Cell = GetSprite("Entities_0");
+	public static Sprite Tentacle_Monster = GetSprite("Entities_1");	
+	public static Sprite Astronaut_Right = GetSprite("Entities_2");
+	public static Sprite Astronaut_Front = GetSprite("Entities_3");
+    public static Sprite Crystal = GetSprite("Entities_4");
+	public static Sprite Mouse_Hover = GetSprite("Markers_0");	
+	public static Sprite Blueish_Marker = GetSprite("Markers_1");
+	public static Sprite Green_Marker = GetSprite("Markers_2"); 
+    public static Sprite Tentacle_Marker = GetSprite("Markers_3");
 }
 
 #endregion
