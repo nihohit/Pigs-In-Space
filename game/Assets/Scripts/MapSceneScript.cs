@@ -4,12 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+public enum GameState { Ongoing, Won, Lost}
 public class MapSceneScript : MonoBehaviour 
 {
     private Vector2 CameraMax= new Vector2(15.05f, 11.25f);        // The maximum x and y coordinates the camera can have.
     private Vector2 CameraMin = new Vector2(4.75f, 3.5f);        // The minimum x and y coordinates the camera can have.
     private static Dictionary<Action, Marker> s_Markers = new Dictionary<Action, Marker>();
-    private static bool gameover = false;
+    private static GameState s_gameState = GameState.Ongoing;
     private const int c_startHealth = 15;
     private const int c_startAttackRange = 5;
     private const int c_startMinDamage = 3;
@@ -18,9 +19,9 @@ public class MapSceneScript : MonoBehaviour
     private const int c_startEnergy = 10;
     private const int c_HiveHealth = 20;
 
-    public static void GameOver ()
+    public static void ChangeGameState(GameState state)
     {
-        gameover = true;
+        s_gameState = state;
     }
 
 	// Use this for initialization
@@ -74,10 +75,40 @@ public class MapSceneScript : MonoBehaviour
 	// Update is called once per frame
 	void Update () 
 	{
-        if (!gameover)
+        if (s_gameState == GameState.Ongoing)
         {
             CameraTrackPlayer();
             StartCoroutine(PlayerAction());
+        }
+    }
+
+    void OnGUI()
+    {       
+        if(s_gameState != GameState.Ongoing)
+        {
+            GUI.BeginGroup(new Rect(320, 265, 384, 256));
+            GUI.DrawTexture(new Rect(0, 0, 384, 256), Resources.Load<Texture2D>(@"Sprites/WinLoseMessage"), ScaleMode.StretchToFill);
+            var style = new GUIStyle
+            {
+                fontStyle = FontStyle.Bold,
+                fontSize = 32,
+                normal = new GUIStyleState
+                {
+                    textColor = Color.white,
+                },
+            };
+            var message = (s_gameState == GameState.Lost) ? "Game Over" : "You Win :)";
+            GUI.Label(new Rect(110, 45, 60, 60), message, style);
+            style.fontSize = 12;
+            GUI.Label(new Rect(176, 127, 30, 30), String.Format("X {0}",(int)Entity.Player.BlueCrystal), style);
+            GUI.Label(new Rect(176, 165, 30, 30), "X 0", style);
+            GUI.Label(new Rect(176, 205, 30, 30), "X 0", style);
+            GUI.EndGroup();
+            //// Make the second button.
+            //if (GUI.Button(new Rect(20, 70, 80, 20), "Level 2"))
+            //{
+            //    Application.LoadLevel(2);
+            //}
         }
     }
 

@@ -161,7 +161,7 @@ public class PlayerEntity : AttackingEntity
     {
         if (BackToShip(newLocation))
         {
-            EndGame("You won");
+            EndGame(GameState.Won);
             return false;
         }
         if (TryMoveTo(newLocation))
@@ -178,7 +178,7 @@ public class PlayerEntity : AttackingEntity
     /// </summary>
     protected override void Destroy()
     {
-        EndGame("Game Over!");
+        EndGame(GameState.Lost);
     }
 
     private void TakeLoot(SquareScript newLocation)
@@ -273,13 +273,9 @@ public class PlayerEntity : AttackingEntity
         return false;
     }
 
-    public void EndGame(string Message)
+    public void EndGame(GameState state)
     {
-        var gameOverThing = new GameObject();
-        gameOverThing.AddComponent<GameOverScript>();
-        gameOverThing.GetComponent<GameOverScript>().Message = Message;
-
-        MapSceneScript.GameOver();        
+        MapSceneScript.ChangeGameState(state);      
     }
 }
 
