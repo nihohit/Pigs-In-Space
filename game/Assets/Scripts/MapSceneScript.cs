@@ -101,8 +101,8 @@ public class MapSceneScript : MonoBehaviour
             GUI.Label(new Rect(110, 45, 60, 60), message, style);
             style.fontSize = 12;
             GUI.Label(new Rect(176, 127, 30, 30), String.Format("X {0}",(int)Entity.Player.BlueCrystal), style);
-            GUI.Label(new Rect(176, 165, 30, 30), "X 0", style);
-            GUI.Label(new Rect(176, 205, 30, 30), "X 0", style);
+            GUI.Label(new Rect(176, 165, 30, 30), String.Format("X {0}",EnemyEntity.KilledEnemies), style);
+            GUI.Label(new Rect(176, 205, 30, 30), String.Format("X {0}", (int)Hive.KilledHives), style);
             GUI.EndGroup();
             //// Make the second button.
             //if (GUI.Button(new Rect(20, 70, 80, 20), "Level 2"))

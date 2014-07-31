@@ -237,7 +237,8 @@ public class PlayerEntity : AttackingEntity
     {
         if (SquareScript.s_markedSquare.GetNeighbours().Contains(this.Location) && 
             SquareScript.s_markedSquare.GetComponent<SpriteRenderer>().sprite == SpriteManager.Rock_Crystal)
-        {            
+        {
+            Energy -= 1;
             SquareScript.s_markedSquare.GetComponent<SpriteRenderer>().sprite = SpriteManager.Empty;
             var mineral = new Loot();
             mineral.BlueCrystal = 5;           
