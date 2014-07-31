@@ -242,7 +242,7 @@ public class PlayerEntity : AttackingEntity
             var mineral = new Loot();
             mineral.BlueCrystal = 5;           
             SquareScript.s_markedSquare.AddLoot(mineral);
-            SquareScript.s_markedSquare.TraversingCondition = Traversability.Walkable;
+            SquareScript.s_markedSquare.TerrainType = TerrainType.Empty;
             EndTurn();
         }           
     }
@@ -262,7 +262,11 @@ public class PlayerEntity : AttackingEntity
 
     public Boolean BackToShip(SquareScript newLocation)
     {
-        if (newLocation.IsShip && m_hasFuelCell)
+        if (m_hasFuelCell && 
+            (newLocation.TerrainType == TerrainType.Spaceship_Bottom_Left ||
+            newLocation.TerrainType == TerrainType.Spaceship_Bottom_Right ||
+            newLocation.TerrainType == TerrainType.Spaceship_Top_Left ||
+            newLocation.TerrainType == TerrainType.Spaceship_Top_Right))
         {
             return true;
         }
