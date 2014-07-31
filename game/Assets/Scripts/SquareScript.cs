@@ -282,31 +282,31 @@ public class TerrainType
         TraversingCondition = traversingCondition;
     }
 
-    public static TerrainType Empty = new TerrainType( SpriteManager7.Empty, Traversability.Walkable);
-    public static TerrainType Rock_Full = new TerrainType(new List<Sprite> { SpriteManager7.Rock_Full1, SpriteManager7.Rock_Full2, SpriteManager7.Rock_Full3, SpriteManager7.Rock_Full4 }, Traversability.Blocking);
-    public static TerrainType Rock_Bottom_Right_Corner= new TerrainType(SpriteManager7.Rock_Bottom_Right_Corner, Traversability.Blocking);
-    public static TerrainType Rock_Bottom_Left_Corner= new TerrainType(SpriteManager7.Rock_Bottom_Left_Corner, Traversability.Blocking);
-    public static TerrainType Rock_Top_Right_Corner= new TerrainType(SpriteManager7.Rock_Top_Right_Corner, Traversability.Blocking);
-    public static TerrainType Rock_Top_Left_Corner= new TerrainType(SpriteManager7.Rock_Top_Left_Corner, Traversability.Blocking);
-    public static TerrainType Rock_Side_Bottom= new TerrainType(SpriteManager7.Rock_Side_Bottom, Traversability.Blocking);
-    public static TerrainType Rock_Side_Left= new TerrainType(SpriteManager7.Rock_Side_Left, Traversability.Blocking);
-    public static TerrainType Rock_Side_Top= new TerrainType(SpriteManager7.Rock_Side_Top, Traversability.Blocking);
-    public static TerrainType Rock_Side_Right= new TerrainType(SpriteManager7.Rock_Side_Right, Traversability.Blocking);
-    public static TerrainType Rock_Crater= new TerrainType(SpriteManager7.Rock_Crater, Traversability.Blocking);
-    public static TerrainType Rock_Crystal= new TerrainType(SpriteManager7.Rock_Crystal, Traversability.Blocking);
-    public static TerrainType Spaceship_Top_Left= new TerrainType(SpriteManager7.Spaceship_Top_Left, Traversability.Blocking);
-    public static TerrainType Spaceship_Top_Right= new TerrainType(SpriteManager7.Spaceship_Top_Right, Traversability.Blocking);
-    public static TerrainType Spaceship_Bottom_Left= new TerrainType(SpriteManager7.Spaceship_Bottom_Left, Traversability.Blocking);
-    public static TerrainType Spaceship_Bottom_Right= new TerrainType(SpriteManager7.Spaceship_Bottom_Right, Traversability.Blocking);
-    public static TerrainType Fuel_Cell= new TerrainType(SpriteManager7.Fuel_Cell, Traversability.Walkable);
-    public static TerrainType Tentacle_Monster= new TerrainType(SpriteManager7.Tentacle_Monster, Traversability.Blocking);
-    public static TerrainType Astornaut= new TerrainType(SpriteManager7.Astronaut_Front, Traversability.Blocking);	
+    public static TerrainType Empty = new TerrainType( SpriteManager.Empty, Traversability.Walkable);
+    public static TerrainType Rock_Full = new TerrainType(new List<Sprite> { SpriteManager.Rock_Full1, SpriteManager.Rock_Full2, SpriteManager.Rock_Full3, SpriteManager.Rock_Full4 }, Traversability.Blocking);
+    public static TerrainType Rock_Bottom_Right_Corner= new TerrainType(SpriteManager.Rock_Bottom_Right_Corner, Traversability.Blocking);
+    public static TerrainType Rock_Bottom_Left_Corner= new TerrainType(SpriteManager.Rock_Bottom_Left_Corner, Traversability.Blocking);
+    public static TerrainType Rock_Top_Right_Corner= new TerrainType(SpriteManager.Rock_Top_Right_Corner, Traversability.Blocking);
+    public static TerrainType Rock_Top_Left_Corner= new TerrainType(SpriteManager.Rock_Top_Left_Corner, Traversability.Blocking);
+    public static TerrainType Rock_Side_Bottom= new TerrainType(SpriteManager.Rock_Side_Bottom, Traversability.Blocking);
+    public static TerrainType Rock_Side_Left= new TerrainType(SpriteManager.Rock_Side_Left, Traversability.Blocking);
+    public static TerrainType Rock_Side_Top= new TerrainType(SpriteManager.Rock_Side_Top, Traversability.Blocking);
+    public static TerrainType Rock_Side_Right= new TerrainType(SpriteManager.Rock_Side_Right, Traversability.Blocking);
+    public static TerrainType Rock_Crater= new TerrainType(SpriteManager.Rock_Crater, Traversability.Blocking);
+    public static TerrainType Rock_Crystal= new TerrainType(SpriteManager.Rock_Crystal, Traversability.Blocking);
+    public static TerrainType Spaceship_Top_Left= new TerrainType(SpriteManager.Spaceship_Top_Left, Traversability.Blocking);
+    public static TerrainType Spaceship_Top_Right= new TerrainType(SpriteManager.Spaceship_Top_Right, Traversability.Blocking);
+    public static TerrainType Spaceship_Bottom_Left= new TerrainType(SpriteManager.Spaceship_Bottom_Left, Traversability.Blocking);
+    public static TerrainType Spaceship_Bottom_Right= new TerrainType(SpriteManager.Spaceship_Bottom_Right, Traversability.Blocking);
+    public static TerrainType Fuel_Cell= new TerrainType(SpriteManager.Fuel_Cell, Traversability.Walkable);
+    public static TerrainType Tentacle_Monster= new TerrainType(SpriteManager.Tentacle_Monster, Traversability.Blocking);
+    public static TerrainType Astornaut= new TerrainType(SpriteManager.Astronaut_Front, Traversability.Blocking);	
 }
 #endregion
 
-#region SpriteManager7
+#region SpriteManager
 
-public class SpriteManager7 
+public class SpriteManager 
 {
 	private static Dictionary<string, Sprite> s_sprites;
 	private static Sprite GetSprite(string spriteName)

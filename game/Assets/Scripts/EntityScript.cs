@@ -236,9 +236,9 @@ public class PlayerEntity : AttackingEntity
     public void MineAsteroid()
     {
         if (SquareScript.s_markedSquare.GetNeighbours().Contains(this.Location) && 
-            SquareScript.s_markedSquare.GetComponent<SpriteRenderer>().sprite == SpriteManager7.Rock_Crystal)
+            SquareScript.s_markedSquare.GetComponent<SpriteRenderer>().sprite == SpriteManager.Rock_Crystal)
         {            
-            SquareScript.s_markedSquare.GetComponent<SpriteRenderer>().sprite = SpriteManager7.Empty;
+            SquareScript.s_markedSquare.GetComponent<SpriteRenderer>().sprite = SpriteManager.Empty;
             var mineral = new Loot();
             mineral.BlueCrystal = 5;           
             SquareScript.s_markedSquare.AddLoot(mineral);
