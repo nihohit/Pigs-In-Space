@@ -226,10 +226,13 @@ public class PlayerEntity : AttackingEntity
         Energy -= 2;
         var laser = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("laser"), Player.Location.transform.position, Quaternion.identity));
         var laserScript = laser.GetComponent<LaserScript>();
-        var MousePos = Input.mousePosition;
-        var translatedPosition = Camera.main.ScreenToWorldPoint(MousePos);
-        var vec2 = new Vector2(translatedPosition.x, translatedPosition.y);
-        laserScript.Init(vec2, Player.Location.transform.position, "Laser shot", MinDamage, MaxDamage);
+        ////Aim to mouse
+        //var MousePos = Input.mousePosition;
+        //var translatedPosition = Camera.main.ScreenToWorldPoint(MousePos);
+        //var destination = new Vector2(translatedPosition.x, translatedPosition.y);
+        //Aim to center of marked tile 
+        var destination = SquareScript.s_markedSquare.getWorldLocation();
+        laserScript.Init(destination, Player.Location.transform.position, "Laser shot", MinDamage, MaxDamage);
         return true;
     }
 

@@ -122,6 +122,11 @@ public class SquareScript : MonoBehaviour
         m_x = x;
     }
 
+    public Vector2 getWorldLocation()
+    {
+        return this.gameObject.transform.position;
+    }
+
     public SquareScript GetNextSquare(int x, int y)
     {
         x = Mathf.Min(x + m_x, s_map.GetLength(0) - 1);
