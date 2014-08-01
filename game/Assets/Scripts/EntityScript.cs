@@ -8,9 +8,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 using System;
-using System.Collections.Generic;
-using UnityEngine;
+using System.Diagnostics;
 using System.Linq;
+using UnityEngine;
 
 public enum MovementType { Walking, Flying }
 
@@ -18,7 +18,23 @@ public enum MovementType { Walking, Flying }
 
 public abstract class Entity
 {
-    public static PlayerEntity Player  { get; set; }
+    #region fields
+
+    private const int c_startHealth = 15;
+    private const int c_startAttackRange = 5;
+    private const int c_startMinDamage = 3;
+    private const int c_startMaxDamage = 7;
+    private const int c_startOxygen = 200;
+    private const int c_startEnergy = 10;
+    private const int c_HiveHealth = 20;
+
+    protected bool m_active;
+
+    #endregion fields
+
+    #region properties
+
+    public static PlayerEntity Player { get; set; }
 
     public double Health { get; private set; }
 
@@ -26,7 +42,9 @@ public abstract class Entity
 
     public SpriteRenderer Image { get; protected set; }
 
-    protected bool m_active;
+    #endregion properties
+
+    #region constructor
 
     public Entity(double health, SquareScript location, SpriteRenderer image)
     {
@@ -37,6 +55,10 @@ public abstract class Entity
         Location.OccupyingEntity = this;
     }
 
+    #endregion constructor
+
+    #region public methods
+
     public virtual void Damage(double damage)
     {
         Health -= damage;
@@ -46,19 +68,66 @@ public abstract class Entity
         }
     }
 
+    public virtual void SetActive(bool active)
+    {
+        m_active = active;
+    }
+
+    #region static generation methods
+
+    public static PlayerEntity CreatePlayerEntity(int x, int y)
+    {
+        var square = SquareScript.GetSquare(x, y);
+        return new PlayerEntity(c_startHealth, c_startAttackRange, c_startMinDamage, c_startMaxDamage,
+            square,
+            ((GameObject)MonoBehaviour.Instantiate(Resources.Load("PlayerSprite"),
+                                                        square.transform.position,
+                                                        Quaternion.identity)).GetComponent<SpriteRenderer>(),
+            c_startEnergy,
+            c_startOxygen);
+    }
+
+    public static EnemyEntity CreateTentacleMonster(int x, int y)
+    {
+        return CreateTentacleMonster(SquareScript.GetSquare(x, y));
+    }
+
+    public static EnemyEntity CreateTentacleMonster(SquareScript square)
+    {
+        return new EnemyEntity(10, 1, 1, 2,
+            square,
+            ((GameObject)MonoBehaviour.Instantiate(Resources.Load("TentacleMonster"),
+                                                        square.transform.position,
+                                                        Quaternion.identity)).GetComponent<SpriteRenderer>(),
+            MovementType.Walking);
+    }
+
+    public static Hive CreateHive(int x, int y)
+    {
+        var square = SquareScript.GetSquare(x, y);
+        return new Hive(c_HiveHealth,
+            square,
+            ((GameObject)MonoBehaviour.Instantiate(Resources.Load("Hive"),
+                                                        square.transform.position,
+                                                        Quaternion.identity)).GetComponent<SpriteRenderer>());
+    }
+
+    #endregion static generation methods
+
+    #endregion public methods
+
+    #region private and protected methods
+
     protected virtual void Destroy()
     {
         this.Location.OccupyingEntity = null;
         UnityEngine.Object.Destroy(this.Image);
     }
 
-    public virtual void SetActive(bool active)
-    {
-        m_active = active;
-    }
+    #endregion private and protected methods
 }
 
-#endregion
+#endregion Entity
 
 #region AttackingEntity
 
@@ -132,14 +201,23 @@ public abstract class AttackingEntity : Entity
     }
 }
 
-#endregion
+#endregion AttackingEntity
 
 #region PlayerEntity
 
 public class PlayerEntity : AttackingEntity
 {
+    #region fields
+
+    private Stopwatch m_playerActionTimer;
 
     private double m_maxEnergy = 20;
+
+    private bool m_hasFuelCell = false;
+
+    #endregion fields
+
+    #region Properties
 
     public double Energy { get; private set; }
 
@@ -147,7 +225,9 @@ public class PlayerEntity : AttackingEntity
 
     public double BlueCrystal { get; private set; }
 
-    private bool m_hasFuelCell = false;
+    #endregion Properties
+
+    #region constructor
 
     public PlayerEntity(double health, double attackRange, float minDamage, float maxDamage, SquareScript location, SpriteRenderer image, double energy, double oxygen) :
         base(health, attackRange, minDamage, maxDamage, location, image, MovementType.Walking)
@@ -155,7 +235,13 @@ public class PlayerEntity : AttackingEntity
         Energy = energy;
         Oxygen = oxygen;
         UpdateUI();
+        m_playerActionTimer = new Stopwatch();
+        m_playerActionTimer.Start();
     }
+
+    #endregion constructor
+
+    #region public methods
 
     public bool Move(SquareScript newLocation)
     {
@@ -173,6 +259,85 @@ public class PlayerEntity : AttackingEntity
         return false;
     }
 
+    public override void Damage(double damage)
+    {
+        base.Damage(damage);
+        UpdateUI("Health", Health);
+    }
+
+    public bool ShootLaser(Vector3 mousePosition)
+    {
+        if (Energy < 2)
+        {
+            return false;
+        }
+        Energy -= 2;
+        var laser = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("laser"), Player.Location.transform.position, Quaternion.identity));
+        var laserScript = laser.GetComponent<LaserScript>();
+        ////Aim to mouse
+        //var MousePos = Input.mousePosition;
+        //var translatedPosition = Camera.main.ScreenToWorldPoint(MousePos);
+        //var destination = new Vector2(translatedPosition.x, translatedPosition.y);
+        //Aim to center of marked tile
+        var destination = SquareScript.s_markedSquare.getWorldLocation();
+        laserScript.Init(destination, Player.Location.transform.position, "Laser shot", MinDamage, MaxDamage);
+        return true;
+    }
+
+    public void MineAsteroid()
+    {
+        if (SquareScript.s_markedSquare.GetNeighbours().Contains(this.Location) &&
+            SquareScript.s_markedSquare.GetComponent<SpriteRenderer>().sprite == SpriteManager.Rock_Crystal)
+        {
+            Energy -= 1;
+            SquareScript.s_markedSquare.GetComponent<SpriteRenderer>().sprite = SpriteManager.Empty;
+            var mineral = new Loot();
+            mineral.BlueCrystal = 5;
+            SquareScript.s_markedSquare.AddLoot(mineral);
+            SquareScript.s_markedSquare.TerrainType = TerrainType.Empty;
+            EndTurn();
+        }
+    }
+
+    public void EndTurn()
+    {
+        double timeSinceLastAction = m_playerActionTimer.ElapsedMilliseconds / 1000.0;
+        m_playerActionTimer.Reset();
+        UnityEngine.Debug.Log("Time interval is {0}".FormatWith(timeSinceLastAction));
+        EnemiesManager.EnemiesTurn();
+        Oxygen -= Math.Min(2, timeSinceLastAction);
+        if (Oxygen <= 0)
+        {
+            Destroy();
+        }
+        Energy++;
+        Energy = Math.Min(Energy, m_maxEnergy);
+        UpdateUI();
+        m_playerActionTimer.Start();
+    }
+
+    public Boolean BackToShip(SquareScript newLocation)
+    {
+        if (m_hasFuelCell &&
+            (newLocation.TerrainType == TerrainType.Spaceship_Bottom_Left ||
+            newLocation.TerrainType == TerrainType.Spaceship_Bottom_Right ||
+            newLocation.TerrainType == TerrainType.Spaceship_Top_Left ||
+            newLocation.TerrainType == TerrainType.Spaceship_Top_Right))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public void EndGame(GameState state)
+    {
+        MapSceneScript.ChangeGameState(state);
+    }
+
+    #endregion public methods
+
+    #region private methods
+
     /// <summary>
     /// Game Over
     /// </summary>
@@ -188,7 +353,7 @@ public class PlayerEntity : AttackingEntity
         {
             BlueCrystal += loot.BlueCrystal;
             loot.BlueCrystal = 0;
-            if(loot.FuelCell)
+            if (loot.FuelCell)
             {
                 m_hasFuelCell = true;
                 loot.FuelCell = false;
@@ -196,12 +361,6 @@ public class PlayerEntity : AttackingEntity
             }
         }
         UpdateUI("Blue Crystals", BlueCrystal);
-    }
-
-    public override void Damage(double damage)
-    {
-        base.Damage(damage);
-        UpdateUI("Health", Health);
     }
 
     private void UpdateUI()
@@ -217,70 +376,10 @@ public class PlayerEntity : AttackingEntity
         Camera.main.GetComponent<MapSceneScript>().UpdatePlayerState(updatedProperty, updatedValue);
     }
 
-    public bool ShootLaser(Vector3 mousePosition)
-    {
-        if (Energy <2)
-        {
-            return false;
-        }
-        Energy -= 2;
-        var laser = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("laser"), Player.Location.transform.position, Quaternion.identity));
-        var laserScript = laser.GetComponent<LaserScript>();
-        var MousePos = Input.mousePosition;
-        var translatedPosition = Camera.main.ScreenToWorldPoint(MousePos);
-        var vec2 = new Vector2(translatedPosition.x, translatedPosition.y);
-        laserScript.Init(vec2, Player.Location.transform.position, "Laser shot", MinDamage, MaxDamage);
-        return true;
-    }
-
-    public void MineAsteroid()
-    {
-        if (SquareScript.s_markedSquare.GetNeighbours().Contains(this.Location) && 
-            SquareScript.s_markedSquare.GetComponent<SpriteRenderer>().sprite == SpriteManager.Rock_Crystal)
-        {
-            Energy -= 1;
-            SquareScript.s_markedSquare.GetComponent<SpriteRenderer>().sprite = SpriteManager.Empty;
-            var mineral = new Loot();
-            mineral.BlueCrystal = 5;           
-            SquareScript.s_markedSquare.AddLoot(mineral);
-            SquareScript.s_markedSquare.TerrainType = TerrainType.Empty;
-            EndTurn();
-        }           
-    }
-
-    public void EndTurn()
-    {
-        EnemiesManager.EnemiesTurn();
-        Oxygen--;
-        if (Oxygen <= 0)
-        {
-            Destroy();
-        }
-        Energy++;
-        Energy = Math.Min(Energy, m_maxEnergy);
-        UpdateUI();
-    }
-
-    public Boolean BackToShip(SquareScript newLocation)
-    {
-        if (m_hasFuelCell && 
-            (newLocation.TerrainType == TerrainType.Spaceship_Bottom_Left ||
-            newLocation.TerrainType == TerrainType.Spaceship_Bottom_Right ||
-            newLocation.TerrainType == TerrainType.Spaceship_Top_Left ||
-            newLocation.TerrainType == TerrainType.Spaceship_Top_Right))
-        {
-            return true;
-        }
-        return false;
-    }
-
-    public void EndGame(GameState state)
-    {
-        MapSceneScript.ChangeGameState(state);      
-    }
+    #endregion private methods
 }
 
-#endregion
+#endregion PlayerEntity
 
 #region EnemyEntity
 
@@ -289,8 +388,6 @@ public class EnemyEntity : AttackingEntity, IHostileEntity
     private static int s_killed_Enemies = 0;
 
     public static int KilledEnemies { get { return s_killed_Enemies; } }
-
-
 
     protected override void Destroy()
     {
@@ -311,7 +408,7 @@ public class EnemyEntity : AttackingEntity, IHostileEntity
         {
             if (WithinRange(Player))
             {
-                //Show hit action                        
+                //Show hit action
                 var Location = Player.Location.transform.position;
                 var otherLocation = this.Location.transform.position;
                 var powPosition = new Vector3((Location.x + otherLocation.x) / 2, (Location.y + otherLocation.y) / 2, Location.z);
@@ -344,7 +441,7 @@ public class EnemyEntity : AttackingEntity, IHostileEntity
     }
 }
 
-#endregion
+#endregion EnemyEntity
 
 #region Hive
 
@@ -355,11 +452,9 @@ public class Hive : Entity, IHostileEntity
 
     public static int KilledHives { get { return s_killed_Hives; } }
 
-
-
     public Hive(double health, SquareScript location, SpriteRenderer image) :
         base(health, location, image)
-    { 
+    {
         EnemiesManager.AddEnemy(this);
     }
 
@@ -374,7 +469,7 @@ public class Hive : Entity, IHostileEntity
     {
         if (Randomizer.CheckChance(s_chanceToSpawn))
         {
-            MapSceneScript.CreateTentacleMonster(ChooseRandomFreeSquare());
+            CreateTentacleMonster(ChooseRandomFreeSquare());
         }
     }
 
@@ -389,4 +484,4 @@ public class Hive : Entity, IHostileEntity
     }
 }
 
-#endregion
+#endregion Hive

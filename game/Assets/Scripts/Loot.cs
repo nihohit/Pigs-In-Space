@@ -3,7 +3,10 @@
     public int BlueCrystal { get; set; }
 
     public bool FuelCell { get; set; }
-    public Loot() { }
+
+    public Loot()
+    {
+    }
 
     public Loot(int blueCrystal, bool fuelCell)
     {
