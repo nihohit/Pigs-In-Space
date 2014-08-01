@@ -7,8 +7,8 @@ using UnityEngine;
 public enum GameState { Ongoing, Won, Lost}
 public class MapSceneScript : MonoBehaviour 
 {
-    private Vector2 CameraMax= new Vector2(15.05f, 11.25f);        // The maximum x and y coordinates the camera can have.
-    private Vector2 CameraMin = new Vector2(4.75f, 3.5f);        // The minimum x and y coordinates the camera can have.
+    private Vector2 CameraMax= new Vector2(0f, 0f);        // The maximum x and y coordinates the camera can have.
+    private Vector2 CameraMin = new Vector2(0f, 0f);        // The minimum x and y coordinates the camera can have.
     private static Dictionary<Action, Marker> s_Markers = new Dictionary<Action, Marker>();
     private static GameState s_gameState = GameState.Ongoing;
     private const int c_startHealth = 15;
@@ -22,6 +22,11 @@ public class MapSceneScript : MonoBehaviour
     public static void ChangeGameState(GameState state)
     {
         s_gameState = state;
+    }
+    
+    public void Awake()
+    {
+        camera.orthographicSize = (Screen.height / 64f / 2.0f); 
     }
 
 	// Use this for initialization
@@ -44,6 +49,7 @@ public class MapSceneScript : MonoBehaviour
         CameraMin = new Vector2(minCameraX, minCameraY);
         CameraMax = new Vector2(maxCameraX, maxCameraY);
         square.FogOfWar();
+
 	}
 
     public static EnemyEntity CreateTentacleMonster(int x, int y)
@@ -116,19 +122,19 @@ public class MapSceneScript : MonoBehaviour
 	{
 		var x = 0;
 		var y = 0;
-		if (Input.GetKeyDown(KeyCode.UpArrow))
+        if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W))
 		{
 			y = -1;
 		}
-		if (Input.GetKeyDown(KeyCode.DownArrow))
+        if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S))
 		{
 			y = 1;
 		}
-		if (Input.GetKeyDown(KeyCode.LeftArrow))
+        if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
 		{
 			x = -1;
 		}
-		if (Input.GetKeyDown(KeyCode.RightArrow))
+        if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
 		{
 			x = 1;
 		}

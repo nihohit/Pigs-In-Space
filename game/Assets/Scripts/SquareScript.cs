@@ -10,7 +10,7 @@ using System.Xml.Linq;
 using UnityEngine;
 
 public enum Traversability { Walkable, Flyable, Blocking }
-
+public enum Opacity { Blocking, SeeThrough}
 #region SquareScript
 
 public class SquareScript : MonoBehaviour
@@ -23,6 +23,7 @@ public class SquareScript : MonoBehaviour
     private SpriteRenderer m_fogOfWar;
     private TerrainType m_terrainType;
     private static SpriteRenderer s_squareMarker;
+    private static SpriteRenderer s_attackMarker;
     public static SquareScript s_markedSquare;
 
     #endregion
@@ -50,6 +51,8 @@ public class SquareScript : MonoBehaviour
 
     public Traversability TraversingCondition { get { return TerrainType.TraversingCondition; } }
 
+    public Opacity Opacity { get { return TerrainType.Opacity; } }
+
     #endregion
 
     #region public methods
@@ -64,7 +67,8 @@ public class SquareScript : MonoBehaviour
 
     public static void LoadFromTMX(string filename)
     {
-        s_squareMarker = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("squareSelectionBox"), Vector2.zero, Quaternion.identity)).GetComponent<SpriteRenderer>();
+        s_squareMarker = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("squareSelectionBox"), new Vector2(1000000, 1000000), Quaternion.identity)).GetComponent<SpriteRenderer>();
+        s_attackMarker = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("AttackMark"), new Vector2(1000000, 1000000), Quaternion.identity)).GetComponent<SpriteRenderer>();
 
         var root = new XmlDocument();
         root.Load(filename);
@@ -173,7 +177,7 @@ public class SquareScript : MonoBehaviour
             tempSquare.Visible(false);
         }
 
-        foreach(var tempSquare in SeenFrom())
+        foreach (var tempSquare in SeenFrom())
         {
             tempSquare.Visible(true);
         }
@@ -201,18 +205,18 @@ public class SquareScript : MonoBehaviour
     {
         List<SquareScript> list = new List<SquareScript>();
 
-        int range = 10;
-        var amountOfSquaresToCheck = range * 4;
+        int range = 16;
+        var amountOfSquaresToCheck = range * 8;
         var angleSlice = 360.0f / amountOfSquaresToCheck;
         for (float angle = 0; angle < 360; angle += angleSlice)
         {
-            list.AddRange(FindVisibleSquares(angle));
+            list.AddRange(FindVisibleSquares(angle, range));
         }
 
         return list;
     }
 
-    private IEnumerable<SquareScript> FindVisibleSquares(float angle)
+    private IEnumerable<SquareScript> FindVisibleSquares(float angle, int leftInRange)
     {
         var layerMask = 1 << LayerMask.NameToLayer("Ground");
 
@@ -220,18 +224,21 @@ public class SquareScript : MonoBehaviour
         var rayHits = Physics2D.RaycastAll(transform.position, new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)), layerMask);
         foreach (var rayHit in rayHits)
         {
-            yield return rayHit.collider.gameObject.GetComponent<SquareScript>();
-            if (Blocking(rayHit.collider.gameObject.GetComponent<SquareScript>()))
+            if(leftInRange > 0)
             {
-                yield break;
+                yield return rayHit.collider.gameObject.GetComponent<SquareScript>();
+                if (Blocking(rayHit.collider.gameObject.GetComponent<SquareScript>()))
+                {
+                    yield break;
+                }
             }
+            leftInRange--;
         }
     }
 
     private bool Blocking(SquareScript square)
     {
-        return square != null &&
-            square.TraversingCondition == Traversability.Blocking;
+        return square != null && square.Opacity == Opacity.Blocking;
     }
 
 	// Use this for initialization
@@ -248,12 +255,25 @@ public class SquareScript : MonoBehaviour
 
     }
 
-    void OnMouseOver()
+    void OnMouseEnter()
     {
-		s_squareMarker.transform.position = transform.position;
-        s_markedSquare = this;
+        if (OccupyingEntity != null && !(OccupyingEntity is PlayerEntity))
+        {
+            s_attackMarker.transform.position = transform.position;
+            s_markedSquare = this;
+        }
+        else if(TerrainType != TerrainType.Empty || OccupyingEntity != null || m_droppedLoot != null)
+        {
+            s_squareMarker.transform.position = transform.position;
+            s_markedSquare = this;
+        }
     }
 
+    void OnMouseExit()
+    {
+        s_squareMarker.transform.position = new Vector2(1000000, 1000000);
+        s_attackMarker.transform.position = new Vector2(1000000, 1000000);
+    }
     #endregion
 	
 }
@@ -265,42 +285,45 @@ public class TerrainType
 {
     private List<Sprite> m_sprites;
     public Traversability TraversingCondition { get; private set; }
+    public Opacity Opacity { get; private set; }
     public Sprite Sprite 
     {
         get { return m_sprites[UnityEngine.Random.Range(0, m_sprites.Count - 1)]; }
     }
 
-    public TerrainType(List<Sprite> sprites, Traversability traversingCondition)
+    public TerrainType(List<Sprite> sprites, Traversability traversingCondition, Opacity opacity)
     {
         m_sprites = sprites;
         TraversingCondition = traversingCondition;
+        Opacity = opacity;
     }
 
-    public TerrainType(Sprite sprite, Traversability traversingCondition)
+    public TerrainType(Sprite sprite, Traversability traversingCondition, Opacity opacity)
     {
         m_sprites = new List<Sprite>{sprite};
         TraversingCondition = traversingCondition;
+        Opacity = opacity;
     }
 
-    public static TerrainType Empty = new TerrainType( SpriteManager.Empty, Traversability.Walkable);
-    public static TerrainType Rock_Full = new TerrainType(new List<Sprite> { SpriteManager.Rock_Full1, SpriteManager.Rock_Full2, SpriteManager.Rock_Full3, SpriteManager.Rock_Full4 }, Traversability.Blocking);
-    public static TerrainType Rock_Bottom_Right_Corner= new TerrainType(SpriteManager.Rock_Bottom_Right_Corner, Traversability.Blocking);
-    public static TerrainType Rock_Bottom_Left_Corner= new TerrainType(SpriteManager.Rock_Bottom_Left_Corner, Traversability.Blocking);
-    public static TerrainType Rock_Top_Right_Corner= new TerrainType(SpriteManager.Rock_Top_Right_Corner, Traversability.Blocking);
-    public static TerrainType Rock_Top_Left_Corner= new TerrainType(SpriteManager.Rock_Top_Left_Corner, Traversability.Blocking);
-    public static TerrainType Rock_Side_Bottom= new TerrainType(SpriteManager.Rock_Side_Bottom, Traversability.Blocking);
-    public static TerrainType Rock_Side_Left= new TerrainType(SpriteManager.Rock_Side_Left, Traversability.Blocking);
-    public static TerrainType Rock_Side_Top= new TerrainType(SpriteManager.Rock_Side_Top, Traversability.Blocking);
-    public static TerrainType Rock_Side_Right= new TerrainType(SpriteManager.Rock_Side_Right, Traversability.Blocking);
-    public static TerrainType Rock_Crater= new TerrainType(SpriteManager.Rock_Crater, Traversability.Blocking);
-    public static TerrainType Rock_Crystal= new TerrainType(SpriteManager.Rock_Crystal, Traversability.Blocking);
-    public static TerrainType Spaceship_Top_Left= new TerrainType(SpriteManager.Spaceship_Top_Left, Traversability.Blocking);
-    public static TerrainType Spaceship_Top_Right= new TerrainType(SpriteManager.Spaceship_Top_Right, Traversability.Blocking);
-    public static TerrainType Spaceship_Bottom_Left= new TerrainType(SpriteManager.Spaceship_Bottom_Left, Traversability.Blocking);
-    public static TerrainType Spaceship_Bottom_Right= new TerrainType(SpriteManager.Spaceship_Bottom_Right, Traversability.Blocking);
-    public static TerrainType Fuel_Cell= new TerrainType(SpriteManager.Fuel_Cell, Traversability.Walkable);
-    public static TerrainType Tentacle_Monster= new TerrainType(SpriteManager.Tentacle_Monster, Traversability.Blocking);
-    public static TerrainType Astornaut= new TerrainType(SpriteManager.Astronaut_Front, Traversability.Blocking);	
+    public static TerrainType Empty = new TerrainType(SpriteManager.Empty, Traversability.Walkable, Opacity.SeeThrough);
+    public static TerrainType Rock_Full = new TerrainType(new List<Sprite> { SpriteManager.Rock_Full1, SpriteManager.Rock_Full2, SpriteManager.Rock_Full3, SpriteManager.Rock_Full4 }, Traversability.Blocking, Opacity.Blocking);
+    public static TerrainType Rock_Bottom_Right_Corner = new TerrainType(SpriteManager.Rock_Bottom_Right_Corner, Traversability.Blocking, Opacity.SeeThrough);
+    public static TerrainType Rock_Bottom_Left_Corner = new TerrainType(SpriteManager.Rock_Bottom_Left_Corner, Traversability.Blocking, Opacity.SeeThrough);
+    public static TerrainType Rock_Top_Right_Corner = new TerrainType(SpriteManager.Rock_Top_Right_Corner, Traversability.Blocking, Opacity.SeeThrough);
+    public static TerrainType Rock_Top_Left_Corner = new TerrainType(SpriteManager.Rock_Top_Left_Corner, Traversability.Blocking, Opacity.SeeThrough);
+    public static TerrainType Rock_Side_Bottom = new TerrainType(SpriteManager.Rock_Side_Bottom, Traversability.Blocking, Opacity.SeeThrough);
+    public static TerrainType Rock_Side_Left = new TerrainType(SpriteManager.Rock_Side_Left, Traversability.Blocking, Opacity.SeeThrough);
+    public static TerrainType Rock_Side_Top = new TerrainType(SpriteManager.Rock_Side_Top, Traversability.Blocking, Opacity.SeeThrough);
+    public static TerrainType Rock_Side_Right = new TerrainType(SpriteManager.Rock_Side_Right, Traversability.Blocking, Opacity.SeeThrough);
+    public static TerrainType Rock_Crater = new TerrainType(SpriteManager.Rock_Crater, Traversability.Blocking, Opacity.Blocking);
+    public static TerrainType Rock_Crystal = new TerrainType(SpriteManager.Rock_Crystal, Traversability.Blocking, Opacity.Blocking);
+    public static TerrainType Spaceship_Top_Left = new TerrainType(SpriteManager.Spaceship_Top_Left, Traversability.Blocking, Opacity.SeeThrough);
+    public static TerrainType Spaceship_Top_Right = new TerrainType(SpriteManager.Spaceship_Top_Right, Traversability.Blocking, Opacity.SeeThrough);
+    public static TerrainType Spaceship_Bottom_Left = new TerrainType(SpriteManager.Spaceship_Bottom_Left, Traversability.Blocking, Opacity.SeeThrough);
+    public static TerrainType Spaceship_Bottom_Right = new TerrainType(SpriteManager.Spaceship_Bottom_Right, Traversability.Blocking, Opacity.SeeThrough);
+    public static TerrainType Fuel_Cell = new TerrainType(SpriteManager.Fuel_Cell, Traversability.Walkable, Opacity.SeeThrough);
+    //public static TerrainType Tentacle_Monster= new TerrainType(SpriteManager.Tentacle_Monster, Traversability.Blocking);
+    //public static TerrainType Astornaut= new TerrainType(SpriteManager.Astronaut_Front, Traversability.Blocking);	
 }
 #endregion
 
@@ -337,6 +360,15 @@ public class SpriteManager
 	public static Sprite Spaceship_Bottom_Left = GetSprite("Terrain_16");
 	public static Sprite Spaceship_Bottom_Right = GetSprite("Terrain_17");
     public static Sprite Rock_Crystal = GetSprite("Terrain_18");
+    public static Sprite Fog_Full = GetSprite("Terrain_19");
+    public static Sprite Fog_Side_Right = GetSprite("Terrain_20");
+    public static Sprite Fog_Side_Bottom = GetSprite("Terrain_21");
+    public static Sprite Fog_Side_Left = GetSprite("Terrain_22");
+    public static Sprite Fog_Side_Top = GetSprite("Terrain_23");
+    public static Sprite Fog_Top_Right_Corner = GetSprite("Terrain_24");
+    public static Sprite Fog_Bottom_Right_Corner = GetSprite("Terrain_25");
+    public static Sprite Fog_Bottom_Left_Corner = GetSprite("Terrain_26");
+    public static Sprite Fog_Top_Left_Corner = GetSprite("Terrain_27");
 	public static Sprite Fuel_Cell = GetSprite("Entities_0");
 	public static Sprite Tentacle_Monster = GetSprite("Entities_1");	
 	public static Sprite Astronaut_Right = GetSprite("Entities_2");
