@@ -6,6 +6,7 @@ using UnityEngine;
 
 public enum Traversability { Walkable, Flyable, Blocking }
 public enum Opacity { Blocking, SeeThrough}
+public enum FogCoverType {None, Partial, Full}
 
 #region SquareScript
 public class SquareScript : MonoBehaviour
@@ -17,6 +18,7 @@ public class SquareScript : MonoBehaviour
     private Loot m_droppedLoot;
     private SpriteRenderer m_fogOfWar;
     private TerrainType m_terrainType;
+    private FogOfWarType m_fogOfWarType;
     private static SpriteRenderer s_squareMarker;
     private static SpriteRenderer s_attackMarker;
     public static SquareScript s_markedSquare;
@@ -38,8 +40,41 @@ public class SquareScript : MonoBehaviour
         set
         {
             m_terrainType = value;
-            var sr = gameObject.GetComponent<SpriteRenderer>();
-            sr.sprite = value.Sprite;
+            gameObject.GetComponent<SpriteRenderer>().sprite = value.Sprite;
+        }
+    }
+
+    public FogOfWarType FogOfWarType
+    {
+        get
+        {
+            return m_fogOfWarType;
+        }
+        set
+        {
+            m_fogOfWarType = value;
+            m_fogOfWar.sprite = value.Sprite;
+        }
+    }
+
+    public bool Visible
+    {
+        get
+        {
+            return !m_fogOfWar.enabled;
+        }
+        private set
+        {
+            m_fogOfWar.enabled = !value;
+            if (OccupyingEntity != null)
+            {
+                OccupyingEntity.Image.enabled = value;
+                OccupyingEntity.SetActive(value);
+            }
+            if (LootRenderer != null)
+            {
+                LootRenderer.enabled = value;
+            }
         }
     }
 
@@ -47,6 +82,7 @@ public class SquareScript : MonoBehaviour
 
     public Opacity Opacity { get { return TerrainType.Opacity; } }
 
+    public FogCoverType TileFogCoverType { get { return FogOfWarType.FogCoverType; } }
     #endregion
 
     #region public methods
@@ -56,7 +92,8 @@ public class SquareScript : MonoBehaviour
         m_fogOfWar = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("FogOfWar"),
                                                                      transform.position,
                                                                  Quaternion.identity)).GetComponent<SpriteRenderer>();
-        m_fogOfWar.enabled = false;
+        FogOfWarType = FogOfWarType.Full;
+        Visible = true;
     }
 
     public static void LoadFromTMX(string filename)
@@ -174,12 +211,51 @@ public class SquareScript : MonoBehaviour
     {
         foreach (SquareScript tempSquare in s_map)
         {
-            tempSquare.Visible(false);
+            tempSquare.Visible = false;
         }
 
-        foreach (var tempSquare in SeenFrom())
+        var seen = SeenFrom();
+        foreach (var tempSquare in seen)
         {
-            tempSquare.Visible(true);
+            tempSquare.Visible = true;
+        }
+
+        // Go over all fog covered tiles and fix fog in corners
+        foreach (SquareScript tempSquare in s_map)
+        {
+            if(!seen.Contains(tempSquare))
+            {
+                var upperTileHasFow = tempSquare.GetNextSquare(0, -1).m_fogOfWar.enabled;
+                var lowerTileHasFow = tempSquare.GetNextSquare(0, 1).m_fogOfWar.enabled;
+                var leftTileHasFow = tempSquare.GetNextSquare(-1, 0).m_fogOfWar.enabled;
+                var rightTileHasFow = tempSquare.GetNextSquare(1, 0).m_fogOfWar.enabled;
+
+                if (!leftTileHasFow && !lowerTileHasFow && rightTileHasFow && upperTileHasFow) tempSquare.FogOfWarType = FogOfWarType.Top_Right_Corner;
+                else if (leftTileHasFow && !lowerTileHasFow && !rightTileHasFow && upperTileHasFow) tempSquare.FogOfWarType = FogOfWarType.Top_Left_Corner;
+                else if (leftTileHasFow && lowerTileHasFow && !rightTileHasFow && !upperTileHasFow) tempSquare.FogOfWarType = FogOfWarType.Bottom_Left_Corner;
+                else if (!leftTileHasFow && lowerTileHasFow && rightTileHasFow && !upperTileHasFow) tempSquare.FogOfWarType = FogOfWarType.Bottom_Right_Corner;
+                else tempSquare.FogOfWarType = FogOfWarType.Full;
+            }
+        }
+
+        // Go over all visible tiles and cover corners
+        var soonToBeInvisible = new List<SquareScript>();
+        foreach (SquareScript tempSquare in seen)
+        {
+            var upperTileHasFow = !tempSquare.GetNextSquare(0, -1).Visible && tempSquare.GetNextSquare(0, -1).TileFogCoverType == FogCoverType.Full;
+            var lowerTileHasFow = !tempSquare.GetNextSquare(0, 1).Visible && tempSquare.GetNextSquare(0, 1).TileFogCoverType == FogCoverType.Full;
+            var leftTileHasFow = !tempSquare.GetNextSquare(-1, 0).Visible && tempSquare.GetNextSquare(-1, 0).TileFogCoverType == FogCoverType.Full;
+            var rightTileHasFow = !tempSquare.GetNextSquare(1, 0).Visible && tempSquare.GetNextSquare(1, 0).TileFogCoverType == FogCoverType.Full;
+
+            if (!leftTileHasFow && !lowerTileHasFow && rightTileHasFow && upperTileHasFow) { tempSquare.m_fogOfWar.sprite = SpriteManager.Fog_Top_Right_Corner; soonToBeInvisible.Add(tempSquare); }
+            else if (leftTileHasFow && !lowerTileHasFow && !rightTileHasFow && upperTileHasFow) { tempSquare.m_fogOfWar.sprite = SpriteManager.Fog_Top_Left_Corner; soonToBeInvisible.Add(tempSquare); }
+            else if (leftTileHasFow && lowerTileHasFow && !rightTileHasFow && !upperTileHasFow) { tempSquare.m_fogOfWar.sprite = SpriteManager.Fog_Bottom_Left_Corner; soonToBeInvisible.Add(tempSquare); }
+            else if (!leftTileHasFow && lowerTileHasFow && rightTileHasFow && !upperTileHasFow) { tempSquare.m_fogOfWar.sprite = SpriteManager.Fog_Bottom_Right_Corner; soonToBeInvisible.Add(tempSquare); }
+        }
+
+        foreach (SquareScript tempSquare in soonToBeInvisible)
+        {
+            tempSquare.Visible = false;
         }
     }
 
@@ -187,25 +263,11 @@ public class SquareScript : MonoBehaviour
 
     #region private methods
 
-    private void Visible(bool visible)
-    {
-        m_fogOfWar.enabled = !visible;
-        if (OccupyingEntity != null)
-        {
-            OccupyingEntity.Image.enabled = visible;
-            OccupyingEntity.SetActive(visible);
-        }
-        if (LootRenderer != null)
-        {
-            LootRenderer.enabled = visible;
-        }
-    }
-
     private IEnumerable<SquareScript> SeenFrom()
     {
         List<SquareScript> list = new List<SquareScript>();
 
-        int range = 16;
+        int range = 32;
         var amountOfSquaresToCheck = range * 8;
         var angleSlice = 360.0f / amountOfSquaresToCheck;
         for (float angle = 0; angle < 360; angle += angleSlice)
@@ -325,6 +387,28 @@ public class TerrainType
     public static TerrainType Fuel_Cell = new TerrainType(SpriteManager.Fuel_Cell, Traversability.Walkable, Opacity.SeeThrough);
     //public static TerrainType Tentacle_Monster= new TerrainType(SpriteManager.Tentacle_Monster, Traversability.Blocking);
     //public static TerrainType Astornaut= new TerrainType(SpriteManager.Astronaut_Front, Traversability.Blocking);	
+}
+
+#endregion TerrainType
+
+#region FogOfWarType
+
+public class FogOfWarType
+{
+    public FogCoverType FogCoverType { get; private set; }
+    public Sprite Sprite {get; private set;}
+    public FogOfWarType(Sprite sprite, FogCoverType fogCoverType)
+    {
+        Sprite = sprite;
+        FogCoverType = fogCoverType;
+    }
+
+    public static FogOfWarType None = new FogOfWarType(SpriteManager.Empty, FogCoverType.None);
+    public static FogOfWarType Full = new FogOfWarType(SpriteManager.Fog_Full, FogCoverType.Full);
+    public static FogOfWarType Bottom_Right_Corner = new FogOfWarType(SpriteManager.Fog_Bottom_Right_Corner, FogCoverType.Partial);
+    public static FogOfWarType Bottom_Left_Corner = new FogOfWarType(SpriteManager.Fog_Bottom_Left_Corner, FogCoverType.Partial);
+    public static FogOfWarType Top_Right_Corner = new FogOfWarType(SpriteManager.Fog_Top_Right_Corner, FogCoverType.Partial);
+    public static FogOfWarType Top_Left_Corner = new FogOfWarType(SpriteManager.Fog_Top_Left_Corner, FogCoverType.Partial);
 }
 
 #endregion TerrainType
