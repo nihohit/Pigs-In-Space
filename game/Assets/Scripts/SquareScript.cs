@@ -465,6 +465,9 @@ public class SpriteManager
     public static Sprite Blueish_Marker = GetSprite("Markers_1");
     public static Sprite Green_Marker = GetSprite("Markers_2");
     public static Sprite Tentacle_Marker = GetSprite("Markers_3");
+    public static Sprite CardiacIcon = GetSprite("Markers_4");
+    public static Sprite LightningIcon = GetSprite("Markers_5");
+    public static Sprite OxygenTank = GetSprite("Markers_6");
 }
 
 #endregion SpriteManager

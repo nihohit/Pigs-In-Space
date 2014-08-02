@@ -12,6 +12,15 @@ public class MapSceneScript : MonoBehaviour
     private Vector2 CameraMin = new Vector2(0f, 0f);        // The minimum x and y coordinates the camera can have.
     private static Dictionary<Action, Marker> s_Markers = new Dictionary<Action, Marker>();
     private static GameState s_gameState = GameState.Ongoing;
+    private static GUIStyle s_guiStyle = new GUIStyle
+    {
+        fontStyle = FontStyle.Bold,
+        fontSize = 12,
+        normal = new GUIStyleState
+        {
+            textColor = Color.white,
+        },
+    };
 
     public static void ChangeGameState(GameState state)
     {
@@ -20,7 +29,7 @@ public class MapSceneScript : MonoBehaviour
     
     public void Awake()
     {
-        camera.orthographicSize = (Screen.height / 64f / 2.0f); 
+        camera.orthographicSize = (Screen.height / 100f); 
     }
 
     // Use this for initialization
@@ -55,21 +64,13 @@ public class MapSceneScript : MonoBehaviour
         {
             GUI.BeginGroup(new Rect(320, 265, 384, 256));
             GUI.DrawTexture(new Rect(0, 0, 384, 256), Resources.Load<Texture2D>(@"Sprites/WinLoseMessage"), ScaleMode.StretchToFill);
-            var style = new GUIStyle
-            {
-                fontStyle = FontStyle.Bold,
-                fontSize = 32,
-                normal = new GUIStyleState
-                {
-                    textColor = Color.white,
-                },
-            };
+            s_guiStyle.fontSize = 32;
             var message = (s_gameState == GameState.Lost) ? "Game Over" : "You Win :)";
-            GUI.Label(new Rect(110, 45, 60, 60), message, style);
-            style.fontSize = 12;
-            GUI.Label(new Rect(176, 127, 30, 30), String.Format("X {0}", (int)Entity.Player.BlueCrystal), style);
-            GUI.Label(new Rect(176, 165, 30, 30), String.Format("X {0}", EnemyEntity.KilledEnemies), style);
-            GUI.Label(new Rect(176, 205, 30, 30), String.Format("X {0}", (int)Hive.KilledHives), style);
+            GUI.Label(new Rect(110, 45, 60, 60), message, s_guiStyle);
+            s_guiStyle.fontSize = 12;
+            GUI.Label(new Rect(176, 127, 30, 30), String.Format("X {0}", (int)Entity.Player.BlueCrystal), s_guiStyle);
+            GUI.Label(new Rect(176, 165, 30, 30), String.Format("X {0}", EnemyEntity.KilledEnemies), s_guiStyle);
+            GUI.Label(new Rect(176, 205, 30, 30), String.Format("X {0}", (int)Hive.KilledHives), s_guiStyle);
             GUI.EndGroup();
             //// Make the second button.
             //if (GUI.Button(new Rect(20, 70, 80, 20), "Level 2"))
@@ -77,6 +78,44 @@ public class MapSceneScript : MonoBehaviour
             //    Application.LoadLevel(2);
             //}
         }
+
+        //if(Entity.Player != null)
+        //{
+        //    GUI.BeginGroup(new Rect(896, 0, 128, 768));
+        //    //GUI.DrawTexture(new Rect(0, 0, 128, 768), Resources.Load<Texture2D>(@"Sprites/PlayerStateDisplay"), ScaleMode.StretchToFill);
+        //    DrawSpriteToGUI(SpriteManager.CardiacIcon, new Rect(16, 32, 32, 32));
+        //    GUI.Label(new Rect(56, 40, 30, 30), String.Format("X {0}", (int)Entity.Player.Health), s_guiStyle);
+        //    DrawSpriteToGUI(SpriteManager.LightningIcon, new Rect(16, 96, 32, 32));
+        //    GUI.Label(new Rect(56, 106, 30, 30), String.Format("X {0}", (int)Entity.Player.Energy), s_guiStyle);
+        //    DrawSpriteToGUI(SpriteManager.OxygenTank, new Rect(16, 160, 32, 32));
+        //    GUI.Label(new Rect(56, 170, 30, 30), String.Format("X {0}", (int)Entity.Player.Oxygen), s_guiStyle);
+        //    DrawSpriteToGUI(SpriteManager.Crystal, new Rect(16, 224, 32, 32));
+        //    GUI.Label(new Rect(56, 234, 30, 30), String.Format("X {0}", (int)Entity.Player.BlueCrystal), s_guiStyle);
+        //    GUI.EndGroup();
+        //}
+
+        if (Entity.Player != null)
+        {
+            GUI.BeginGroup(new Rect(640, 0, 384, 64));
+            //GUI.DrawTexture(new Rect(0, 0, 128, 768), Resources.Load<Texture2D>(@"Sprites/PlayerStateDisplay"), ScaleMode.StretchToFill);
+            DrawSpriteToGUI(SpriteManager.CardiacIcon, new Rect(16, 16, 32, 32));
+            GUI.Label(new Rect(52, 24, 30, 30), String.Format("X {0}", (int)Entity.Player.Health), s_guiStyle);
+            DrawSpriteToGUI(SpriteManager.LightningIcon, new Rect(104, 16, 32, 32));
+            GUI.Label(new Rect(140, 24, 30, 30), String.Format("X {0}", (int)Entity.Player.Energy), s_guiStyle);
+            DrawSpriteToGUI(SpriteManager.OxygenTank, new Rect(192, 16, 32, 32));
+            GUI.Label(new Rect(228, 24, 30, 30), String.Format("X {0}", (int)Entity.Player.Oxygen), s_guiStyle);
+            DrawSpriteToGUI(SpriteManager.Crystal, new Rect(280, 16, 32, 32));
+            GUI.Label(new Rect(316, 24, 30, 30), String.Format("X {0}", (int)Entity.Player.BlueCrystal), s_guiStyle);
+            GUI.EndGroup();
+        }
+    }
+
+    private void DrawSpriteToGUI(Sprite sprite, Rect position)
+    {
+        Texture t = sprite.texture;
+        Rect tr = sprite.textureRect;
+        Rect r = new Rect(tr.x / t.width, tr.y / t.height, tr.width / t.width, tr.height / t.height);
+        GUI.DrawTextureWithTexCoords(position, t, r);
     }
 
     private IEnumerator PlayerAction()
@@ -127,15 +166,6 @@ public class MapSceneScript : MonoBehaviour
         {
             Entity.Player.MineAsteroid();
         }
-    }
-
-    public void UpdatePlayerState(string updatedProperty, double updatedValue)
-    {
-        var doubleToString = string.Format("{0:N1}", updatedValue);
-        var guiText = GameObject.Find(updatedProperty).GetComponent<GUIText>();
-        guiText.text = "{0}:{1}".FormatWith(updatedProperty, doubleToString);
-        guiText = GameObject.Find("{0}Shadow".FormatWith(updatedProperty)).GetComponent<GUIText>();
-        guiText.text = "{0}:{1}".FormatWith(updatedProperty, doubleToString);
     }
 
     private void CameraTrackPlayer()

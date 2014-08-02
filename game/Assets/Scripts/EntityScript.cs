@@ -234,7 +234,6 @@ public class PlayerEntity : AttackingEntity
     {
         Energy = energy;
         Oxygen = oxygen;
-        UpdateUI();
         m_playerActionTimer = new Stopwatch();
         m_playerActionTimer.Start();
     }
@@ -262,7 +261,6 @@ public class PlayerEntity : AttackingEntity
     public override void Damage(double damage)
     {
         base.Damage(damage);
-        UpdateUI("Health", Health);
     }
 
     public bool ShootLaser(Vector3 mousePosition)
@@ -312,7 +310,6 @@ public class PlayerEntity : AttackingEntity
         }
         Energy++;
         Energy = Math.Min(Energy, m_maxEnergy);
-        UpdateUI();
         m_playerActionTimer.Start();
     }
 
@@ -360,20 +357,6 @@ public class PlayerEntity : AttackingEntity
                 MapSceneScript.EnterEscapeMode();
             }
         }
-        UpdateUI("Blue Crystals", BlueCrystal);
-    }
-
-    private void UpdateUI()
-    {
-        UpdateUI("Health", Health);
-        UpdateUI("Oxygen", Oxygen);
-        UpdateUI("Energy", Energy);
-        UpdateUI("Blue Crystals", BlueCrystal);
-    }
-
-    private void UpdateUI(string updatedProperty, double updatedValue)
-    {
-        Camera.main.GetComponent<MapSceneScript>().UpdatePlayerState(updatedProperty, updatedValue);
     }
 
     #endregion private methods
