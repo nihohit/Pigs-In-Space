@@ -278,8 +278,7 @@ public class PlayerEntity : AttackingEntity
         var laser = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("laser"), Player.Location.transform.position, Quaternion.identity));
         var laserScript = laser.GetComponent<LaserScript>();
         ////Aim to mouse
-        var destination = SquareScript.s_markedSquare.getWorldLocation();
-        laserScript.Init(destination, Player.Location.transform.position, "Laser shot", MinDamage, MaxDamage);
+        laserScript.Init(SquareScript.s_markedSquare, Player.Location, "Laser shot", MinDamage, MaxDamage);
         return true;
     }
 
