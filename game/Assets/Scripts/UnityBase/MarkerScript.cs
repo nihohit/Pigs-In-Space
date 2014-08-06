@@ -21,6 +21,18 @@ namespace Assets.scripts.UnityBase
 
         public SpriteRenderer Renderer { get { return gameObject.GetComponent<SpriteRenderer>(); } }
 
+        public void Visible(bool visible)
+        {
+            if(visible)
+            {
+                Mark();
+            }
+            else
+            {
+                Unmark();
+            }
+        }
+
         // Displays the sprite at the given location.
         public virtual void Mark(Vector3 position)
         {

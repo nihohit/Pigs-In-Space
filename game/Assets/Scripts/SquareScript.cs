@@ -16,10 +16,10 @@ public class SquareScript : MonoBehaviour
     private static SquareScript[,] s_map;
     private int m_x, m_y;
     private Loot m_droppedLoot;
-    private SpriteRenderer m_fogOfWar;
+    private IUnityMarker m_fogOfWar;
     private TerrainType m_terrainType;
-    private static SpriteRenderer s_squareMarker;
-    private static SpriteRenderer s_attackMarker;
+    private static IUnityMarker s_squareMarker;
+    private static IUnityMarker s_attackMarker;
     public static SquareScript s_markedSquare;
 
     #endregion fields
@@ -28,7 +28,7 @@ public class SquareScript : MonoBehaviour
 
     public Entity OccupyingEntity { get; set; }
 
-    public IUnityMarker LootRenderer { get; private set; }
+    public IUnityMarker LootMarker { get; private set; }
 
     public TerrainType TerrainType
     {
@@ -56,14 +56,14 @@ public class SquareScript : MonoBehaviour
     {
         m_fogOfWar = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("FogOfWar"),
                                                                      transform.position,
-                                                                 Quaternion.identity)).GetComponent<SpriteRenderer>();
-        m_fogOfWar.enabled = false;
+                                                                 Quaternion.identity)).GetComponent<MarkerScript>();
+        m_fogOfWar.Unmark();
     }
 
     public static void LoadFromTMX(string filename)
     {
-        s_squareMarker = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("squareSelectionBox"), new Vector2(1000000, 1000000), Quaternion.identity)).GetComponent<SpriteRenderer>();
-        s_attackMarker = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("AttackMark"), new Vector2(1000000, 1000000), Quaternion.identity)).GetComponent<SpriteRenderer>();
+        s_squareMarker = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("squareSelectionBox"), new Vector2(1000000, 1000000), Quaternion.identity)).GetComponent<MarkerScript>();
+        s_attackMarker = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("AttackMark"), new Vector2(1000000, 1000000), Quaternion.identity)).GetComponent<MarkerScript>();
 
         var root = new XmlDocument();
         root.Load(filename);
@@ -95,7 +95,7 @@ public class SquareScript : MonoBehaviour
         {
             m_droppedLoot = loot;
             var prefabName = (m_droppedLoot.FuelCell) ? "FuelCell" : "Crystals";
-            LootRenderer = ((GameObject)MonoBehaviour.Instantiate(Resources.Load(prefabName),
+            LootMarker = ((GameObject)MonoBehaviour.Instantiate(Resources.Load(prefabName),
                                                                      transform.position,
                                                                  Quaternion.identity)).GetComponent<MarkerScript>();
         }
@@ -154,8 +154,8 @@ public class SquareScript : MonoBehaviour
 
         var loot = m_droppedLoot;
         m_droppedLoot = null;
-        LootRenderer.DestroyGameObject();
-        LootRenderer = null;
+        LootMarker.DestroyGameObject();
+        LootMarker = null;
         return loot;
     }
 
@@ -190,29 +190,15 @@ public class SquareScript : MonoBehaviour
 
     private void Visible(bool visible)
     {
-        m_fogOfWar.enabled = !visible;
+        m_fogOfWar.Visible(!visible);
         if (OccupyingEntity != null)
         {
-            if(visible)
-            {
-                OccupyingEntity.Image.Mark();
-            }
-            else
-            {
-                OccupyingEntity.Image.Unmark();
-            }
+            OccupyingEntity.Image.Visible(visible);
             OccupyingEntity.SetActive(visible);
         }
-        if (LootRenderer != null)
+        if (LootMarker != null)
         {
-            if (visible)
-            {
-                LootRenderer.Mark();
-            }
-            else
-            {
-                LootRenderer.Unmark();
-            }
+            LootMarker.Visible(visible);
         }
     }
 
@@ -273,20 +259,20 @@ public class SquareScript : MonoBehaviour
     {
         if (OccupyingEntity != null && !(OccupyingEntity is PlayerEntity))
         {
-            s_attackMarker.transform.position = transform.position;
+            s_attackMarker.Position = transform.position;
             s_markedSquare = this;
         }
         else
         {
-            s_squareMarker.transform.position = transform.position;
+            s_squareMarker.Position = transform.position;
             s_markedSquare = this;
         }
     }
 
     private void OnMouseExit()
     {
-        s_squareMarker.transform.position = new Vector2(1000000, 1000000);
-        s_attackMarker.transform.position = new Vector2(1000000, 1000000);
+        s_squareMarker.Position = new Vector2(1000000, 1000000);
+        s_attackMarker.Position = new Vector2(1000000, 1000000);
     }
 
     #endregion Private methods

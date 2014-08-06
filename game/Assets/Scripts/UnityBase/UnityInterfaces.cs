@@ -13,6 +13,8 @@ namespace Assets.scripts.UnityBase
 
         void Unmark();
 
+        void Visible(bool visible);
+
         void DestroyGameObject();
 
         Vector3 Position { get; set; }
