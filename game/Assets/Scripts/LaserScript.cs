@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using Assets.scripts.UnityBase;
 
 /// <summary>
 ///  Script wrapper for shots moving across the screen

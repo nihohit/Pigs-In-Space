@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
 using UnityEngine;
+using Assets.scripts.UnityBase;
 
 public enum Traversability { Walkable, Flyable, Blocking }
 public enum Opacity { Blocking, SeeThrough}
@@ -27,7 +28,7 @@ public class SquareScript : MonoBehaviour
 
     public Entity OccupyingEntity { get; set; }
 
-    public SpriteRenderer LootRenderer { get; private set; }
+    public IUnityMarker LootRenderer { get; private set; }
 
     public TerrainType TerrainType
     {
@@ -79,7 +80,6 @@ public class SquareScript : MonoBehaviour
         {
             for (int i = 0; i < mapWidth; i++)
             {
-                Debug.Log(i + " , " + j);
                 TmxManager.HandleTerrain(terrain[j * mapWidth + i], i, j, currentPosition);
                 TmxManager.HandleEntity(entities[j * mapWidth + i], i, j);
                 TmxManager.HandleMarker(markers[j * mapWidth + i], i, j);
@@ -97,7 +97,7 @@ public class SquareScript : MonoBehaviour
             var prefabName = (m_droppedLoot.FuelCell) ? "FuelCell" : "Crystals";
             LootRenderer = ((GameObject)MonoBehaviour.Instantiate(Resources.Load(prefabName),
                                                                      transform.position,
-                                                                 Quaternion.identity)).GetComponent<SpriteRenderer>();
+                                                                 Quaternion.identity)).GetComponent<MarkerScript>();
         }
         else
         {
@@ -154,7 +154,8 @@ public class SquareScript : MonoBehaviour
 
         var loot = m_droppedLoot;
         m_droppedLoot = null;
-        GameObject.Destroy(LootRenderer.gameObject);
+        LootRenderer.DestroyGameObject();
+        LootRenderer = null;
         return loot;
     }
 
@@ -192,12 +193,26 @@ public class SquareScript : MonoBehaviour
         m_fogOfWar.enabled = !visible;
         if (OccupyingEntity != null)
         {
-            OccupyingEntity.Image.enabled = visible;
+            if(visible)
+            {
+                OccupyingEntity.Image.Mark();
+            }
+            else
+            {
+                OccupyingEntity.Image.Unmark();
+            }
             OccupyingEntity.SetActive(visible);
         }
         if (LootRenderer != null)
         {
-            LootRenderer.enabled = visible;
+            if (visible)
+            {
+                LootRenderer.Mark();
+            }
+            else
+            {
+                LootRenderer.Unmark();
+            }
         }
     }
 
