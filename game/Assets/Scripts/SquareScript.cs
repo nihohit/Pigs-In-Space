@@ -276,7 +276,7 @@ public class SquareScript : MonoBehaviour
             s_attackMarker.transform.position = transform.position;
             s_markedSquare = this;
         }
-        else if(TerrainType != TerrainType.Empty || OccupyingEntity != null || m_droppedLoot != null)
+        else
         {
             s_squareMarker.transform.position = transform.position;
             s_markedSquare = this;

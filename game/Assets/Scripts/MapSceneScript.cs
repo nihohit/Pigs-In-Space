@@ -114,10 +114,7 @@ public class MapSceneScript : MonoBehaviour
         { // left click
             //Get Mouse direction, let's assume it's right for now
             //create laser object
-
-            var destination = Input.mousePosition;
-
-            if (Entity.Player.ShootLaser(destination))
+            if (Entity.Player.ShootLaser())
             {
                 yield return new WaitForSeconds(0.25f);
                 Entity.Player.EndTurn();

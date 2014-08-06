@@ -268,7 +268,7 @@ public class PlayerEntity : AttackingEntity
         UpdateUI("Health", Health);
     }
 
-    public bool ShootLaser(Vector3 mousePosition)
+    public bool ShootLaser()
     {
         if (Energy < 2)
         {
@@ -278,10 +278,6 @@ public class PlayerEntity : AttackingEntity
         var laser = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("laser"), Player.Location.transform.position, Quaternion.identity));
         var laserScript = laser.GetComponent<LaserScript>();
         ////Aim to mouse
-        //var MousePos = Input.mousePosition;
-        //var translatedPosition = Camera.main.ScreenToWorldPoint(MousePos);
-        //var destination = new Vector2(translatedPosition.x, translatedPosition.y);
-        //Aim to center of marked tile
         var destination = SquareScript.s_markedSquare.getWorldLocation();
         laserScript.Init(destination, Player.Location.transform.position, "Laser shot", MinDamage, MaxDamage);
         return true;
