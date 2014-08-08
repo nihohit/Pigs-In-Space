@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Linq;
 using Assets.scripts.Base;
 using Assets.scripts.UnityBase;
+using Assets.Scripts.LogicBase;
 using UnityEngine;
 
 public enum MovementType { Walking, Flying }

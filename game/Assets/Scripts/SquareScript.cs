@@ -4,6 +4,7 @@ using System.Linq;
 using System.Xml;
 using UnityEngine;
 using Assets.scripts.UnityBase;
+using Assets.Scripts.LogicBase;
 
 public enum Traversability { Walkable, Flyable, Blocking }
 public enum Opacity { Blocking, SeeThrough}
