@@ -479,7 +479,7 @@ public class Hive : Entity, IHostileEntity
 
     private SquareScript ChooseRandomFreeSquare()
     {
-        return Location.GetNeighbours().Where(square => square.TraversingCondition == Traversability.Walkable && square.OccupyingEntity == null).ChooseRandomMember();
+        return Location.GetNeighbours().Where(square => square.TraversingCondition == Traversability.Walkable && square.OccupyingEntity == null).ChooseRandomValue();
     }
 }
 

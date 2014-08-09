@@ -45,21 +45,6 @@ namespace Assets.scripts.Base
             return (float)Math.PI * degrees / 180;
         }
 
-        public static T ChooseRandomMember<T>(this IEnumerable<T> list)
-        {
-            var totalCount = list.Count();
-            double currentChecked = 0.0;
-            foreach (var member in list)
-            {
-                currentChecked++;
-                if (Randomiser.ProbabilityCheck(currentChecked / totalCount))
-                {
-                    return member;
-                }
-            }
-            return default(T);
-        }
-
         #region timing
 
         public static void StartTiming(this IIdentifiable timer, string operation)
