@@ -21,6 +21,7 @@ public class MapSceneScript : MonoBehaviour
             textColor = Color.white,
         },
     };
+    public const float UnitsToPixelsRatio = 1f / 100f;
 
     public static void ChangeGameState(GameState state)
     {
@@ -29,7 +30,7 @@ public class MapSceneScript : MonoBehaviour
     
     public void Awake()
     {
-        camera.orthographicSize = (Screen.height / 100f); 
+        camera.orthographicSize = (Screen.height * UnitsToPixelsRatio);
     }
 
     // Use this for initialization
@@ -38,12 +39,28 @@ public class MapSceneScript : MonoBehaviour
         SquareScript.LoadFromTMX(@"Maps\testMap3.tmx");
         Entity.Player = Entity.CreatePlayerEntity(5, 5);
 
-        var minCameraX = 0f - 0.64f / 2 + camera.orthographicSize * camera.aspect;
-        var minCameraY = 0f - 0.64f / 2 + camera.orthographicSize;
-        var maxCameraX = minCameraX + 0.64f * SquareScript.Weidth() - 2 * camera.orthographicSize * camera.aspect;
-        var maxCameraY = minCameraY + 0.64f * SquareScript.Height() - 2 * camera.orthographicSize;
+        var squareSize = SquareScript.PixelsPerSquare * MapSceneScript.UnitsToPixelsRatio; // 1f
+        
+        var minCameraX = 0f - squareSize / 2 + camera.orthographicSize * camera.aspect;
+        var maxCameraX = minCameraX + squareSize * SquareScript.Weidth() - 2 * camera.orthographicSize * camera.aspect;
+        if(maxCameraX < minCameraX)
+        {
+            // camera not moving in x axis
+            maxCameraX = minCameraX = (maxCameraX + minCameraX) / 2;
+        }
+
+        var minCameraY = 0f - squareSize / 2 + camera.orthographicSize;
+        var maxCameraY = minCameraY + squareSize * SquareScript.Height() - 2 * camera.orthographicSize;
+        if (maxCameraY < minCameraY)
+        {
+            // camera not moving in y axis
+            maxCameraY = minCameraY = (maxCameraY + minCameraY) / 2;
+        }
+
         CameraMin = new Vector2(minCameraX, minCameraY);
         CameraMax = new Vector2(maxCameraX, maxCameraY);
+
+        SquareScript.InitFog();
         Entity.Player.Location.FogOfWar();
 
     }
@@ -96,7 +113,7 @@ public class MapSceneScript : MonoBehaviour
 
         if (Entity.Player != null)
         {
-            GUI.BeginGroup(new Rect(640, 0, 384, 64));
+            GUI.BeginGroup(new Rect(Screen.width - 384, 0, 384, 64));
             //GUI.DrawTexture(new Rect(0, 0, 128, 768), Resources.Load<Texture2D>(@"Sprites/PlayerStateDisplay"), ScaleMode.StretchToFill);
             DrawSpriteToGUI(SpriteManager.CardiacIcon, new Rect(16, 16, 32, 32));
             GUI.Label(new Rect(52, 24, 30, 30), String.Format("X {0}", (int)Entity.Player.Health), s_guiStyle);
@@ -183,11 +200,13 @@ public class MapSceneScript : MonoBehaviour
         // ... the target x coordinate should be a Lerp between the camera's current x position and the player's current x position.
         targetX = Mathf.Lerp(transform.position.x, playerTransform.position.x, xSmooth * Time.deltaTime);
 
+        // The target x coordinates should not be larger than the maximum or smaller than the minimum.
+        targetX = Mathf.Clamp(targetX, CameraMin.x, CameraMax.x);
+
         // ... the target y coordinate should be a Lerp between the camera's current y position and the player's current y position.
         targetY = Mathf.Lerp(transform.position.y, playerTransform.position.y, ySmooth * Time.deltaTime);
 
-        // The target x and y coordinates should not be larger than the maximum or smaller than the minimum.
-        targetX = Mathf.Clamp(targetX, CameraMin.x, CameraMax.x);
+        // The target y coordinates should not be larger than the maximum or smaller than the minimum.
         targetY = Mathf.Clamp(targetY, CameraMin.y, CameraMax.y);
 
         // Set the camera's position to the target position with the same z component.

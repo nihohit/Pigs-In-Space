@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Xml;
+using System.Xml.Serialization;
 using UnityEngine;
 
 public enum Traversability { Walkable, Flyable, Blocking }
@@ -22,7 +25,7 @@ public class SquareScript : MonoBehaviour
     private static SpriteRenderer s_squareMarker;
     private static SpriteRenderer s_attackMarker;
     public static SquareScript s_markedSquare;
-
+    public const int PixelsPerSquare = 64;
     #endregion fields
 
     #region properties
@@ -83,6 +86,7 @@ public class SquareScript : MonoBehaviour
     public Opacity Opacity { get { return TerrainType.Opacity; } }
 
     public FogCoverType TileFogCoverType { get { return FogOfWarType.FogCoverType; } }
+
     #endregion
 
     #region public methods
@@ -110,13 +114,12 @@ public class SquareScript : MonoBehaviour
         var markers = root.SelectNodes(@"map/layer[@name='Markers']/data/tile").Cast<XmlNode>().Select(node => node.Attributes["gid"].Value).ToList();
 
         s_map = new SquareScript[mapWidth, mapHeight];
-        var squareSize = 0.64f;
+        var squareSize = PixelsPerSquare * MapSceneScript.UnitsToPixelsRatio; // 1f
         var currentPosition = Vector3.zero;
         for (int j = mapHeight - 1; j >= 0; j--) // invert y axis
         {
             for (int i = 0; i < mapWidth; i++)
             {
-                Debug.Log(i + " , " + j);
                 TmxManager.HandleTerrain(terrain[j * mapWidth + i], i, j, currentPosition);
                 TmxManager.HandleEntity(entities[j * mapWidth + i], i, j);
                 TmxManager.HandleMarker(markers[j * mapWidth + i], i, j);
@@ -207,11 +210,24 @@ public class SquareScript : MonoBehaviour
         return neighbours;
     }
 
+    public static void InitFog()
+    {
+        foreach(var square in s_map)
+        {
+            square.Visible = false;
+            square.FogOfWarType = FogOfWarType.Full;
+        }
+    }
+
     public void FogOfWar()
     {
-        foreach (SquareScript tempSquare in s_map)
+        if (Entity.Player.LastSeen != null)
         {
-            tempSquare.Visible = false;
+            foreach (var square in Entity.Player.LastSeen)
+            {
+                square.Visible = false;
+                square.FogOfWarType = FogOfWarType.Full;
+            }
         }
 
         var seen = SeenFrom();
@@ -223,7 +239,7 @@ public class SquareScript : MonoBehaviour
         // Go over all fog covered tiles and fix fog in corners
         foreach (SquareScript tempSquare in s_map)
         {
-            if(!seen.Contains(tempSquare))
+            if (!seen.Contains(tempSquare))
             {
                 var upperTileHasFow = tempSquare.GetNextSquare(0, -1).m_fogOfWar.enabled;
                 var lowerTileHasFow = tempSquare.GetNextSquare(0, 1).m_fogOfWar.enabled;
@@ -257,25 +273,27 @@ public class SquareScript : MonoBehaviour
         {
             tempSquare.Visible = false;
         }
+        seen.ExceptWith(soonToBeInvisible);
+        Entity.Player.LastSeen = seen;
     }
 
     #endregion public methods
 
     #region private methods
 
-    private IEnumerable<SquareScript> SeenFrom()
+    public HashSet<SquareScript> SeenFrom()
     {
-        List<SquareScript> list = new List<SquareScript>();
+        HashSet<SquareScript> seenSquaresSet = new HashSet<SquareScript>();
 
         int range = 32;
         var amountOfSquaresToCheck = range * 8;
         var angleSlice = 360.0f / amountOfSquaresToCheck;
         for (float angle = 0; angle < 360; angle += angleSlice)
         {
-            list.AddRange(FindVisibleSquares(angle, range));
+            seenSquaresSet.UnionWith(FindVisibleSquares(angle, range));
         }
 
-        return list;
+        return seenSquaresSet;
     }
 
     private IEnumerable<SquareScript> FindVisibleSquares(float angle, int leftInRange)
@@ -410,7 +428,6 @@ public class FogOfWarType
     public static FogOfWarType Top_Right_Corner = new FogOfWarType(SpriteManager.Fog_Top_Right_Corner, FogCoverType.Partial);
     public static FogOfWarType Top_Left_Corner = new FogOfWarType(SpriteManager.Fog_Top_Left_Corner, FogCoverType.Partial);
 }
-
 #endregion TerrainType
 
 #region SpriteManager

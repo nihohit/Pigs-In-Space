@@ -8,6 +8,8 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
@@ -224,6 +226,8 @@ public class PlayerEntity : AttackingEntity
     public double Oxygen { get; private set; }
 
     public double BlueCrystal { get; private set; }
+
+    public IEnumerable<SquareScript> LastSeen { get; set; }
 
     #endregion Properties
 
