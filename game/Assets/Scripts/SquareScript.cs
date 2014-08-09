@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Xml;
+using System.Xml.Serialization;
 using UnityEngine;
 using Assets.scripts.UnityBase;
 using Assets.Scripts.LogicBase;
 
 public enum Traversability { Walkable, Flyable, Blocking }
 public enum Opacity { Blocking, SeeThrough}
+public enum FogCoverType {None, Partial, Full}
 
 #region SquareScript
 public class SquareScript : MonoBehaviour
@@ -17,19 +21,21 @@ public class SquareScript : MonoBehaviour
     private static SquareScript[,] s_map;
     private int m_x, m_y;
     private Loot m_droppedLoot;
-    private IUnityMarker m_fogOfWar;
     private TerrainType m_terrainType;
-    private static IUnityMarker s_squareMarker;
-    private static IUnityMarker s_attackMarker;
+    private FogOfWarType m_fogOfWarType;
     public static SquareScript s_markedSquare;
+    public const int PixelsPerSquare = 64;
+
+    private static IUnityMarker s_attackMarker;
+    private static IUnityMarker s_squareMarker;
+    public IUnityMarker m_lootMarker;
+    private IUnityMarker m_fogOfWar;
 
     #endregion fields
 
     #region properties
 
     public Entity OccupyingEntity { get; set; }
-
-    public IUnityMarker LootMarker { get; private set; }
 
     public TerrainType TerrainType
     {
@@ -40,14 +46,49 @@ public class SquareScript : MonoBehaviour
         set
         {
             m_terrainType = value;
-            var sr = gameObject.GetComponent<SpriteRenderer>();
-            sr.sprite = value.Sprite;
+            gameObject.GetComponent<SpriteRenderer>().sprite = value.Sprite;
+        }
+    }
+
+    public FogOfWarType FogOfWarType
+    {
+        get
+        {
+            return m_fogOfWarType;
+        }
+        set
+        {
+            m_fogOfWarType = value;
+            m_fogOfWar.Renderer.sprite = value.Sprite;
+        }
+    }
+
+    public bool Visible
+    {
+        get
+        {
+            return !m_fogOfWar.Visible;
+        }
+        private set
+        {
+            m_fogOfWar.Visible = !value;
+            if (OccupyingEntity != null)
+            {
+                OccupyingEntity.Image.Visible = value;
+                OccupyingEntity.SetActive(value);
+            }
+            if (m_lootMarker != null)
+            {
+                m_lootMarker.Visible = value;
+            }
         }
     }
 
     public Traversability TraversingCondition { get { return TerrainType.TraversingCondition; } }
 
     public Opacity Opacity { get { return TerrainType.Opacity; } }
+
+    public FogCoverType TileFogCoverType { get { return FogOfWarType.FogCoverType; } }
 
     #endregion
 
@@ -58,7 +99,8 @@ public class SquareScript : MonoBehaviour
         m_fogOfWar = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("FogOfWar"),
                                                                      transform.position,
                                                                  Quaternion.identity)).GetComponent<MarkerScript>();
-        m_fogOfWar.Unmark();
+        FogOfWarType = FogOfWarType.Full;
+        Visible = true;
     }
 
     public static void LoadFromTMX(string filename)
@@ -75,7 +117,7 @@ public class SquareScript : MonoBehaviour
         var markers = root.SelectNodes(@"map/layer[@name='Markers']/data/tile").Cast<XmlNode>().Select(node => node.Attributes["gid"].Value).ToList();
 
         s_map = new SquareScript[mapWidth, mapHeight];
-        var squareSize = 0.64f;
+        var squareSize = PixelsPerSquare * MapSceneScript.UnitsToPixelsRatio; // 1f
         var currentPosition = Vector3.zero;
         for (int j = mapHeight - 1; j >= 0; j--) // invert y axis
         {
@@ -96,7 +138,7 @@ public class SquareScript : MonoBehaviour
         {
             m_droppedLoot = loot;
             var prefabName = (m_droppedLoot.FuelCell) ? "FuelCell" : "Crystals";
-            LootMarker = ((GameObject)MonoBehaviour.Instantiate(Resources.Load(prefabName),
+            m_lootMarker = ((GameObject)MonoBehaviour.Instantiate(Resources.Load(prefabName),
                                                                      transform.position,
                                                                  Quaternion.identity)).GetComponent<MarkerScript>();
         }
@@ -155,8 +197,8 @@ public class SquareScript : MonoBehaviour
 
         var loot = m_droppedLoot;
         m_droppedLoot = null;
-        LootMarker.DestroyGameObject();
-        LootMarker = null;
+        m_lootMarker.DestroyGameObject();
+        m_lootMarker = null;
         return loot;
     }
 
@@ -172,50 +214,91 @@ public class SquareScript : MonoBehaviour
         return neighbours;
     }
 
+    public static void InitFog()
+    {
+        foreach(var square in s_map)
+        {
+            square.Visible = false;
+            square.FogOfWarType = FogOfWarType.Full;
+        }
+    }
+
     public void FogOfWar()
     {
-        foreach (SquareScript tempSquare in s_map)
+        // darken all previously seen squares
+        if (Entity.Player.LastSeen != null)
         {
-            tempSquare.Visible(false);
+            foreach (var square in Entity.Player.LastSeen)
+            {
+                square.Visible = false;
+                square.FogOfWarType = FogOfWarType.Full;
+            }
         }
 
-        foreach (var tempSquare in SeenFrom())
+        var seen = SeenFrom();
+        foreach (var tempSquare in seen)
         {
-            tempSquare.Visible(true);
+            tempSquare.Visible = true;
         }
+
+        // Go over all fog covered tiles and fix fog in corners
+        foreach (SquareScript tempSquare in s_map)
+        {
+            if (!seen.Contains(tempSquare))
+            {
+                var upperTileHasFow = tempSquare.GetNextSquare(0, -1).m_fogOfWar.Visible;
+                var lowerTileHasFow = tempSquare.GetNextSquare(0, 1).m_fogOfWar.Visible;
+                var leftTileHasFow = tempSquare.GetNextSquare(-1, 0).m_fogOfWar.Visible;
+                var rightTileHasFow = tempSquare.GetNextSquare(1, 0).m_fogOfWar.Visible;
+
+                if (!leftTileHasFow && !lowerTileHasFow && rightTileHasFow && upperTileHasFow) tempSquare.FogOfWarType = FogOfWarType.Top_Right_Corner;
+                else if (leftTileHasFow && !lowerTileHasFow && !rightTileHasFow && upperTileHasFow) tempSquare.FogOfWarType = FogOfWarType.Top_Left_Corner;
+                else if (leftTileHasFow && lowerTileHasFow && !rightTileHasFow && !upperTileHasFow) tempSquare.FogOfWarType = FogOfWarType.Bottom_Left_Corner;
+                else if (!leftTileHasFow && lowerTileHasFow && rightTileHasFow && !upperTileHasFow) tempSquare.FogOfWarType = FogOfWarType.Bottom_Right_Corner;
+                else tempSquare.FogOfWarType = FogOfWarType.Full;
+            }
+        }
+
+        // Go over all visible tiles and cover corners
+        var soonToBeInvisible = new List<SquareScript>();
+        foreach (SquareScript tempSquare in seen)
+        {
+            var upperTileHasFow = !tempSquare.GetNextSquare(0, -1).Visible && tempSquare.GetNextSquare(0, -1).TileFogCoverType == FogCoverType.Full;
+            var lowerTileHasFow = !tempSquare.GetNextSquare(0, 1).Visible && tempSquare.GetNextSquare(0, 1).TileFogCoverType == FogCoverType.Full;
+            var leftTileHasFow = !tempSquare.GetNextSquare(-1, 0).Visible && tempSquare.GetNextSquare(-1, 0).TileFogCoverType == FogCoverType.Full;
+            var rightTileHasFow = !tempSquare.GetNextSquare(1, 0).Visible && tempSquare.GetNextSquare(1, 0).TileFogCoverType == FogCoverType.Full;
+
+            if (!leftTileHasFow && !lowerTileHasFow && rightTileHasFow && upperTileHasFow) { tempSquare.m_fogOfWar.Renderer.sprite = SpriteManager.Fog_Top_Right_Corner; soonToBeInvisible.Add(tempSquare); }
+            else if (leftTileHasFow && !lowerTileHasFow && !rightTileHasFow && upperTileHasFow) { tempSquare.m_fogOfWar.Renderer.sprite = SpriteManager.Fog_Top_Left_Corner; soonToBeInvisible.Add(tempSquare); }
+            else if (leftTileHasFow && lowerTileHasFow && !rightTileHasFow && !upperTileHasFow) { tempSquare.m_fogOfWar.Renderer.sprite = SpriteManager.Fog_Bottom_Left_Corner; soonToBeInvisible.Add(tempSquare); }
+            else if (!leftTileHasFow && lowerTileHasFow && rightTileHasFow && !upperTileHasFow) { tempSquare.m_fogOfWar.Renderer.sprite = SpriteManager.Fog_Bottom_Right_Corner; soonToBeInvisible.Add(tempSquare); }
+        }
+
+        foreach (SquareScript tempSquare in soonToBeInvisible)
+        {
+            tempSquare.Visible = false;
+        }
+        seen.ExceptWith(soonToBeInvisible);
+        Entity.Player.LastSeen = seen;
     }
 
     #endregion public methods
 
     #region private methods
 
-    private void Visible(bool visible)
+    public HashSet<SquareScript> SeenFrom()
     {
-        m_fogOfWar.Visible(!visible);
-        if (OccupyingEntity != null)
-        {
-            OccupyingEntity.Image.Visible(visible);
-            OccupyingEntity.SetActive(visible);
-        }
-        if (LootMarker != null)
-        {
-            LootMarker.Visible(visible);
-        }
-    }
+        HashSet<SquareScript> seenSquaresSet = new HashSet<SquareScript>();
 
-    private IEnumerable<SquareScript> SeenFrom()
-    {
-        List<SquareScript> list = new List<SquareScript>();
-
-        int range = 16;
+        int range = 32;
         var amountOfSquaresToCheck = range * 8;
         var angleSlice = 360.0f / amountOfSquaresToCheck;
         for (float angle = 0; angle < 360; angle += angleSlice)
         {
-            list.AddRange(FindVisibleSquares(angle, range));
+            seenSquaresSet.UnionWith(FindVisibleSquares(angle, range));
         }
 
-        return list;
+        return seenSquaresSet;
     }
 
     private IEnumerable<SquareScript> FindVisibleSquares(float angle, int leftInRange)
@@ -260,20 +343,21 @@ public class SquareScript : MonoBehaviour
     {
         if (OccupyingEntity != null && !(OccupyingEntity is PlayerEntity))
         {
-            s_attackMarker.Position = transform.position;
+            s_attackMarker.Mark(transform.position);
+
             s_markedSquare = this;
         }
         else
         {
-            s_squareMarker.Position = transform.position;
+            s_squareMarker.Mark(transform.position);
             s_markedSquare = this;
         }
     }
 
     private void OnMouseExit()
     {
-        s_squareMarker.Position = new Vector2(1000000, 1000000);
-        s_attackMarker.Position = new Vector2(1000000, 1000000);
+        s_squareMarker.Unmark();
+        s_attackMarker.Unmark();
     }
 
     #endregion Private methods
@@ -331,6 +415,27 @@ public class TerrainType
 
 #endregion TerrainType
 
+#region FogOfWarType
+
+public class FogOfWarType
+{
+    public FogCoverType FogCoverType { get; private set; }
+    public Sprite Sprite {get; private set;}
+    public FogOfWarType(Sprite sprite, FogCoverType fogCoverType)
+    {
+        Sprite = sprite;
+        FogCoverType = fogCoverType;
+    }
+
+    public static FogOfWarType None = new FogOfWarType(SpriteManager.Empty, FogCoverType.None);
+    public static FogOfWarType Full = new FogOfWarType(SpriteManager.Fog_Full, FogCoverType.Full);
+    public static FogOfWarType Bottom_Right_Corner = new FogOfWarType(SpriteManager.Fog_Bottom_Right_Corner, FogCoverType.Partial);
+    public static FogOfWarType Bottom_Left_Corner = new FogOfWarType(SpriteManager.Fog_Bottom_Left_Corner, FogCoverType.Partial);
+    public static FogOfWarType Top_Right_Corner = new FogOfWarType(SpriteManager.Fog_Top_Right_Corner, FogCoverType.Partial);
+    public static FogOfWarType Top_Left_Corner = new FogOfWarType(SpriteManager.Fog_Top_Left_Corner, FogCoverType.Partial);
+}
+#endregion TerrainType
+
 #region SpriteManager
 
 public class SpriteManager
@@ -383,6 +488,9 @@ public class SpriteManager
     public static Sprite Blueish_Marker = GetSprite("Markers_1");
     public static Sprite Green_Marker = GetSprite("Markers_2");
     public static Sprite Tentacle_Marker = GetSprite("Markers_3");
+    public static Sprite CardiacIcon = GetSprite("Markers_4");
+    public static Sprite LightningIcon = GetSprite("Markers_5");
+    public static Sprite OxygenTank = GetSprite("Markers_6");
 }
 
 #endregion SpriteManager

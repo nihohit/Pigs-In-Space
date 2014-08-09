@@ -13,8 +13,6 @@ namespace Assets.scripts.UnityBase
 
         void Unmark();
 
-        void Visible(bool visible);
-
         void DestroyGameObject();
 
         Vector3 Position { get; set; }
@@ -22,6 +20,8 @@ namespace Assets.scripts.UnityBase
         Vector3 Scale { get; set; }
 
         SpriteRenderer Renderer { get; }
+
+        bool Visible { get; set; }
     }
 
     public interface IUnityButton : IUnityMarker

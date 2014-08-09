@@ -7,6 +7,8 @@ namespace Assets.scripts.UnityBase
     /// </summary>
     public class MarkerScript : MonoBehaviour, IUnityMarker
     {
+        #region properties
+
         public Vector3 Position 
         { 
             get { return transform.position; }
@@ -19,19 +21,28 @@ namespace Assets.scripts.UnityBase
             set { transform.localScale = value; }
         }
 
-        public SpriteRenderer Renderer { get { return gameObject.GetComponent<SpriteRenderer>(); } }
-
-        public void Visible(bool visible)
+        public bool Visible
         {
-            if(visible)
+            get
             {
-                Mark();
+                return Renderer.enabled;
             }
-            else
+            set
             {
-                Unmark();
+                if (value)
+                {
+                    Mark();
+                }
+                else
+                {
+                    Unmark();
+                }
             }
         }
+
+        public SpriteRenderer Renderer { get { return gameObject.GetComponent<SpriteRenderer>(); } }
+
+        #endregion
 
         // Displays the sprite at the given location.
         public virtual void Mark(Vector3 position)
