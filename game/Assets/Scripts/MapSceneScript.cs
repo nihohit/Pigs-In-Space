@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Assets.scripts.Base;
 
 public enum GameState { Ongoing, Won, Lost }
 
@@ -169,10 +170,7 @@ public class MapSceneScript : MonoBehaviour
         { // left click
             //Get Mouse direction, let's assume it's right for now
             //create laser object
-
-            var destination = Input.mousePosition;
-
-            if (Entity.Player.ShootLaser(destination))
+            if (Entity.Player.ShootLaser())
             {
                 yield return new WaitForSeconds(0.25f);
                 Entity.Player.EndTurn();
@@ -195,16 +193,16 @@ public class MapSceneScript : MonoBehaviour
         float targetY = transform.position.y;
 
         // If the player has moved beyond the x margin...
-        var playerTransform = Entity.Player.Image.transform;
+        var playerPosition = Entity.Player.Image.Position;
 
         // ... the target x coordinate should be a Lerp between the camera's current x position and the player's current x position.
-        targetX = Mathf.Lerp(transform.position.x, playerTransform.position.x, xSmooth * Time.deltaTime);
+        targetX = Mathf.Lerp(transform.position.x, playerPosition.x, xSmooth * Time.deltaTime);
 
         // The target x coordinates should not be larger than the maximum or smaller than the minimum.
         targetX = Mathf.Clamp(targetX, CameraMin.x, CameraMax.x);
 
         // ... the target y coordinate should be a Lerp between the camera's current y position and the player's current y position.
-        targetY = Mathf.Lerp(transform.position.y, playerTransform.position.y, ySmooth * Time.deltaTime);
+        targetY = Mathf.Lerp(transform.position.y, playerPosition.y, ySmooth * Time.deltaTime);
 
         // The target y coordinates should not be larger than the maximum or smaller than the minimum.
         targetY = Mathf.Clamp(targetY, CameraMin.y, CameraMax.y);

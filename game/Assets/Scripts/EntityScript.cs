@@ -12,6 +12,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Assets.scripts.Base;
+using Assets.scripts.UnityBase;
+using Assets.Scripts.LogicBase;
 using UnityEngine;
 
 public enum MovementType { Walking, Flying }
@@ -42,18 +45,19 @@ public abstract class Entity
 
     public SquareScript Location { get; protected set; }
 
-    public SpriteRenderer Image { get; protected set; }
+    public IUnityMarker Image { get; protected set; }
 
     #endregion properties
 
     #region constructor
 
-    public Entity(double health, SquareScript location, SpriteRenderer image)
+    public Entity(double health, SquareScript location, IUnityMarker image)
     {
         // TODO: Complete member initialization
         this.Health = health;
         this.Location = location;
         this.Image = image;
+        Image.Mark(location.transform.position);
         Location.OccupyingEntity = this;
     }
 
@@ -84,7 +88,7 @@ public abstract class Entity
             square,
             ((GameObject)MonoBehaviour.Instantiate(Resources.Load("PlayerSprite"),
                                                         square.transform.position,
-                                                        Quaternion.identity)).GetComponent<SpriteRenderer>(),
+                                                        Quaternion.identity)).GetComponent<MarkerScript>(),
             c_startEnergy,
             c_startOxygen);
     }
@@ -100,7 +104,7 @@ public abstract class Entity
             square,
             ((GameObject)MonoBehaviour.Instantiate(Resources.Load("TentacleMonster"),
                                                         square.transform.position,
-                                                        Quaternion.identity)).GetComponent<SpriteRenderer>(),
+                                                        Quaternion.identity)).GetComponent<MarkerScript>(),
             MovementType.Walking);
     }
 
@@ -111,7 +115,7 @@ public abstract class Entity
             square,
             ((GameObject)MonoBehaviour.Instantiate(Resources.Load("Hive"),
                                                         square.transform.position,
-                                                        Quaternion.identity)).GetComponent<SpriteRenderer>());
+                                                        Quaternion.identity)).GetComponent<MarkerScript>());
     }
 
     #endregion static generation methods
@@ -123,7 +127,7 @@ public abstract class Entity
     protected virtual void Destroy()
     {
         this.Location.OccupyingEntity = null;
-        UnityEngine.Object.Destroy(this.Image);
+        this.Image.DestroyGameObject();
     }
 
     #endregion private and protected methods
@@ -151,7 +155,7 @@ public abstract class AttackingEntity : Entity
 
     #endregion properties
 
-    public AttackingEntity(double health, double attackRange, float minDamage, float maxDamage, SquareScript location, SpriteRenderer image, MovementType movementType) :
+    public AttackingEntity(double health, double attackRange, float minDamage, float maxDamage, SquareScript location, IUnityMarker image, MovementType movementType) :
         base(health, location, image)
     {
         m_movementType = movementType;
@@ -169,7 +173,7 @@ public abstract class AttackingEntity : Entity
         Location.OccupyingEntity = null;
         newLocation.OccupyingEntity = this;
         Location = newLocation;
-        Image.transform.position = Location.transform.position;
+        Image.Position = Location.transform.position;
         return true;
     }
 
@@ -199,7 +203,7 @@ public abstract class AttackingEntity : Entity
 
     protected void Attack(AttackingEntity ent)
     {
-        ent.Damage(Randomizer.NextDouble(MinDamage, MaxDamage));
+        ent.Damage(Randomiser.NextDouble(MinDamage, MaxDamage));
     }
 }
 
@@ -233,7 +237,7 @@ public class PlayerEntity : AttackingEntity
 
     #region constructor
 
-    public PlayerEntity(double health, double attackRange, float minDamage, float maxDamage, SquareScript location, SpriteRenderer image, double energy, double oxygen) :
+    public PlayerEntity(double health, double attackRange, float minDamage, float maxDamage, SquareScript location, IUnityMarker image, double energy, double oxygen) :
         base(health, attackRange, minDamage, maxDamage, location, image, MovementType.Walking)
     {
         Energy = energy;
@@ -267,7 +271,7 @@ public class PlayerEntity : AttackingEntity
         base.Damage(damage);
     }
 
-    public bool ShootLaser(Vector3 mousePosition)
+    public bool ShootLaser()
     {
         if (Energy < 2)
         {
@@ -277,12 +281,7 @@ public class PlayerEntity : AttackingEntity
         var laser = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("laser"), Player.Location.transform.position, Quaternion.identity));
         var laserScript = laser.GetComponent<LaserScript>();
         ////Aim to mouse
-        //var MousePos = Input.mousePosition;
-        //var translatedPosition = Camera.main.ScreenToWorldPoint(MousePos);
-        //var destination = new Vector2(translatedPosition.x, translatedPosition.y);
-        //Aim to center of marked tile
-        var destination = SquareScript.s_markedSquare.getWorldLocation();
-        laserScript.Init(destination, Player.Location.transform.position, "Laser shot", MinDamage, MaxDamage);
+        laserScript.Init(SquareScript.s_markedSquare, Player.Location, "Laser shot", MinDamage, MaxDamage);
         return true;
     }
 
@@ -383,7 +382,7 @@ public class EnemyEntity : AttackingEntity, IHostileEntity
         s_killed_Enemies++;
     }
 
-    public EnemyEntity(double health, double attackRange, float minDamage, float maxDamage, SquareScript location, SpriteRenderer image, MovementType movementType) :
+    public EnemyEntity(double health, double attackRange, float minDamage, float maxDamage, SquareScript location, IUnityMarker image, MovementType movementType) :
         base(health, attackRange, minDamage, maxDamage, location, image, movementType)
     {
         EnemiesManager.AddEnemy(this);
@@ -439,7 +438,7 @@ public class Hive : Entity, IHostileEntity
 
     public static int KilledHives { get { return s_killed_Hives; } }
 
-    public Hive(double health, SquareScript location, SpriteRenderer image) :
+    public Hive(double health, SquareScript location, IUnityMarker image) :
         base(health, location, image)
     {
         EnemiesManager.AddEnemy(this);
@@ -454,7 +453,7 @@ public class Hive : Entity, IHostileEntity
 
     public void Act()
     {
-        if (Randomizer.CheckChance(s_chanceToSpawn))
+        if (Randomiser.ProbabilityCheck(s_chanceToSpawn))
         {
             CreateTentacleMonster(ChooseRandomFreeSquare());
         }
@@ -467,7 +466,7 @@ public class Hive : Entity, IHostileEntity
 
     private SquareScript ChooseRandomFreeSquare()
     {
-        return Location.GetNeighbours().Where(square => square.TraversingCondition == Traversability.Walkable && square.OccupyingEntity == null).ChooseRandomMember();
+        return Location.GetNeighbours().Where(square => square.TraversingCondition == Traversability.Walkable && square.OccupyingEntity == null).ChooseRandomValue();
     }
 }
 

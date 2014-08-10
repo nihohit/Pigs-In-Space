@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using Assets.scripts.UnityBase;
+using Assets.scripts.Base;
 
 /// <summary>
 ///  Script wrapper for shots moving across the screen
@@ -10,21 +12,20 @@ public class LaserScript : MonoBehaviour
     private bool m_started = false;
     private Vector2 m_startingPoint;
     private Vector2 m_movementSpeed;
-    private Vector2 m_endPoint;
     private double m_damage;
     private SquareScript m_targetSquare;
 
     #endregion fields
 
-    public void Init(Vector2 to, Vector2 from, string name, float minDamage, float maxDamage)
+    public void Init(SquareScript to, SquareScript from, string name, float minDamage, float maxDamage)
     {
         m_damage = UnityEngine.Random.Range(minDamage, maxDamage);
-        m_startingPoint = from;
-        var endPoint = RaycastToTarget(to, from);
-        transform.position = from;
-        m_endPoint = endPoint;
+        m_startingPoint = from.transform.position;
+        m_targetSquare = to;
+        var endPoint = RaycastToTarget(to.transform.position, m_startingPoint);
+        transform.position = m_startingPoint;
         m_started = true;
-        var differenceVector = endPoint - from;
+        var differenceVector = endPoint - m_startingPoint;
         var angle = Vector2.Angle(new Vector2(1, 0), differenceVector);
         if (differenceVector.y < 0)
         {
@@ -32,6 +33,7 @@ public class LaserScript : MonoBehaviour
         }
         this.gameObject.transform.Rotate(new Vector3(0, 0, angle));
         m_movementSpeed = differenceVector.normalized / 4;
+        Destroy(gameObject, 1f);
     }
 
     private Vector2 RaycastToTarget(Vector2 to, Vector2 from)
@@ -63,7 +65,8 @@ public class LaserScript : MonoBehaviour
     {
         if (!m_started) return;
         transform.position = (Vector2)m_movementSpeed + (Vector2)transform.position;
-        if (GetComponent<BoxCollider2D>().Bounds().Contains(m_endPoint))
+
+        if (m_targetSquare.GetComponent<BoxCollider2D>().Bounds().Overlaps(this.GetComponent<BoxCollider2D>().Bounds()))
         {
             Destroy();
         }
