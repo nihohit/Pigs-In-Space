@@ -5,18 +5,18 @@ public class GameOverScript : MonoBehaviour
     public string Message { get; set; }
 
     // Use this for initialization
-    void Start()
+    private void Start()
     {
     }
 
-    void OnGUI()
+    private void OnGUI()
     {
         // Make a background box
         GUI.Box(new Rect(100, 100, 500, 600), Message);
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
     }
 }

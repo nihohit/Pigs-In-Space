@@ -3,13 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using Assets.scripts.Base;
 
 public enum GameState { Ongoing, Won, Lost }
 
 public class MapSceneScript : MonoBehaviour
 {
-    private Vector2 CameraMax= new Vector2(0f, 0f);        // The maximum x and y coordinates the camera can have.
+    private Vector2 CameraMax = new Vector2(0f, 0f);        // The maximum x and y coordinates the camera can have.
     private Vector2 CameraMin = new Vector2(0f, 0f);        // The minimum x and y coordinates the camera can have.
     private static Dictionary<Action, Marker> s_Markers = new Dictionary<Action, Marker>();
     private static GameState s_gameState = GameState.Ongoing;
@@ -28,7 +27,7 @@ public class MapSceneScript : MonoBehaviour
     {
         s_gameState = state;
     }
-    
+
     public void Awake()
     {
         camera.orthographicSize = (Screen.height * UnitsToPixelsRatio);
@@ -41,10 +40,10 @@ public class MapSceneScript : MonoBehaviour
         Entity.Player = Entity.CreatePlayerEntity(5, 5);
 
         var squareSize = SquareScript.PixelsPerSquare * MapSceneScript.UnitsToPixelsRatio; // 1f
-        
+
         var minCameraX = 0f - squareSize / 2 + camera.orthographicSize * camera.aspect;
         var maxCameraX = minCameraX + squareSize * SquareScript.Weidth() - 2 * camera.orthographicSize * camera.aspect;
-        if(maxCameraX < minCameraX)
+        if (maxCameraX < minCameraX)
         {
             // camera not moving in x axis
             maxCameraX = minCameraX = (maxCameraX + minCameraX) / 2;
@@ -63,7 +62,6 @@ public class MapSceneScript : MonoBehaviour
 
         SquareScript.InitFog();
         Entity.Player.Location.FogOfWar();
-
     }
 
     // Update is called once per frame

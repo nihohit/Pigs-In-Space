@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 
 namespace Assets.Scripts.LogicBase
 {
@@ -16,13 +14,13 @@ namespace Assets.Scripts.LogicBase
         private double m_effectStrength;
         // TODO - do we want to add cooldown timer, so that not all equipment piece could be operated everyturn?
 
-        #endregion
+        #endregion fields
 
         #region properties
 
         public double Range { get; private set; }
 
-        #endregion
+        #endregion properties
 
         #region public methods
 
@@ -31,16 +29,16 @@ namespace Assets.Scripts.LogicBase
             m_effect(target, m_effectStrength);
         }
 
-        #endregion
+        #endregion public methods
     }
 
-    #endregion
+    #endregion ActionableItem
 
     #region EquipmentPiece
 
     public class EquipmentPiece : ActionableItem
-    { 
-		#region properties
+    {
+        #region properties
 
         public Loot Cost { get; private set; }
 
@@ -48,9 +46,8 @@ namespace Assets.Scripts.LogicBase
 
         public double EnergyCost { get; private set; }
 
-		#endregion
+        #endregion properties
     }
 
-    #endregion
-
+    #endregion EquipmentPiece
 }

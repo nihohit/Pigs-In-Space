@@ -24,7 +24,7 @@
         // represents what happens when pressing a "buy" button
         public bool RemoveIfEnough(Loot cost)
         {
-            if(IsEnoughToCover(cost))
+            if (IsEnoughToCover(cost))
             {
                 BlueCrystal -= cost.BlueCrystal;
                 return true;
