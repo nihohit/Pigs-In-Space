@@ -89,7 +89,8 @@ public abstract class Entity
                                                         square.transform.position,
                                                         Quaternion.identity)).GetComponent<MarkerScript>(),
             c_startEnergy,
-            c_startOxygen);
+            c_startOxygen,
+            new EquipmentPiece[] {new LaserPistol(), new LaserRifle(), new LaserMachinegun(), new MagneticAttractor(), new MagneticRepulsor() });
     }
 
     public static EnemyEntity CreateTentacleMonster(int x, int y)
@@ -232,15 +233,27 @@ public class PlayerEntity : AttackingEntity
 
     public IEnumerable<SquareScript> LastSeen { get; set; }
 
+    public IEnumerable<EquipmentPiece> Equipment { get; private set; }
+
+    public EquipmentPiece LeftHandEquipment { get; set; }
+
+    public EquipmentPiece RightHandEquipment { get; set; }
+
     #endregion Properties
 
     #region constructor
 
-    public PlayerEntity(double health, double attackRange, float minDamage, float maxDamage, SquareScript location, IUnityMarker image, double energy, double oxygen) :
+    public PlayerEntity(double health, double attackRange, float minDamage, float maxDamage, SquareScript location, 
+        IUnityMarker image, double energy, double oxygen, IEnumerable<EquipmentPiece> equipment) :
         base(health, attackRange, minDamage, maxDamage, location, image, MovementType.Walking)
     {
         Energy = energy;
         Oxygen = oxygen;
+        Equipment = equipment;
+        Assert.EqualOrLesser(Equipment.Count(), 8);
+        Assert.EqualOrGreater(Equipment.Count(), 2);
+        LeftHandEquipment = Equipment.First();
+        RightHandEquipment = Equipment.ElementAt(1);
         m_playerActionTimer = new Stopwatch();
         m_playerActionTimer.Start();
     }
@@ -303,7 +316,6 @@ public class PlayerEntity : AttackingEntity
     {
         double timeSinceLastAction = m_playerActionTimer.ElapsedMilliseconds / 1000.0;
         m_playerActionTimer.Reset();
-        UnityEngine.Debug.Log("Time interval is {0}".FormatWith(timeSinceLastAction));
         EnemiesManager.EnemiesTurn();
         Oxygen -= Math.Min(2, timeSinceLastAction);
         if (Oxygen <= 0)

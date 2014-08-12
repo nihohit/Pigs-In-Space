@@ -18,6 +18,26 @@ namespace Assets.scripts.Base
             NotEqual(first, second, string.Empty);
         }
 
+        public static void EqualOrGreater(int num, int top, string additionalMessage)
+        {
+            AssertConditionMet(num >= top, "{0} is larger than {1}. {2}".FormatWith(num, top, additionalMessage));
+        }
+
+        public static void EqualOrGreater(int num, int top)
+        {
+            EqualOrGreater(num, top, string.Empty);
+        }
+
+        public static void EqualOrGreater(double num, double top)
+        {
+            EqualOrGreater(num, top, string.Empty);
+        }
+
+        public static void EqualOrGreater(double num, double top, string additionalMessage)
+        {
+            AssertConditionMet(num >= top, "{0} is larger than {1}. {2}".FormatWith(num, top, additionalMessage));
+        }
+
         public static void EqualOrLesser(int num, int top, string additionalMessage)
         {
             AssertConditionMet(num <= top, "{0} is larger than {1}. {2}".FormatWith(num, top, additionalMessage));

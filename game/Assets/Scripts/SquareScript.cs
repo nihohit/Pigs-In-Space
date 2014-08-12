@@ -201,12 +201,24 @@ public class SquareScript : MonoBehaviour
 
     public IEnumerable<SquareScript> GetNeighbours()
     {
+        return GetNeighbours(false);
+    }
+
+    public IEnumerable<SquareScript> GetNeighbours(bool diagonals)
+    {
         List<SquareScript> neighbours = new List<SquareScript>();
 
         if (m_x > 0) neighbours.Add(GetSquare(m_x - 1, m_y));
         if (m_x < s_map.GetLength(0)) neighbours.Add(GetSquare(m_x + 1, m_y));
         if (m_y > 0) neighbours.Add(GetSquare(m_x, m_y - 1));
         if (m_y < s_map.GetLength(1)) neighbours.Add(GetSquare(m_x, m_y + 1));
+        if (diagonals)
+        {
+            if ((m_x > 0)  && (m_y > 0))  neighbours.Add(GetSquare(m_x - 1, m_y - 1));
+            if ((m_x < s_map.GetLength(0))  && (m_y > 0)) neighbours.Add(GetSquare(m_x + 1, m_y-1));
+            if ((m_x > 0) && (m_y < s_map.GetLength(1))) neighbours.Add(GetSquare(m_x - 1, m_y + 1));
+            if ((m_x < s_map.GetLength(0)) && (m_y < s_map.GetLength(1))) neighbours.Add(GetSquare(m_x + 1, m_y + 1));
+        }
 
         return neighbours;
     }
