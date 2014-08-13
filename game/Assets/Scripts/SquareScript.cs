@@ -7,10 +7,13 @@ using Assets.Scripts.LogicBase;
 using UnityEngine;
 
 public enum Traversability { Walkable, Flyable, Blocking }
+
 public enum Opacity { Blocking, SeeThrough }
+
 public enum FogCoverType { None, Partial, Full }
 
 #region SquareScript
+
 public class SquareScript : MonoBehaviour
 {
     #region fields
@@ -214,8 +217,8 @@ public class SquareScript : MonoBehaviour
         if (m_y < s_map.GetLength(1)) neighbours.Add(GetSquare(m_x, m_y + 1));
         if (diagonals)
         {
-            if ((m_x > 0)  && (m_y > 0))  neighbours.Add(GetSquare(m_x - 1, m_y - 1));
-            if ((m_x < s_map.GetLength(0))  && (m_y > 0)) neighbours.Add(GetSquare(m_x + 1, m_y-1));
+            if ((m_x > 0) && (m_y > 0)) neighbours.Add(GetSquare(m_x - 1, m_y - 1));
+            if ((m_x < s_map.GetLength(0)) && (m_y > 0)) neighbours.Add(GetSquare(m_x + 1, m_y - 1));
             if ((m_x > 0) && (m_y < s_map.GetLength(1))) neighbours.Add(GetSquare(m_x - 1, m_y + 1));
             if ((m_x < s_map.GetLength(0)) && (m_y < s_map.GetLength(1))) neighbours.Add(GetSquare(m_x + 1, m_y + 1));
         }
@@ -381,7 +384,9 @@ public class TerrainType
     private List<Sprite> m_sprites;
 
     public Traversability TraversingCondition { get; private set; }
+
     public Opacity Opacity { get; private set; }
+
     public Sprite Sprite
     {
         get { return m_sprites[UnityEngine.Random.Range(0, m_sprites.Count - 1)]; }
@@ -429,7 +434,9 @@ public class TerrainType
 public class FogOfWarType
 {
     public FogCoverType FogCoverType { get; private set; }
+
     public Sprite Sprite { get; private set; }
+
     public FogOfWarType(Sprite sprite, FogCoverType fogCoverType)
     {
         Sprite = sprite;
@@ -443,6 +450,7 @@ public class FogOfWarType
     public static FogOfWarType Top_Right_Corner = new FogOfWarType(SpriteManager.Fog_Top_Right_Corner, FogCoverType.Partial);
     public static FogOfWarType Top_Left_Corner = new FogOfWarType(SpriteManager.Fog_Top_Left_Corner, FogCoverType.Partial);
 }
+
 #endregion FogOfWarType
 
 #region SpriteManager

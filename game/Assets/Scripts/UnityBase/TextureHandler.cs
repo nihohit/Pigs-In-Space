@@ -13,7 +13,7 @@ namespace Assets.scripts.UnityBase
         Texture2D GetNullTexture();
     }
 
-    #endregion
+    #endregion ITextureHandler
 
     #region TextureHandler
 
@@ -117,5 +117,5 @@ namespace Assets.scripts.UnityBase
         }
     }
 
-    #endregion
+    #endregion TextureHandler
 }

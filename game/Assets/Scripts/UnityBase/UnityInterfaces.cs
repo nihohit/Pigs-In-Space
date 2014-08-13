@@ -25,7 +25,9 @@ namespace Assets.scripts.UnityBase
     public interface IUnityButton : IUnityMarker
     {
         Action ClickableAction { get; set; }
+
         Action OnMouseOverAction { get; set; }
+
         Action OnMouseExitAction { get; set; }
     }
 }
