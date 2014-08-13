@@ -1,91 +1,116 @@
 ﻿using System.Collections.Generic;
 using Assets.scripts.Base;
+using UnityEngine;
+using System.Linq;
+using System.Collections;
 
 namespace Assets.Scripts.LogicBase
 {
     public delegate void SquareEffect(SquareScript square);
+    public delegate IEnumerator TimedSquareEffect(SquareScript square);
     public enum EffectType { SingleShot, SprayShot, Mine }
 
     #region ActionableItem
 
+    // represent an item that can affect squares
     public class ActionableItem
     {
+        //TODO - read from a configuration
+        private int m_amountOfShots = 3;
+
         // TODO - do we want to add cooldown timer, so that not all equipment piece could be operated everyturn?
-        // TODO - implement range
-        // TODO - implement different shots
         #region properties
 
-        public double Range { get; private set; }
-        public SquareEffect Effect { get; private set; }
+        public float Range { get; private set; }
+        public virtual TimedSquareEffect Effect { get; private set; }
 
         #endregion properties
 
         #region constructor
 
-        public ActionableItem(EffectType type, double minStrength, double maxStrength, double range, Entity owner)
+        public ActionableItem(EffectType type, double minStrength, double maxStrength, float range, Entity owner)
         {
             Range = range;
-            Effect = GetEffect(type, minStrength, maxStrength, owner);
+            SetEffect(type, minStrength, maxStrength, owner);
         }
 
-        public ActionableItem(EffectType type, double minStrength, double maxStrength, double range) : this(type, minStrength, maxStrength, range, null) { }
+        public ActionableItem(EffectType type, double minStrength, double maxStrength, float range) : this(type, minStrength, maxStrength, range, null) { }
 
         #endregion
 
         #region private methods
 
-        private SquareEffect GetEffect(EffectType type, double minStrength, double maxStrength, Entity owner)
+        private void SetEffect(EffectType type, double minStrength, double maxStrength, Entity owner)
         {
             switch(type)
             {
                 case EffectType.SingleShot:
-                    return SingleShot(minStrength, maxStrength);
-
+                    Effect = (square) => SingleShotAction(square, minStrength, maxStrength);
+                    break;
                 case EffectType.SprayShot:
-                    return SprayShot(minStrength, maxStrength);
-
+                    Effect = (square) => SprayShotAction(square, minStrength, maxStrength);
+                    break;
                 case EffectType.Mine:
-                    return Mine(minStrength, maxStrength);
-
+                    Effect = (square) => MineAction(square, minStrength, maxStrength);
+                    break;
                 default:
                     throw new UnknownValueException(type);
             }
         }
 
-        private SquareEffect Mine(double minStrength, double maxStrength)
+        private IEnumerator MineAction(SquareScript square, double minStrength, double maxStrength)
         {
-            /* TODO.
-            if (SquareScript.s_markedSquare.GetNeighbours().Contains(this.Location) &&
-            SquareScript.s_markedSquare.GetComponent<SpriteRenderer>().sprite == SpriteManager.Rock_Crystal)
+            var hitSquare = FindHitSquare(square);
+            if (hitSquare.GetComponent<SpriteRenderer>().sprite == SpriteManager.Rock_Crystal)
             {
-                Energy -= 1;
-                SquareScript.s_markedSquare.GetComponent<SpriteRenderer>().sprite = SpriteManager.Empty;
+                hitSquare.GetComponent<SpriteRenderer>().sprite = SpriteManager.Empty;
                 var mineral = new Loot();
                 mineral.BlueCrystal = 5;
-                SquareScript.s_markedSquare.AddLoot(mineral);
-                SquareScript.s_markedSquare.TerrainType = TerrainType.Empty;
-                EndTurn();
+                hitSquare.AddLoot(mineral);
+                hitSquare.TerrainType = TerrainType.Empty;
             }
-             * */
-        }
-
-        private SquareEffect SprayShot(double minStrength, double maxStrength)
-        {
-            //TODO - add chance to miss
-            var singleShot = SingleShot(minStrength, maxStrength);
-            return (SquareScript square) => 
+            else
             {
-                singleShot(square);
-                square.GetNeighbours(true).ForEach(neighbour => singleShot(neighbour));
-            };
+                if (hitSquare.OccupyingEntity != null)
+                {
+                    hitSquare.OccupyingEntity.Damage(Randomiser.NextDouble(minStrength, maxStrength));
+                }
+            }
+            yield return new WaitForSeconds(0.2f);
         }
 
-        private SquareEffect SingleShot(double minStrength, double maxStrength)
+        private IEnumerator SprayShotAction(SquareScript square, double minStrength, double maxStrength)
         {
-            return (SquareScript square) => 
-            { 
-                if (square.OccupyingEntity != null) square.OccupyingEntity.Damage(Randomiser.NextDouble(minStrength, maxStrength)); 
-            };
+            // shoot random shots at the square and its surroundings
+            var squares = new List<SquareScript>();
+            squares.Add(square);
+            squares.AddRange(square.GetNeighbours(true));
+
+            for (int i = 0; i < m_amountOfShots; i++ )
+            {
+                SingleShot(squares.ChooseRandomValue(), minStrength, maxStrength);
+                yield return new WaitForSeconds(0.05f);
+            }
+        }
+
+        private IEnumerator SingleShotAction(SquareScript square, double minStrength, double maxStrength)
+        {
+            SingleShot(square, minStrength, maxStrength);
+            yield return new WaitForSeconds(0.2f);
+        }
+
+        private void SingleShot(SquareScript square, double minStrength, double maxStrength)
+        {
+            var hitSquare = FindHitSquare(square);
+            if (hitSquare.OccupyingEntity != null) hitSquare.OccupyingEntity.Damage(Randomiser.NextDouble(minStrength, maxStrength));
+        }
+
+        private SquareScript FindHitSquare(SquareScript target)
+        {
+            var laser = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("laser"), Entity.Player.Location.transform.position, Quaternion.identity));
+            var ShotScript = laser.GetComponent<ShotScript>();
+            ShotScript.Init(target, Entity.Player.Location, "Laser shot", Range);
+            return ShotScript.HitSquare;
         }
 
         #endregion
@@ -107,11 +132,30 @@ namespace Assets.Scripts.LogicBase
 
         public string Name { get; set; }
 
+        public override TimedSquareEffect Effect
+        {
+            get
+            {
+                if(Entity.Player.Energy >= EnergyCost)
+                {
+                    Entity.Player.EndTurn(EnergyCost);
+                    return base.Effect;
+                }
+
+                Entity.Player.EndTurn(0);
+                // do nothing
+                return (square) => { var array = new object[1];
+                    array[0]  = new WaitForSeconds(0.1f);
+                    return array.GetEnumerator();
+                };
+            }
+        }
+
         #endregion properties
 
         #region constructor
 
-        public EquipmentPiece(EffectType type, double minStrength, double maxStrength, double range, string name,
+        public EquipmentPiece(EffectType type, double minStrength, double maxStrength, float range, string name,
             double energyCost, Loot cost, IEnumerable<EquipmentPiece> upgrades) :
             base(type, minStrength, maxStrength, range, Entity.Player)
         {
@@ -121,7 +165,7 @@ namespace Assets.Scripts.LogicBase
             Name = name;
         }
 
-        public EquipmentPiece(EffectType type, double minStrength, double maxStrength, double range, string name, double energyCost) :
+        public EquipmentPiece(EffectType type, double minStrength, double maxStrength, float range, string name, double energyCost) :
             this(type, minStrength, maxStrength, range, name, energyCost, null, null) { }
 
         #endregion
@@ -149,7 +193,7 @@ namespace Assets.Scripts.LogicBase
 
     public class Digger : EquipmentPiece
     {
-        public Digger() : base(EffectType.Mine, 4, 8, 1, "digger", 1) { }
+        public Digger() : base(EffectType.Mine, 4, 8, 0.5f, "digger", 1) { }
     }
 
     #endregion

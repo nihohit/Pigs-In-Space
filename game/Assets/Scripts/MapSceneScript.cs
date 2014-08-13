@@ -200,7 +200,7 @@ public class MapSceneScript : MonoBehaviour
             {
                 //transform.position = new Vector3(m_playerSprite.transform.position.x, m_playerSprite.transform.position.y, transform.position.z);
                 yield return new WaitForSeconds(0.25f);
-                Entity.Player.EndTurn();
+                Entity.Player.EndTurn(0);
             }
         }
 
@@ -208,16 +208,20 @@ public class MapSceneScript : MonoBehaviour
         { // left click
             //Get Mouse direction, let's assume it's right for now
             //create laser object
-            if (Entity.Player.ShootLaser())
+            var enumerator = Entity.Player.LeftHandEquipment.Effect(SquareScript.s_markedSquare);
+            while (enumerator.MoveNext())
             {
-                yield return new WaitForSeconds(0.25f);
-                Entity.Player.EndTurn();
+                yield return enumerator.Current;
             }
         }
 
         if (Input.GetMouseButtonUp(1) && !m_mouseOnUI)
         {
-            Entity.Player.MineAsteroid();
+            var enumerator = Entity.Player.RightHandEquipment.Effect(SquareScript.s_markedSquare);
+            while (enumerator.MoveNext())
+            {
+                yield return enumerator.Current;
+            }
         }
     }
 

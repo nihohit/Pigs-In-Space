@@ -90,7 +90,7 @@ public abstract class Entity
                                                         Quaternion.identity)).GetComponent<MarkerScript>(),
             c_startEnergy,
             c_startOxygen,
-            new EquipmentPiece[] {new LaserPistol(), new LaserRifle(), new LaserMachinegun(), new MagneticAttractor(), new MagneticRepulsor() });
+            new EquipmentPiece[] { new LaserPistol(), new Digger(), new LaserRifle(), new LaserMachinegun() });
     }
 
     public static EnemyEntity CreateTentacleMonster(int x, int y)
@@ -283,37 +283,9 @@ public class PlayerEntity : AttackingEntity
         base.Damage(damage);
     }
 
-    public bool ShootLaser()
+    public void EndTurn(double energyCost)
     {
-        if (Energy < 2)
-        {
-            return false;
-        }
-        Energy -= 2;
-        var laser = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("laser"), Player.Location.transform.position, Quaternion.identity));
-        var laserScript = laser.GetComponent<LaserScript>();
-        ////Aim to mouse
-        laserScript.Init(SquareScript.s_markedSquare, Player.Location, "Laser shot", MinDamage, MaxDamage);
-        return true;
-    }
-
-    public void MineAsteroid()
-    {
-        if (SquareScript.s_markedSquare.GetNeighbours().Contains(this.Location) &&
-            SquareScript.s_markedSquare.GetComponent<SpriteRenderer>().sprite == SpriteManager.Rock_Crystal)
-        {
-            Energy -= 1;
-            SquareScript.s_markedSquare.GetComponent<SpriteRenderer>().sprite = SpriteManager.Empty;
-            var mineral = new Loot();
-            mineral.BlueCrystal = 5;
-            SquareScript.s_markedSquare.AddLoot(mineral);
-            SquareScript.s_markedSquare.TerrainType = TerrainType.Empty;
-            EndTurn();
-        }
-    }
-
-    public void EndTurn()
-    {
+        Energy -= energyCost;
         double timeSinceLastAction = m_playerActionTimer.ElapsedMilliseconds / 1000.0;
         m_playerActionTimer.Reset();
         EnemiesManager.EnemiesTurn();

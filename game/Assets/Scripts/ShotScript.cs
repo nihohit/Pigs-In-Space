@@ -4,24 +4,22 @@ using UnityEngine;
 /// <summary>
 ///  Script wrapper for shots moving across the screen
 /// </summary>
-public class LaserScript : MonoBehaviour
+public class ShotScript : MonoBehaviour
 {
     #region fields
 
     private bool m_started = false;
     private Vector2 m_startingPoint;
     private Vector2 m_movementSpeed;
-    private double m_damage;
-    private SquareScript m_targetSquare;
+    public SquareScript HitSquare { get; private set; }
 
     #endregion fields
 
-    public void Init(SquareScript to, SquareScript from, string name, float minDamage, float maxDamage)
+    public void Init(SquareScript to, SquareScript from, string name, float range)
     {
-        m_damage = UnityEngine.Random.Range(minDamage, maxDamage);
         m_startingPoint = from.transform.position;
-        m_targetSquare = to;
-        var endPoint = RaycastToTarget(to.transform.position, m_startingPoint);
+        HitSquare = to;
+        var endPoint = RaycastToTarget(to.transform.position, m_startingPoint, range);
         transform.position = m_startingPoint;
         m_started = true;
         var differenceVector = endPoint - m_startingPoint;
@@ -35,21 +33,26 @@ public class LaserScript : MonoBehaviour
         Destroy(gameObject, 1f);
     }
 
-    private Vector2 RaycastToTarget(Vector2 to, Vector2 from)
+    private Vector2 RaycastToTarget(Vector2 to, Vector2 from, float range)
     {
         var layerMask = 1 << LayerMask.NameToLayer("Ground");
 
         // return all colliders that the ray passes through
-        var rayHits = Physics2D.RaycastAll(from, to - from, to.Distance(from), layerMask);
+        var rayHits = Physics2D.RaycastAll(from, to - from, range, layerMask);
         foreach (var rayHit in rayHits)
         {
-            if (Blocking(rayHit.collider.gameObject.GetComponent<SquareScript>()))
+            if (Blocking(rayHit.collider.gameObject.GetComponent<SquareScript>()) ||
+                (to.x == rayHit.collider.gameObject.GetComponent<SquareScript>().transform.position.x && 
+                 to.y == rayHit.collider.gameObject.GetComponent<SquareScript>().transform.position.y)) 
             {
-                m_targetSquare = rayHit.collider.gameObject.GetComponent<SquareScript>();
+                HitSquare = rayHit.collider.gameObject.GetComponent<SquareScript>();
                 return rayHit.point;
             }
         }
-        return to;
+
+        var lastHit = rayHits[rayHits.Length-1];
+        HitSquare = lastHit.collider.gameObject.GetComponent<SquareScript>();
+        return lastHit.point;
     }
 
     private bool Blocking(SquareScript square)
@@ -65,7 +68,7 @@ public class LaserScript : MonoBehaviour
         if (!m_started) return;
         transform.position = (Vector2)m_movementSpeed + (Vector2)transform.position;
 
-        if (m_targetSquare.GetComponent<BoxCollider2D>().Bounds().Overlaps(this.GetComponent<BoxCollider2D>().Bounds()))
+        if (HitSquare.GetComponent<BoxCollider2D>().Bounds().Overlaps(this.GetComponent<BoxCollider2D>().Bounds()))
         {
             Destroy();
         }
@@ -73,14 +76,10 @@ public class LaserScript : MonoBehaviour
 
     private void Destroy()
     {
-        if (m_targetSquare != null)
+        if (HitSquare != null)
         {
             var pow = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("pow"), transform.position, Quaternion.identity));
             UnityEngine.Object.Destroy(pow, 0.3f);
-            if (m_targetSquare.OccupyingEntity != null)
-            {
-                m_targetSquare.OccupyingEntity.Damage(m_damage);
-            }
         }
         Destroy(gameObject);
     }
