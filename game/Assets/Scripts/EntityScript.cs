@@ -243,7 +243,7 @@ public class PlayerEntity : AttackingEntity
 
     #region constructor
 
-    public PlayerEntity(double health, double attackRange, float minDamage, float maxDamage, SquareScript location, 
+    public PlayerEntity(double health, double attackRange, float minDamage, float maxDamage, SquareScript location,
         IUnityMarker image, double energy, double oxygen, IEnumerable<EquipmentPiece> equipment) :
         base(health, attackRange, minDamage, maxDamage, location, image, MovementType.Walking)
     {

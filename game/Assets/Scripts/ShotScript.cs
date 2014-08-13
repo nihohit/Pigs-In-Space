@@ -11,6 +11,7 @@ public class ShotScript : MonoBehaviour
     private bool m_started = false;
     private Vector2 m_startingPoint;
     private Vector2 m_movementSpeed;
+
     public SquareScript HitSquare { get; private set; }
 
     #endregion fields
@@ -42,15 +43,15 @@ public class ShotScript : MonoBehaviour
         foreach (var rayHit in rayHits)
         {
             if (Blocking(rayHit.collider.gameObject.GetComponent<SquareScript>()) ||
-                (to.x == rayHit.collider.gameObject.GetComponent<SquareScript>().transform.position.x && 
-                 to.y == rayHit.collider.gameObject.GetComponent<SquareScript>().transform.position.y)) 
+                (to.x == rayHit.collider.gameObject.GetComponent<SquareScript>().transform.position.x &&
+                 to.y == rayHit.collider.gameObject.GetComponent<SquareScript>().transform.position.y))
             {
                 HitSquare = rayHit.collider.gameObject.GetComponent<SquareScript>();
                 return rayHit.point;
             }
         }
 
-        var lastHit = rayHits[rayHits.Length-1];
+        var lastHit = rayHits[rayHits.Length - 1];
         HitSquare = lastHit.collider.gameObject.GetComponent<SquareScript>();
         return lastHit.point;
     }

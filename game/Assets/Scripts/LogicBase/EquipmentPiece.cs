@@ -1,13 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using Assets.scripts.Base;
 using UnityEngine;
-using System.Linq;
-using System.Collections;
 
 namespace Assets.Scripts.LogicBase
 {
     public delegate void SquareEffect(SquareScript square);
+
     public delegate IEnumerator TimedSquareEffect(SquareScript square);
+
     public enum EffectType { SingleShot, SprayShot, Mine }
 
     #region ActionableItem
@@ -19,9 +20,11 @@ namespace Assets.Scripts.LogicBase
         private int m_amountOfShots = 3;
 
         // TODO - do we want to add cooldown timer, so that not all equipment piece could be operated everyturn?
+
         #region properties
 
         public float Range { get; private set; }
+
         public virtual TimedSquareEffect Effect { get; private set; }
 
         #endregion properties
@@ -34,25 +37,31 @@ namespace Assets.Scripts.LogicBase
             SetEffect(type, minStrength, maxStrength, owner);
         }
 
-        public ActionableItem(EffectType type, double minStrength, double maxStrength, float range) : this(type, minStrength, maxStrength, range, null) { }
+        public ActionableItem(EffectType type, double minStrength, double maxStrength, float range)
+            : this(type, minStrength, maxStrength, range, null)
+        {
+        }
 
-        #endregion
+        #endregion constructor
 
         #region private methods
 
         private void SetEffect(EffectType type, double minStrength, double maxStrength, Entity owner)
         {
-            switch(type)
+            switch (type)
             {
                 case EffectType.SingleShot:
                     Effect = (square) => SingleShotAction(square, minStrength, maxStrength);
                     break;
+
                 case EffectType.SprayShot:
                     Effect = (square) => SprayShotAction(square, minStrength, maxStrength);
                     break;
+
                 case EffectType.Mine:
                     Effect = (square) => MineAction(square, minStrength, maxStrength);
                     break;
+
                 default:
                     throw new UnknownValueException(type);
             }
@@ -86,7 +95,7 @@ namespace Assets.Scripts.LogicBase
             squares.Add(square);
             squares.AddRange(square.GetNeighbours(true));
 
-            for (int i = 0; i < m_amountOfShots; i++ )
+            for (int i = 0; i < m_amountOfShots; i++)
             {
                 SingleShot(squares.ChooseRandomValue(), minStrength, maxStrength);
                 yield return new WaitForSeconds(0.05f);
@@ -113,7 +122,7 @@ namespace Assets.Scripts.LogicBase
             return ShotScript.HitSquare;
         }
 
-        #endregion
+        #endregion private methods
     }
 
     #endregion ActionableItem
@@ -136,7 +145,7 @@ namespace Assets.Scripts.LogicBase
         {
             get
             {
-                if(Entity.Player.Energy >= EnergyCost)
+                if (Entity.Player.Energy >= EnergyCost)
                 {
                     Entity.Player.EndTurn(EnergyCost);
                     return base.Effect;
@@ -144,8 +153,10 @@ namespace Assets.Scripts.LogicBase
 
                 Entity.Player.EndTurn(0);
                 // do nothing
-                return (square) => { var array = new object[1];
-                    array[0]  = new WaitForSeconds(0.1f);
+                return (square) =>
+                {
+                    var array = new object[1];
+                    array[0] = new WaitForSeconds(0.1f);
                     return array.GetEnumerator();
                 };
             }
@@ -168,33 +179,46 @@ namespace Assets.Scripts.LogicBase
         public EquipmentPiece(EffectType type, double minStrength, double maxStrength, float range, string name, double energyCost) :
             this(type, minStrength, maxStrength, range, name, energyCost, null, null) { }
 
-        #endregion
+        #endregion constructor
     }
 
     #endregion EquipmentPiece
 
     //TODO - remove and replace with configuration files
+
     #region Equipment examples
 
     public class LaserPistol : EquipmentPiece
     {
-        public LaserPistol() : base(EffectType.SingleShot, 2, 5, 5, "pistol", 1) { }
+        public LaserPistol()
+            : base(EffectType.SingleShot, 2, 5, 5, "pistol", 1)
+        {
+        }
     }
 
     public class LaserRifle : EquipmentPiece
     {
-        public LaserRifle() : base(EffectType.SingleShot, 3, 5, 10, "rifle", 2) { }
+        public LaserRifle()
+            : base(EffectType.SingleShot, 3, 5, 10, "rifle", 2)
+        {
+        }
     }
 
     public class LaserMachinegun : EquipmentPiece
     {
-        public LaserMachinegun() : base(EffectType.SprayShot, 3, 5, 7, "machinegun", 3) { }
+        public LaserMachinegun()
+            : base(EffectType.SprayShot, 3, 5, 7, "machinegun", 3)
+        {
+        }
     }
 
     public class Digger : EquipmentPiece
     {
-        public Digger() : base(EffectType.Mine, 4, 8, 0.5f, "digger", 1) { }
+        public Digger()
+            : base(EffectType.Mine, 4, 8, 0.5f, "digger", 1)
+        {
+        }
     }
 
-    #endregion
+    #endregion Equipment examples
 }

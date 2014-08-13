@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using Assets.scripts.Base;
 
 public enum GameState { Ongoing, Won, Lost }
 
@@ -14,6 +13,7 @@ public class MapSceneScript : MonoBehaviour
     private TextureManager m_textureManager;
     private static Dictionary<Action, Marker> s_Markers = new Dictionary<Action, Marker>();
     private static GameState s_gameState = GameState.Ongoing;
+
     private static GUIStyle s_guiStyle = new GUIStyle
     {
         fontStyle = FontStyle.Bold,
@@ -23,6 +23,7 @@ public class MapSceneScript : MonoBehaviour
             textColor = Color.white,
         },
     };
+
     public const float UnitsToPixelsRatio = 1f / 100f;
     private bool m_mouseOnUI;
 
@@ -99,18 +100,18 @@ public class MapSceneScript : MonoBehaviour
         {
             // define the area of the UI
             var heightSliver = Screen.height / 7f;
-            var relativeWidth = heightSliver * 4/3;
+            var relativeWidth = heightSliver * 4 / 3;
             var oneSliver = Screen.width - relativeWidth;
-            var twoSlivers = Screen.width - 2* relativeWidth;
+            var twoSlivers = Screen.width - 2 * relativeWidth;
             var currentHeight = 16f;
             Rect UIArea = new Rect(twoSlivers, 0, 2 * relativeWidth, Screen.height);
 
             //load the UI background
             GUI.DrawTexture(UIArea, Resources.Load<Texture2D>(@"Sprites/PlayerStateDisplay"), ScaleMode.StretchToFill);
 
-            //every 
+            //every
             m_mouseOnUI = false;
-            if(UIArea.Contains(Input.mousePosition))
+            if (UIArea.Contains(Input.mousePosition))
             {
                 m_mouseOnUI = true;
             }
@@ -131,11 +132,11 @@ public class MapSceneScript : MonoBehaviour
 
             // display choosable equipment
             bool goDown = false;
-            foreach(var equipment in Entity.Player.Equipment)
+            foreach (var equipment in Entity.Player.Equipment)
             {
                 goDown = !goDown;
                 float widthPosition = 0;
-                if(goDown)
+                if (goDown)
                 {
                     currentHeight += heightSliver;
                     widthPosition = twoSlivers;
@@ -145,8 +146,8 @@ public class MapSceneScript : MonoBehaviour
                     widthPosition = oneSliver;
                 }
                 GUI.color = Color.gray;
-                
-                if(equipment == Entity.Player.LeftHandEquipment)
+
+                if (equipment == Entity.Player.LeftHandEquipment)
                 {
                     GUI.color = Color.blue;
                 }
