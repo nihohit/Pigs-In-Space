@@ -14,16 +14,7 @@ public class MapSceneScript : MonoBehaviour
     private static Dictionary<Action, Marker> s_Markers = new Dictionary<Action, Marker>();
     private static GameState s_gameState = GameState.Ongoing;
 
-    private static GUIStyle s_guiStyle = new GUIStyle
-    {
-        fontStyle = FontStyle.Bold,
-        fontSize = 12,
-        normal = new GUIStyleState
-        {
-            textColor = Color.white,
-        },
-    };
-
+    private static GUIStyle s_guiStyle;
     public const float UnitsToPixelsRatio = 1f / 100f;
     private bool m_mouseOnUI;
 
@@ -40,6 +31,16 @@ public class MapSceneScript : MonoBehaviour
     // Use this for initialization
     private void Start()
     {
+        s_guiStyle = new GUIStyle
+        {
+            fontStyle = FontStyle.Bold,
+            fontSize = 12,
+            normal = new GUIStyleState
+            {
+                textColor = Color.white,
+            },
+        };
+
         m_textureManager = new TextureManager();
         SquareScript.LoadFromTMX(@"Maps\testMap3.tmx");
         Entity.Player = Entity.CreatePlayerEntity(5, 5);
@@ -84,7 +85,7 @@ public class MapSceneScript : MonoBehaviour
         // load game ending message
         if (s_gameState != GameState.Ongoing)
         {
-            GUI.BeginGroup(new Rect(320, 265, 384, 256));
+            GUI.BeginGroup(new Rect(320, 265, 384, 300));
             GUI.DrawTexture(new Rect(0, 0, 384, 256), m_textureManager.GetUIBackground(), ScaleMode.StretchToFill);
             s_guiStyle.fontSize = 32;
             var message = (s_gameState == GameState.Lost) ? "Game Over" : "You Win :)";
@@ -93,7 +94,14 @@ public class MapSceneScript : MonoBehaviour
             GUI.Label(new Rect(176, 127, 30, 30), String.Format("X {0}", (int)Entity.Player.BlueCrystal), s_guiStyle);
             GUI.Label(new Rect(176, 165, 30, 30), String.Format("X {0}", EnemyEntity.KilledEnemies), s_guiStyle);
             GUI.Label(new Rect(176, 205, 30, 30), String.Format("X {0}", (int)Hive.KilledHives), s_guiStyle);
+
+            if (GUI.Button(new Rect(110, 230, 150, 30), "Spaceship"))
+            {
+                Application.LoadLevel("SpaceShipScene");
+            }
             GUI.EndGroup();
+
+
         }
 
         if (Entity.Player != null)
