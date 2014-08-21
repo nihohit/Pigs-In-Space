@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
+using Assets.Scripts;
 using Assets.scripts.UnityBase;
 using Assets.Scripts.LogicBase;
 using UnityEngine;
@@ -30,6 +31,16 @@ public class SquareScript : MonoBehaviour
     private static IUnityMarker s_squareMarker;
     public IUnityMarker m_lootMarker;
     private IUnityMarker m_fogOfWar;
+
+    /// <summary>
+    /// Unity marker for effect
+    /// </summary>
+    private IUnityMarker m_squareEffect;
+
+    /// <summary>
+    /// The Ground effec object
+    /// </summary>
+    private GroundEffect m_groundEffect;
 
     #endregion fields
 
@@ -84,6 +95,28 @@ public class SquareScript : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// setting the groundeffect also replace sprite in squareEffect unityMarker
+    /// </summary>
+    public GroundEffect GroundEffect
+    {
+        get { return m_groundEffect; }
+        set
+        {
+            if(value.Type != GroundEffectType.None)
+            {
+                m_squareEffect.Renderer.sprite = value.Sprite;
+                m_squareEffect.Visible = true;
+            }
+            else
+            {
+                m_squareEffect.Renderer.sprite = value.Sprite;
+                m_squareEffect.Visible = false;
+            }
+            m_groundEffect = value;
+        }
+    }
+
     public Traversability TraversingCondition { get { return TerrainType.TraversingCondition; } }
 
     public Opacity Opacity { get { return TerrainType.Opacity; } }
@@ -96,10 +129,12 @@ public class SquareScript : MonoBehaviour
 
     private void Awake()
     {
-        m_fogOfWar = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("FogOfWar"),
-                                                                     transform.position,
-                                                                 Quaternion.identity)).GetComponent<MarkerScript>();
+        m_fogOfWar = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("FogOfWar"), transform.position, Quaternion.identity)).GetComponent<MarkerScript>();
         FogOfWarType = FogOfWarType.Full;
+
+        m_squareEffect = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("EmptyMarker"), transform.position, Quaternion.identity)).GetComponent<MarkerScript>();
+        GroundEffect = GroundEffect.NoEffect;
+        
         Visible = true;
     }
 
@@ -371,7 +406,6 @@ public class SquareScript : MonoBehaviour
         s_squareMarker.Unmark();
         s_attackMarker.Unmark();
     }
-
     #endregion private methods
 }
 
@@ -508,6 +542,8 @@ public class SpriteManager
     public static Sprite CardiacIcon = GetSprite("Markers_4");
     public static Sprite LightningIcon = GetSprite("Markers_5");
     public static Sprite OxygenTank = GetSprite("Markers_6");
+    public static Sprite EmptyMarker = GetSprite("Markers_8");
+    public static Sprite Acid = GetSprite("Markers_9");
 }
 
 #endregion SpriteManager
@@ -566,6 +602,7 @@ public class TmxManager
         switch (gid)
         {
             case "68": MapSceneScript.SetEvent(() => Entity.CreateTentacleMonster(x, y), Marker.OnEscape); break;
+            case "74": MapSceneScript.AddGroundEffect(GroundEffect.StandardAcid, x, y); break;
         }
     }
 }

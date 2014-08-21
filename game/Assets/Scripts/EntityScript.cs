@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Assets.Scripts;
 using Assets.scripts.Base;
 using Assets.scripts.UnityBase;
 using Assets.Scripts.LogicBase;
@@ -170,6 +171,7 @@ public abstract class AttackingEntity : Entity
         {
             return false;
         }
+        ApplyGroundEffects(newLocation);
         Location.OccupyingEntity = null;
         newLocation.OccupyingEntity = this;
         Location = newLocation;
@@ -204,6 +206,17 @@ public abstract class AttackingEntity : Entity
     protected void Attack(AttackingEntity ent)
     {
         ent.Damage(Randomiser.NextDouble(MinDamage, MaxDamage));
+    }
+
+    protected virtual void ApplyGroundEffects(SquareScript location)
+    {
+        if (location.GroundEffect != GroundEffect.NoEffect)
+        {
+            if (location.GroundEffect.Type == GroundEffectType.Acid)
+            {
+                Damage(location.GroundEffect.Damage);
+            }
+        }
     }
 }
 
@@ -296,6 +309,7 @@ public class PlayerEntity : AttackingEntity
         }
         Energy++;
         Energy = Math.Min(Energy, m_maxEnergy);
+        MapSceneScript.ReduceEffectsDuration();
         m_playerActionTimer.Start();
     }
 
@@ -399,13 +413,22 @@ public class EnemyEntity : AttackingEntity, IHostileEntity
         var direction = new Vector2(Player.Location.transform.position.x - Location.transform.position.x, Location.transform.position.y - Player.Location.transform.position.y);
         var absX = Math.Abs(direction.x);
         var absY = Math.Abs(direction.y);
+        var possibleLocationMovingX = Location.GetNextSquare((int)(direction.x / absX), 0);
+        var possibleLocationMovingY = Location.GetNextSquare(0, (int)(direction.y / absY));
+        SquareScript newLocation;
         if (absX > absY)
         {
-            TryMoveTo(Location.GetNextSquare((int)(direction.x / absX), 0));
+            if(!TryMoveTo(possibleLocationMovingX))
+            {
+                TryMoveTo(possibleLocationMovingY);
+            }
         }
         else
         {
-            TryMoveTo(Location.GetNextSquare(0, (int)(direction.y / absY)));
+            if (!TryMoveTo(possibleLocationMovingY))
+            {
+                TryMoveTo(possibleLocationMovingX);
+            }
         }
     }
 }

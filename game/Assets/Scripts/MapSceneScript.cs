@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Assets.Scripts;
 
 public enum GameState { Ongoing, Won, Lost }
 
@@ -12,8 +13,12 @@ public class MapSceneScript : MonoBehaviour
     private Vector2 CameraMin = new Vector2(0f, 0f);        // The minimum x and y coordinates the camera can have.
     private TextureManager m_textureManager;
     private static Dictionary<Action, Marker> s_Markers = new Dictionary<Action, Marker>();
-    private static GameState s_gameState = GameState.Ongoing;
 
+    /// <summary>
+    /// List of all the squares with an active effect, each turn all these effects durability is reduced 
+    /// </summary>
+    private static List<SquareScript> s_squaresWithEffect = new List<SquareScript>();
+    private static GameState s_gameState = GameState.Ongoing;
     private static GUIStyle s_guiStyle = new GUIStyle
     {
         fontStyle = FontStyle.Bold,
@@ -267,6 +272,34 @@ public class MapSceneScript : MonoBehaviour
     public static void SetEvent(Action action, Marker marker)
     {
         s_Markers.Add(action, marker);
+    }
+
+    /// <summary>
+    /// Reduce durability for all active effects
+    /// </summary>
+    public static void ReduceEffectsDuration()
+    {
+        var toBeRemoved = new List<SquareScript>();
+        foreach( var squareWithEffect in s_squaresWithEffect)
+        {
+            squareWithEffect.GroundEffect.Duration--;
+            if(squareWithEffect.GroundEffect.Duration <= 0)
+            {
+                toBeRemoved.Add(squareWithEffect);
+                squareWithEffect.GroundEffect = GroundEffect.NoEffect;
+            }
+        }
+        s_squaresWithEffect = s_squaresWithEffect.Except(toBeRemoved).ToList();
+    }
+
+    /// <summary>
+    /// Add a effect at given location
+    /// </summary>
+    public static void AddGroundEffect(GroundEffect effect, int x, int y)
+    {
+        var squareScript = SquareScript.GetSquare(x, y);
+        squareScript.GroundEffect = effect;
+        s_squaresWithEffect.Add(squareScript);
     }
 }
 
