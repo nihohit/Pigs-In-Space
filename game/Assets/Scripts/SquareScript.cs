@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Xml;
-using System.Xml.Serialization;
-using UnityEngine;
 using Assets.scripts.UnityBase;
 using Assets.Scripts.LogicBase;
+using UnityEngine;
 
 public enum Traversability { Walkable, Flyable, Blocking }
-public enum Opacity { Blocking, SeeThrough}
-public enum FogCoverType {None, Partial, Full}
+
+public enum Opacity { Blocking, SeeThrough }
+
+public enum FogCoverType { None, Partial, Full }
 
 #region SquareScript
+
 public class SquareScript : MonoBehaviour
 {
     #region fields
@@ -90,7 +90,7 @@ public class SquareScript : MonoBehaviour
 
     public FogCoverType TileFogCoverType { get { return FogOfWarType.FogCoverType; } }
 
-    #endregion
+    #endregion properties
 
     #region public methods
 
@@ -204,19 +204,31 @@ public class SquareScript : MonoBehaviour
 
     public IEnumerable<SquareScript> GetNeighbours()
     {
+        return GetNeighbours(false);
+    }
+
+    public IEnumerable<SquareScript> GetNeighbours(bool diagonals)
+    {
         List<SquareScript> neighbours = new List<SquareScript>();
 
         if (m_x > 0) neighbours.Add(GetSquare(m_x - 1, m_y));
         if (m_x < s_map.GetLength(0)) neighbours.Add(GetSquare(m_x + 1, m_y));
         if (m_y > 0) neighbours.Add(GetSquare(m_x, m_y - 1));
         if (m_y < s_map.GetLength(1)) neighbours.Add(GetSquare(m_x, m_y + 1));
+        if (diagonals)
+        {
+            if ((m_x > 0) && (m_y > 0)) neighbours.Add(GetSquare(m_x - 1, m_y - 1));
+            if ((m_x < s_map.GetLength(0)) && (m_y > 0)) neighbours.Add(GetSquare(m_x + 1, m_y - 1));
+            if ((m_x > 0) && (m_y < s_map.GetLength(1))) neighbours.Add(GetSquare(m_x - 1, m_y + 1));
+            if ((m_x < s_map.GetLength(0)) && (m_y < s_map.GetLength(1))) neighbours.Add(GetSquare(m_x + 1, m_y + 1));
+        }
 
         return neighbours;
     }
 
     public static void InitFog()
     {
-        foreach(var square in s_map)
+        foreach (var square in s_map)
         {
             square.Visible = false;
             square.FogOfWarType = FogOfWarType.Full;
@@ -309,7 +321,7 @@ public class SquareScript : MonoBehaviour
         var rayHits = Physics2D.RaycastAll(transform.position, new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)), layerMask);
         foreach (var rayHit in rayHits)
         {
-            if(leftInRange > 0)
+            if (leftInRange > 0)
             {
                 yield return rayHit.collider.gameObject.GetComponent<SquareScript>();
                 if (Blocking(rayHit.collider.gameObject.GetComponent<SquareScript>()))
@@ -360,7 +372,7 @@ public class SquareScript : MonoBehaviour
         s_attackMarker.Unmark();
     }
 
-    #endregion Private methods
+    #endregion private methods
 }
 
 #endregion SquareScript
@@ -372,7 +384,9 @@ public class TerrainType
     private List<Sprite> m_sprites;
 
     public Traversability TraversingCondition { get; private set; }
+
     public Opacity Opacity { get; private set; }
+
     public Sprite Sprite
     {
         get { return m_sprites[UnityEngine.Random.Range(0, m_sprites.Count - 1)]; }
@@ -410,7 +424,7 @@ public class TerrainType
     public static TerrainType Spaceship_Bottom_Right = new TerrainType(SpriteManager.Spaceship_Bottom_Right, Traversability.Blocking, Opacity.SeeThrough);
     public static TerrainType Fuel_Cell = new TerrainType(SpriteManager.Fuel_Cell, Traversability.Walkable, Opacity.SeeThrough);
     //public static TerrainType Tentacle_Monster= new TerrainType(SpriteManager.Tentacle_Monster, Traversability.Blocking);
-    //public static TerrainType Astornaut= new TerrainType(SpriteManager.Astronaut_Front, Traversability.Blocking);	
+    //public static TerrainType Astornaut= new TerrainType(SpriteManager.Astronaut_Front, Traversability.Blocking);
 }
 
 #endregion TerrainType
@@ -420,7 +434,9 @@ public class TerrainType
 public class FogOfWarType
 {
     public FogCoverType FogCoverType { get; private set; }
-    public Sprite Sprite {get; private set;}
+
+    public Sprite Sprite { get; private set; }
+
     public FogOfWarType(Sprite sprite, FogCoverType fogCoverType)
     {
         Sprite = sprite;
@@ -434,7 +450,8 @@ public class FogOfWarType
     public static FogOfWarType Top_Right_Corner = new FogOfWarType(SpriteManager.Fog_Top_Right_Corner, FogCoverType.Partial);
     public static FogOfWarType Top_Left_Corner = new FogOfWarType(SpriteManager.Fog_Top_Left_Corner, FogCoverType.Partial);
 }
-#endregion TerrainType
+
+#endregion FogOfWarType
 
 #region SpriteManager
 

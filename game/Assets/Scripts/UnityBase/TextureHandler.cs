@@ -2,6 +2,21 @@
 
 namespace Assets.scripts.UnityBase
 {
+    #region ITextureHandler
+
+    public interface ITextureHandler<T>
+    {
+        void UpdateMarkerTexture(T item, SpriteRenderer renderer);
+
+        Texture2D GetTexture(T ent);
+
+        Texture2D GetNullTexture();
+    }
+
+    #endregion ITextureHandler
+
+    #region TextureHandler
+
     /// <summary>
     /// Abstract class for texture replacement and changes in textures
     /// </summary>
@@ -61,7 +76,7 @@ namespace Assets.scripts.UnityBase
             renderer.sprite.name = name;
         }
 
-        public Texture2D MergeTextures (Texture2D bottom, Texture2D top, string textureName)
+        public Texture2D MergeTextures(Texture2D bottom, Texture2D top, string textureName)
         {
             //Create a new Texture2D, which will be the copy.
             Texture2D texture = new Texture2D(bottom.width, bottom.height);
@@ -79,7 +94,7 @@ namespace Assets.scripts.UnityBase
                 {
                     if (top.GetPixel(x, y) == Color.clear)
                     {
-                        texture.SetPixel(x, y, bottom.GetPixel(x,y));
+                        texture.SetPixel(x, y, bottom.GetPixel(x, y));
                     }
                     else
                     {
@@ -101,4 +116,6 @@ namespace Assets.scripts.UnityBase
             return texture;
         }
     }
+
+    #endregion TextureHandler
 }

@@ -8,7 +8,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -90,7 +89,8 @@ public abstract class Entity
                                                         square.transform.position,
                                                         Quaternion.identity)).GetComponent<MarkerScript>(),
             c_startEnergy,
-            c_startOxygen);
+            c_startOxygen,
+            new EquipmentPiece[] { new LaserPistol(), new Digger(), new LaserRifle(), new LaserMachinegun() });
     }
 
     public static EnemyEntity CreateTentacleMonster(int x, int y)
@@ -233,15 +233,27 @@ public class PlayerEntity : AttackingEntity
 
     public IEnumerable<SquareScript> LastSeen { get; set; }
 
+    public IEnumerable<EquipmentPiece> Equipment { get; private set; }
+
+    public EquipmentPiece LeftHandEquipment { get; set; }
+
+    public EquipmentPiece RightHandEquipment { get; set; }
+
     #endregion Properties
 
     #region constructor
 
-    public PlayerEntity(double health, double attackRange, float minDamage, float maxDamage, SquareScript location, IUnityMarker image, double energy, double oxygen) :
+    public PlayerEntity(double health, double attackRange, float minDamage, float maxDamage, SquareScript location,
+        IUnityMarker image, double energy, double oxygen, IEnumerable<EquipmentPiece> equipment) :
         base(health, attackRange, minDamage, maxDamage, location, image, MovementType.Walking)
     {
         Energy = energy;
         Oxygen = oxygen;
+        Equipment = equipment;
+        Assert.EqualOrLesser(Equipment.Count(), 8);
+        Assert.EqualOrGreater(Equipment.Count(), 2);
+        LeftHandEquipment = Equipment.First();
+        RightHandEquipment = Equipment.ElementAt(1);
         m_playerActionTimer = new Stopwatch();
         m_playerActionTimer.Start();
     }
@@ -271,40 +283,11 @@ public class PlayerEntity : AttackingEntity
         base.Damage(damage);
     }
 
-    public bool ShootLaser()
+    public void EndTurn(double energyCost)
     {
-        if (Energy < 2)
-        {
-            return false;
-        }
-        Energy -= 2;
-        var laser = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("laser"), Player.Location.transform.position, Quaternion.identity));
-        var laserScript = laser.GetComponent<LaserScript>();
-        ////Aim to mouse
-        laserScript.Init(SquareScript.s_markedSquare, Player.Location, "Laser shot", MinDamage, MaxDamage);
-        return true;
-    }
-
-    public void MineAsteroid()
-    {
-        if (SquareScript.s_markedSquare.GetNeighbours().Contains(this.Location) &&
-            SquareScript.s_markedSquare.GetComponent<SpriteRenderer>().sprite == SpriteManager.Rock_Crystal)
-        {
-            Energy -= 1;
-            SquareScript.s_markedSquare.GetComponent<SpriteRenderer>().sprite = SpriteManager.Empty;
-            var mineral = new Loot();
-            mineral.BlueCrystal = 5;
-            SquareScript.s_markedSquare.AddLoot(mineral);
-            SquareScript.s_markedSquare.TerrainType = TerrainType.Empty;
-            EndTurn();
-        }
-    }
-
-    public void EndTurn()
-    {
+        Energy -= energyCost;
         double timeSinceLastAction = m_playerActionTimer.ElapsedMilliseconds / 1000.0;
         m_playerActionTimer.Reset();
-        UnityEngine.Debug.Log("Time interval is {0}".FormatWith(timeSinceLastAction));
         EnemiesManager.EnemiesTurn();
         Oxygen -= Math.Min(2, timeSinceLastAction);
         if (Oxygen <= 0)

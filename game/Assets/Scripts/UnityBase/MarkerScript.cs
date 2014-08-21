@@ -9,10 +9,10 @@ namespace Assets.scripts.UnityBase
     {
         #region properties
 
-        public Vector3 Position 
-        { 
+        public Vector3 Position
+        {
             get { return transform.position; }
-            set { transform.position = value; } 
+            set { transform.position = value; }
         }
 
         public Vector3 Scale
@@ -42,7 +42,7 @@ namespace Assets.scripts.UnityBase
 
         public SpriteRenderer Renderer { get { return gameObject.GetComponent<SpriteRenderer>(); } }
 
-        #endregion
+        #endregion properties
 
         // Displays the sprite at the given location.
         public virtual void Mark(Vector3 position)
