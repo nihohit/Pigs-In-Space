@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Assets.scripts.Base
+namespace Assets.Scripts.Base
 {
     public enum FileAccessor { Units, TerrainGeneration, General }
 

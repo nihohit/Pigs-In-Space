@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Assets.scripts.Base;
+using Assets.Scripts.Base;
 
-namespace Assets.scripts.UnityBase
+namespace Assets.Scripts.UnityBase
 {
     /// <summary>
     /// Used when a group of buttons need to be operated on simultaneously.

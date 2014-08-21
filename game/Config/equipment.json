@@ -1,0 +1,36 @@
+[
+{
+	"Name":"pistol",
+	"EffectType": 1, 
+	"MinPower" :  2.0,
+	"MaxPower" :  5.0, 
+	"Range": 5.0, 
+	"EnergyCost" :  1.0
+},
+{
+	"Name":"rifle",
+	"EffectType": 1, 
+	"MinPower" :  3.0,
+	"MaxPower" :  5.0, 
+	"Range": 10.0, 
+	"EnergyCost" :  2.0
+},
+{
+	"Name":"machinegun",
+	"EffectType": 1, 
+	"MinPower" :  3.0,
+	"MaxPower" :  5.0, 
+	"Range": 7.0, 
+    "ShotSAmount" :  5,
+    "ShotSpread" :  1, 
+	"EnergyCost" :  4.0
+},
+{
+	"Name":"digger",
+	"EffectType": 2, 
+	"MinPower" :  4.0,
+	"MaxPower" :  8.0, 
+	"Range": 0.5, 
+	"EnergyCost" :  1.0
+}
+]

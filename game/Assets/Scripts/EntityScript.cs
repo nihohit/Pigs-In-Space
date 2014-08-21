@@ -11,8 +11,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Assets.scripts.Base;
-using Assets.scripts.UnityBase;
+using Assets.Scripts.Base;
+using Assets.Scripts.UnityBase;
 using Assets.Scripts.LogicBase;
 using UnityEngine;
 
@@ -90,7 +90,7 @@ public abstract class Entity
                                                         Quaternion.identity)).GetComponent<MarkerScript>(),
             c_startEnergy,
             c_startOxygen,
-            new EquipmentPiece[] { new LaserPistol(), new Digger(), new LaserRifle(), new LaserMachinegun() });
+            new EquipmentJSONParser().GetConfigurations("equipment"));
     }
 
     public static EnemyEntity CreateTentacleMonster(int x, int y)

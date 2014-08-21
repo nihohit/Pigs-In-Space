@@ -14,15 +14,7 @@ public class MapSceneScript : MonoBehaviour
     private static Dictionary<Action, Marker> s_Markers = new Dictionary<Action, Marker>();
     private static GameState s_gameState = GameState.Ongoing;
 
-    private static GUIStyle s_guiStyle = new GUIStyle
-    {
-        fontStyle = FontStyle.Bold,
-        fontSize = 12,
-        normal = new GUIStyleState
-        {
-            textColor = Color.white,
-        },
-    };
+    private static GUIStyle s_guiStyle;
 
     public const float UnitsToPixelsRatio = 1f / 100f;
     private bool m_mouseOnUI;
@@ -35,6 +27,15 @@ public class MapSceneScript : MonoBehaviour
     public void Awake()
     {
         camera.orthographicSize = (Screen.height * UnitsToPixelsRatio);
+        s_guiStyle = new GUIStyle
+        {
+            fontStyle = FontStyle.Bold,
+            fontSize = 12,
+            normal = new GUIStyleState
+            {
+                textColor = Color.white,
+            },
+        };
     }
 
     // Use this for initialization
@@ -147,11 +148,11 @@ public class MapSceneScript : MonoBehaviour
                 }
                 GUI.color = Color.gray;
 
-                if (equipment == Entity.Player.LeftHandEquipment)
+                if (equipment.Equals(Entity.Player.LeftHandEquipment))
                 {
                     GUI.color = Color.blue;
                 }
-                if (equipment == Entity.Player.RightHandEquipment)
+                if (equipment.Equals(Entity.Player.RightHandEquipment))
                 {
                     GUI.color = Color.red;
                 }

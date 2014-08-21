@@ -1,7 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using Assets.scripts.Base;
+using Assets.Scripts.Base;
 using UnityEngine;
+using System.Linq;
 
 namespace Assets.Scripts.LogicBase
 {
@@ -9,57 +10,73 @@ namespace Assets.Scripts.LogicBase
 
     public delegate IEnumerator TimedSquareEffect(SquareScript square);
 
-    public enum EffectType { SingleShot, SprayShot, Mine }
+    public enum EffectType { Shot = 1, Mine = 2 }
 
     #region ActionableItem
 
     // represent an item that can affect squares
     public class ActionableItem
     {
-        //TODO - read from a configuration
-        private int m_amountOfShots = 3;
-
-        // TODO - do we want to add cooldown timer, so that not all equipment piece could be operated everyturn?
-
         #region properties
 
         public float Range { get; private set; }
 
         public virtual TimedSquareEffect Effect { get; private set; }
 
+        public int ShotsAmount { get; private set; }
+
+        public int ShotSpread { get; private set; }
+
         #endregion properties
 
-        #region constructor
+        #region constructors
 
-        public ActionableItem(EffectType type, double minStrength, double maxStrength, float range, Entity owner)
+        public ActionableItem(EffectType type, double minPower, double maxPower, float range, Entity owner, int shotsAmount, int shotSpread)
         {
             Range = range;
-            SetEffect(type, minStrength, maxStrength, owner);
+            SetEffect(type, minPower, maxPower, owner);
+            ShotsAmount = shotsAmount;
+            ShotSpread = shotSpread;
         }
 
-        public ActionableItem(EffectType type, double minStrength, double maxStrength, float range)
-            : this(type, minStrength, maxStrength, range, null)
+        public ActionableItem(EffectType type, double minPower, double maxPower, float range, Entity owner)
+            : this(type, minPower, maxPower, range, owner, 1, 0)
+        {
+        }
+
+        public ActionableItem(EffectType type, double minPower, double maxPower, float range, int shotsAmount, int shotSpread)
+            : this(type, minPower, maxPower, range, null, shotsAmount, shotSpread)
+        {
+        }
+
+        public ActionableItem(EffectType type, double minPower, double maxPower, float range)
+            : this(type, minPower, maxPower, range, null, 1, 0)
         {
         }
 
         #endregion constructor
 
+        public override bool Equals(object obj)
+        {
+            var item = obj as ActionableItem;
+            return item != null &&
+                Range == item.Range &&
+                ShotsAmount == item.ShotsAmount &&
+                ShotSpread == item.ShotSpread;
+        }
+
         #region private methods
 
-        private void SetEffect(EffectType type, double minStrength, double maxStrength, Entity owner)
+        private void SetEffect(EffectType type, double minPower, double maxPower, Entity owner)
         {
             switch (type)
             {
-                case EffectType.SingleShot:
-                    Effect = (square) => SingleShotAction(square, minStrength, maxStrength);
-                    break;
-
-                case EffectType.SprayShot:
-                    Effect = (square) => SprayShotAction(square, minStrength, maxStrength);
+                case EffectType.Shot:
+                    Effect = (square) => ShotAction(square, minPower, maxPower);
                     break;
 
                 case EffectType.Mine:
-                    Effect = (square) => MineAction(square, minStrength, maxStrength);
+                    Effect = (square) => MineAction(square, minPower, maxPower);
                     break;
 
                 default:
@@ -67,7 +84,7 @@ namespace Assets.Scripts.LogicBase
             }
         }
 
-        private IEnumerator MineAction(SquareScript square, double minStrength, double maxStrength)
+        private IEnumerator MineAction(SquareScript square, double minPower, double maxPower)
         {
             var hitSquare = FindHitSquare(square);
             if (hitSquare.GetComponent<SpriteRenderer>().sprite == SpriteManager.Rock_Crystal)
@@ -82,36 +99,39 @@ namespace Assets.Scripts.LogicBase
             {
                 if (hitSquare.OccupyingEntity != null)
                 {
-                    hitSquare.OccupyingEntity.Damage(Randomiser.NextDouble(minStrength, maxStrength));
+                    hitSquare.OccupyingEntity.Damage(Randomiser.NextDouble(minPower, maxPower));
                 }
             }
             yield return new WaitForSeconds(0.2f);
         }
 
-        private IEnumerator SprayShotAction(SquareScript square, double minStrength, double maxStrength)
+        private IEnumerator ShotAction(SquareScript square, double minPower, double maxPower)
         {
             // shoot random shots at the square and its surroundings
             var squares = new List<SquareScript>();
             squares.Add(square);
-            squares.AddRange(square.GetNeighbours(true));
-
-            for (int i = 0; i < m_amountOfShots; i++)
+            for (int i = 0; i < ShotSpread; i++ )
             {
-                SingleShot(squares.ChooseRandomValue(), minStrength, maxStrength);
-                yield return new WaitForSeconds(0.05f);
+                var tempSquares = squares.Select(target => target).Materialize();
+                foreach (var potentialTarget in tempSquares)
+                {
+                    squares.AddRange(potentialTarget.GetNeighbours(true));
+                }
+            }
+
+            float timePerShot = (1.8f / (ShotsAmount * 10));
+
+            for (int i = 0; i < ShotsAmount; i++)
+            {
+                SingleShot(squares.ChooseRandomValue(), minPower, maxPower);
+                yield return new WaitForSeconds(timePerShot);
             }
         }
 
-        private IEnumerator SingleShotAction(SquareScript square, double minStrength, double maxStrength)
-        {
-            SingleShot(square, minStrength, maxStrength);
-            yield return new WaitForSeconds(0.2f);
-        }
-
-        private void SingleShot(SquareScript square, double minStrength, double maxStrength)
+        private void SingleShot(SquareScript square, double minPower, double maxPower)
         {
             var hitSquare = FindHitSquare(square);
-            if (hitSquare.OccupyingEntity != null) hitSquare.OccupyingEntity.Damage(Randomiser.NextDouble(minStrength, maxStrength));
+            if (hitSquare.OccupyingEntity != null) hitSquare.OccupyingEntity.Damage(Randomiser.NextDouble(minPower, maxPower));
         }
 
         private SquareScript FindHitSquare(SquareScript target)
@@ -164,11 +184,11 @@ namespace Assets.Scripts.LogicBase
 
         #endregion properties
 
-        #region constructor
+        #region constructors
 
-        public EquipmentPiece(EffectType type, double minStrength, double maxStrength, float range, string name,
+        public EquipmentPiece(EffectType type, double minPower, double maxPower, float range, int shotsAmount, int shotSpread, string name, 
             double energyCost, Loot cost, IEnumerable<EquipmentPiece> upgrades) :
-            base(type, minStrength, maxStrength, range, Entity.Player)
+            base(type, minPower, maxPower, range, Entity.Player, shotsAmount, shotSpread)
         {
             Cost = cost;
             EnergyCost = energyCost;
@@ -176,49 +196,17 @@ namespace Assets.Scripts.LogicBase
             Name = name;
         }
 
-        public EquipmentPiece(EffectType type, double minStrength, double maxStrength, float range, string name, double energyCost) :
-            this(type, minStrength, maxStrength, range, name, energyCost, null, null) { }
-
         #endregion constructor
+
+        public override bool Equals(object obj)
+        {
+            var item = obj as EquipmentPiece;
+            return item != null &&
+                base.Equals(item) &&
+                Name.Equals(item.Name) &&
+                EnergyCost == item.EnergyCost;
+        }
     }
 
     #endregion EquipmentPiece
-
-    //TODO - remove and replace with configuration files
-
-    #region Equipment examples
-
-    public class LaserPistol : EquipmentPiece
-    {
-        public LaserPistol()
-            : base(EffectType.SingleShot, 2, 5, 5, "pistol", 1)
-        {
-        }
-    }
-
-    public class LaserRifle : EquipmentPiece
-    {
-        public LaserRifle()
-            : base(EffectType.SingleShot, 3, 5, 10, "rifle", 2)
-        {
-        }
-    }
-
-    public class LaserMachinegun : EquipmentPiece
-    {
-        public LaserMachinegun()
-            : base(EffectType.SprayShot, 3, 5, 7, "machinegun", 3)
-        {
-        }
-    }
-
-    public class Digger : EquipmentPiece
-    {
-        public Digger()
-            : base(EffectType.Mine, 4, 8, 0.5f, "digger", 1)
-        {
-        }
-    }
-
-    #endregion Equipment examples
 }

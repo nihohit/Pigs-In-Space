@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Assets.scripts.UnityBase
+namespace Assets.Scripts.UnityBase
 {
     /// <summary>
     /// Extension class for unity engine objects

@@ -1,4 +1,4 @@
-﻿using Assets.scripts.UnityBase;
+﻿using Assets.Scripts.UnityBase;
 using UnityEngine;
 
 /// <summary>
