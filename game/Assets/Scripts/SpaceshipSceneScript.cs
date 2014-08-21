@@ -37,7 +37,7 @@ public class SpaceshipSceneScript : MonoBehaviour
     private void OnGUI()
     {
         
-        GUI.BeginGroup(new Rect(0, 0, 384, 300));
+        GUI.BeginGroup(new Rect(0, 0, Screen.width, Screen.height));
         GUI.DrawTexture(new Rect(0, 0, 384, 256), m_textureManager.GetUIBackground(), ScaleMode.StretchToFill);
         s_guiStyle.fontSize = 32;
         var message = "Space ship!";
@@ -50,6 +50,11 @@ public class SpaceshipSceneScript : MonoBehaviour
         if (GUI.Button(new Rect(110, 230, 150, 30), "Level1"))
         {
             Application.LoadLevel("MapScene");
+        }
+
+        if (GUI.Button(new Rect(280, 230, 150, 30), "Quit"))
+        {
+            Application.Quit();
         }
         GUI.EndGroup();
     }

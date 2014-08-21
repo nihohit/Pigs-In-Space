@@ -8,6 +8,8 @@ public enum GameState { Ongoing, Won, Lost }
 
 public class MapSceneScript : MonoBehaviour
 {
+    #region private members 
+
     private Vector2 CameraMax = new Vector2(0f, 0f);        // The maximum x and y coordinates the camera can have.
     private Vector2 CameraMin = new Vector2(0f, 0f);        // The minimum x and y coordinates the camera can have.
     private TextureManager m_textureManager;
@@ -18,19 +20,16 @@ public class MapSceneScript : MonoBehaviour
     public const float UnitsToPixelsRatio = 1f / 100f;
     private bool m_mouseOnUI;
 
+    #endregion
+
     public static void ChangeGameState(GameState state)
     {
         s_gameState = state;
     }
 
-    public void Awake()
+    public void Init()
     {
-        camera.orthographicSize = (Screen.height * UnitsToPixelsRatio);
-    }
-
-    // Use this for initialization
-    private void Start()
-    {
+        EnemiesManager.Init();
         s_guiStyle = new GUIStyle
         {
             fontStyle = FontStyle.Bold,
@@ -68,6 +67,20 @@ public class MapSceneScript : MonoBehaviour
 
         SquareScript.InitFog();
         Entity.Player.Location.FogOfWar();
+        ChangeGameState(GameState.Ongoing);
+    }
+
+    #region UnityMethods
+
+    public void Awake()
+    {
+        camera.orthographicSize = (Screen.height * UnitsToPixelsRatio);
+    }
+
+    // Use this for initialization
+    private void Start()
+    {
+        Init();
     }
 
     // Update is called once per frame
@@ -97,7 +110,7 @@ public class MapSceneScript : MonoBehaviour
 
             if (GUI.Button(new Rect(110, 230, 150, 30), "Spaceship"))
             {
-                Application.LoadLevel("SpaceShipScene");
+                Application.LoadLevel("SpaceShipScene");             
             }
             GUI.EndGroup();
 
@@ -174,6 +187,10 @@ public class MapSceneScript : MonoBehaviour
             }
         }
     }
+
+    #endregion
+
+    #region private methods
 
     private void DrawSpriteToGUI(Sprite sprite, Rect position)
     {
@@ -262,6 +279,10 @@ public class MapSceneScript : MonoBehaviour
         transform.position = new Vector3(targetX, targetY, transform.position.z);
     }
 
+    #endregion
+
+    #region public methods
+
     public static void EnterEscapeMode()
     {
         Hive.EnterEscapeMode();
@@ -276,6 +297,8 @@ public class MapSceneScript : MonoBehaviour
     {
         s_Markers.Add(action, marker);
     }
+
+    #endregion
 }
 
 public enum Marker
