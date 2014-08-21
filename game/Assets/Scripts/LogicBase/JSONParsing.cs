@@ -12,7 +12,7 @@ namespace Assets.Scripts.LogicBase
         protected override EquipmentPiece ConvertToObject(Dictionary<string, object> item)
         {
             return new EquipmentPiece(
-                (EffectType)TryGetValue<long>(item, "EffectType"),
+                (SpecialEffects)TryGetValue<long>(item, "EffectType"),
                 TryGetValue<double>(item, "MinPower"),
                 TryGetValue<double>(item, "MaxPower"),
                 (float)TryGetValue<double>(item, "Range"),

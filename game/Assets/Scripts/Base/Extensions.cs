@@ -45,6 +45,11 @@ namespace Assets.Scripts.Base
             return (float)Math.PI * degrees / 180;
         }
 
+        public static bool HasFlag(this Enum value, Enum flag) 
+        {
+            return (Convert.ToInt64(value) & Convert.ToInt64(flag)) > 0;
+        }
+
         #region timing
 
         public static void StartTiming(this IIdentifiable timer, string operation)
