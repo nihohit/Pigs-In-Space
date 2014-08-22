@@ -8,6 +8,14 @@
 	"EnergyCost" :  1.0
 },
 {
+	"Name":"digger",
+	"EffectType": 1, 
+	"MinPower" :  4.0,
+	"MaxPower" :  8.0, 
+	"Range": 0.5, 
+	"EnergyCost" :  1.0
+},
+{
 	"Name":"rifle",
 	"EffectType": 0, 
 	"MinPower" :  3.0,
@@ -26,19 +34,20 @@
 	"EnergyCost" :  4.0
 },
 {
-	"Name":"digger",
-	"EffectType": 1, 
-	"MinPower" :  4.0,
-	"MaxPower" :  8.0, 
-	"Range": 0.5, 
-	"EnergyCost" :  1.0
-},
-{
 	"Name":"railgun",
 	"EffectType": 2, 
 	"MinPower" :  2.0,
 	"MaxPower" :  5.0, 
 	"Range": 15.0, 
 	"EnergyCost" :  2.0
+},
+{
+	"Name":"rocketlauncher",
+	"EffectType": 5 
+	"MinPower" :  8.0,
+	"MaxPower" :  16.0, 
+	"EffectSize" : 1, 
+	"Range": 10.0, 
+	"EnergyCost" :  8.0
 }
 ]

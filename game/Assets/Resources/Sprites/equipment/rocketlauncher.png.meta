@@ -1,8 +1,8 @@
 fileFormatVersion: 2
-guid: 6ca53237e6a9b2d43894e665d511ea5f
+guid: ca552881bb872c34a905effc01a58314
 TextureImporter:
   fileIDToRecycleName:
-    21300000: digger
+    21300000: rocketlauncher
   serializedVersion: 2
   mipmaps:
     mipMapMode: 0
@@ -41,7 +41,11 @@ TextureImporter:
   spritePixelsToUnits: 100
   alphaIsTransparency: 1
   textureType: 8
-  buildTargetSettings: []
+  buildTargetSettings:
+  - buildTarget: iPhone
+    maxTextureSize: 1024
+    textureFormat: -2
+    compressionQuality: 50
   spriteSheet:
     sprites: []
   spritePackingTag: 

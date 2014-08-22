@@ -7,6 +7,8 @@ using System;
 
 namespace Assets.Scripts.LogicBase
 {
+    #region enums and delegate
+
     public delegate void SquareEffect(SquareScript square);
 
     public delegate IEnumerator TimedSquareEffect(SquareScript square);
@@ -15,18 +17,22 @@ namespace Assets.Scripts.LogicBase
     public enum SpecialEffects 
     { 
         None = 0, 
-        Mine = 1, 
+        RockBreaking = 1, 
         Piercing = 2, 
-        Exploding = 4 
     }
+
+    #endregion
 
     #region ActionableItem
 
     // represent an item that can affect squares
     public class ActionableItem
     {
+        private int m_hash;
 
         #region properties
+
+        public int EffectSize { get; private set; }
 
         public float Range { get; private set; }
 
@@ -46,7 +52,8 @@ namespace Assets.Scripts.LogicBase
 
         #region constructors
 
-        public ActionableItem(SpecialEffects type, double minPower, double maxPower, float range, Entity owner, int shotsAmount, int shotSpread)
+        public ActionableItem(SpecialEffects type, double minPower, double maxPower, 
+            float range, Entity owner, int shotsAmount, int shotSpread, int effectSize)
         {
             Range = range;
             Effects = type;
@@ -55,9 +62,14 @@ namespace Assets.Scripts.LogicBase
             MinPower = minPower;
             MaxPower = maxPower;
             Owner = owner;
+            EffectSize = effectSize;
+
+            m_hash = Hasher.GetHashCode(Range, MinPower, MaxPower, ShotsAmount, ShotSpread, EffectSize, EffectSize);
         }
 
         #endregion constructor
+
+        #region public methods
 
         public override bool Equals(object obj)
         {
@@ -69,7 +81,8 @@ namespace Assets.Scripts.LogicBase
                 ShotsAmount == item.ShotsAmount &&
                 ShotSpread == item.ShotSpread &&
                 Effects == item.Effects &&
-                Owner.Equals(item.Owner);
+                Owner.Equals(item.Owner) &&
+                EffectSize == item.EffectSize;
         }
 
         public virtual IEnumerator Effect(SquareScript square)
@@ -95,6 +108,19 @@ namespace Assets.Scripts.LogicBase
             }
         }
 
+        public override string ToString()
+        {
+            return "Range: {0} MinPower: {1} MaxPower: {2} ShotsAmount: {3} ShotSpread {4} Effects {5} EffectSize {6}".FormatWith(
+                Range, MinPower, MaxPower, ShotsAmount, ShotSpread, Effects, EffectSize);
+        }
+
+        public override int GetHashCode()
+        {
+            return m_hash;
+        }
+
+        #endregion
+
         #region private methods
 
         private void MineAction(SquareScript square)
@@ -112,9 +138,9 @@ namespace Assets.Scripts.LogicBase
 
         private void ActOn(SquareScript square)
         {
-            foreach (var hitSquare in FindHitSquares(square))
+            foreach (var hitSquare in FindHitSquares(square).MultiplyBySize(EffectSize))
             {
-                if (Effects.HasFlag(SpecialEffects.Mine) &&
+                if (Effects.HasFlag(SpecialEffects.RockBreaking) &&
                     hitSquare.GetComponent<SpriteRenderer>().sprite == SpriteManager.Rock_Crystal)
                 {
                     MineAction(hitSquare);
@@ -131,7 +157,7 @@ namespace Assets.Scripts.LogicBase
         {
             var laser = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("laser"), Entity.Player.Location.transform.position, Quaternion.identity));
             var ShotScript = laser.GetComponent<ShotScript>();
-            ShotScript.Init(target, Entity.Player.Location, "Laser shot", Range, Effects.HasFlag(SpecialEffects.Piercing));
+            ShotScript.Init(target, Entity.Player.Location, "Laser shot", Range, Effects.HasFlag(SpecialEffects.Piercing), EffectSize);
             return ShotScript.HitSquares;
         }
 
@@ -144,6 +170,8 @@ namespace Assets.Scripts.LogicBase
 
     public class EquipmentPiece : ActionableItem
     {
+        private int m_hash;
+
         #region properties
 
         public Loot Cost { get; private set; }
@@ -173,17 +201,26 @@ namespace Assets.Scripts.LogicBase
 
         #region constructors
 
-        public EquipmentPiece(SpecialEffects type, double minPower, double maxPower, float range, int shotsAmount, int shotSpread, string name, 
-            double energyCost, Loot cost, IEnumerable<EquipmentPiece> upgrades) :
-            base(type, minPower, maxPower, range, Entity.Player, shotsAmount, shotSpread)
+        public EquipmentPiece(SpecialEffects type, double minPower, double maxPower, float range, int shotsAmount, 
+            int shotSpread, int effectSize, string name, double energyCost, Loot cost, 
+            IEnumerable<EquipmentPiece> upgrades) :
+            base(type, minPower, maxPower, range, Entity.Player, shotsAmount, shotSpread, effectSize)
         {
             Cost = cost;
             EnergyCost = energyCost;
             PossibleUpgrades = upgrades;
             Name = name;
+            m_hash = Hasher.GetHashCode(base.GetHashCode(), Name, Cost, EnergyCost);
         }
 
         #endregion constructor
+
+        #region object overrides
+
+        public override string ToString()
+        {
+            return "{0} {1} Cost: {2} EnergyCost: {3} ".FormatWith(Name, base.ToString(), Cost, EnergyCost);
+        }
 
         public override bool Equals(object obj)
         {
@@ -193,6 +230,13 @@ namespace Assets.Scripts.LogicBase
                 Name.Equals(item.Name) &&
                 EnergyCost == item.EnergyCost;
         }
+
+        public override int GetHashCode()
+        {
+            return m_hash;
+        }
+
+        #endregion
     }
 
     #endregion EquipmentPiece

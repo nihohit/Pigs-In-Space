@@ -80,17 +80,17 @@ public abstract class Entity
 
     #region static generation methods
 
-    public static PlayerEntity CreatePlayerEntity(int x, int y)
+    public static void CreatePlayerEntity(int x, int y)
     {
         var square = SquareScript.GetSquare(x, y);
-        return new PlayerEntity(c_startHealth, c_startAttackRange, c_startMinDamage, c_startMaxDamage,
+        Entity.Player = new PlayerEntity(c_startHealth, c_startAttackRange, c_startMinDamage, c_startMaxDamage,
             square,
             ((GameObject)MonoBehaviour.Instantiate(Resources.Load("PlayerSprite"),
                                                         square.transform.position,
                                                         Quaternion.identity)).GetComponent<MarkerScript>(),
             c_startEnergy,
-            c_startOxygen,
-            new EquipmentJSONParser().GetConfigurations("equipment"));
+            c_startOxygen);
+        Entity.Player.SetEquipment(new EquipmentJSONParser().GetConfigurations("equipment"));
     }
 
     public static EnemyEntity CreateTentacleMonster(int x, int y)
@@ -244,16 +244,11 @@ public class PlayerEntity : AttackingEntity
     #region constructor
 
     public PlayerEntity(double health, double attackRange, float minDamage, float maxDamage, SquareScript location,
-        IUnityMarker image, double energy, double oxygen, IEnumerable<EquipmentPiece> equipment) :
+        IUnityMarker image, double energy, double oxygen) :
         base(health, attackRange, minDamage, maxDamage, location, image, MovementType.Walking)
     {
         Energy = energy;
         Oxygen = oxygen;
-        Equipment = equipment;
-        Assert.EqualOrLesser(Equipment.Count(), 8);
-        Assert.EqualOrGreater(Equipment.Count(), 2);
-        LeftHandEquipment = Equipment.First();
-        RightHandEquipment = Equipment.ElementAt(1);
         m_playerActionTimer = new Stopwatch();
         m_playerActionTimer.Start();
     }
@@ -261,6 +256,16 @@ public class PlayerEntity : AttackingEntity
     #endregion constructor
 
     #region public methods
+
+    public void SetEquipment(IEnumerable<EquipmentPiece> equipment)
+    {
+        Equipment = equipment;
+        Assert.EqualOrLesser(Equipment.Count(), 8);
+        Assert.EqualOrGreater(Equipment.Count(), 2);
+        LeftHandEquipment = Equipment.First();
+        RightHandEquipment = Equipment.ElementAt(1);
+    }
+
 
     public bool Move(SquareScript newLocation)
     {

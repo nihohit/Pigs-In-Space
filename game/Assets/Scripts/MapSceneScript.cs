@@ -43,7 +43,7 @@ public class MapSceneScript : MonoBehaviour
     {
         m_textureManager = new TextureManager();
         SquareScript.LoadFromTMX(@"Maps\testMap3.tmx");
-        Entity.Player = Entity.CreatePlayerEntity(5, 5);
+        Entity.CreatePlayerEntity(5, 5);
 
         var squareSize = SquareScript.PixelsPerSquare * MapSceneScript.UnitsToPixelsRatio; // 1f
 

@@ -18,7 +18,7 @@ namespace Assets.Scripts.Base
                 var fileAsString = fileReader.ReadToEnd();
                 var items = Json.Deserialize(fileAsString) as IEnumerable<object>;
                 var itemsAsDictionaries = items.Select(item => item as Dictionary<string, object>);
-                return itemsAsDictionaries.Select(item => ConvertToObject(item));
+                return itemsAsDictionaries.Select(item => ConvertToObject(item)).Materialize();
             }
         }
 
