@@ -41,7 +41,7 @@ namespace Assets.Scripts.Base
     [Serializable]
     public class ValueNotFoundException : ArgumentException
     {
-        public ValueNotFoundException(string propertyName, Type type) : 
+        public ValueNotFoundException(string propertyName, Type type) :
             base("Property {0} not found while deserializing type {1}".FormatWith(propertyName, type.Name))
         { }
     }

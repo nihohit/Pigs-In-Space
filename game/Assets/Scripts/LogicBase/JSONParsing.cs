@@ -1,7 +1,5 @@
-﻿using System;
+﻿using Assets.Scripts.Base;
 using System.Collections.Generic;
-using System.Linq;
-using Assets.Scripts.Base;
 using UnityEngine;
 
 namespace Assets.Scripts.LogicBase
@@ -13,7 +11,7 @@ namespace Assets.Scripts.LogicBase
         protected override EquipmentPiece ConvertToObject(Dictionary<string, object> item)
         {
             //TODO - debugging only. reduce to single line
-            var temp =  new EquipmentPiece(
+            var temp = new EquipmentPiece(
                 (SpecialEffects)TryGetValue<long>(item, "EffectType"),
                 TryGetValue<double>(item, "MinPower"),
                 TryGetValue<double>(item, "MaxPower"),
@@ -32,5 +30,5 @@ namespace Assets.Scripts.LogicBase
         }
     }
 
-    #endregion
+    #endregion EquipmentJSONParser
 }

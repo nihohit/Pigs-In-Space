@@ -1,8 +1,6 @@
-﻿using System;
+﻿using Assets.Scripts.Base;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Assets.Scripts.Base;
 
 namespace Assets.Scripts
 {
@@ -13,7 +11,7 @@ namespace Assets.Scripts
             var newSquares = new List<SquareScript>();
             newSquares.Add(original);
 
-            for (int i = 0; i < size; i++ )
+            for (int i = 0; i < size; i++)
             {
                 var addedSquares = newSquares.SelectMany(square => square.GetNeighbours(true)).Distinct().Materialize(); ;
                 newSquares.AddRange(addedSquares);

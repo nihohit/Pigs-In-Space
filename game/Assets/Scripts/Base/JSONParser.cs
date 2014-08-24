@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -7,7 +6,7 @@ namespace Assets.Scripts.Base
 {
     #region JSONParser
 
-    public abstract class JSONParser<T> 
+    public abstract class JSONParser<T>
     {
         #region public methods
 
@@ -22,23 +21,23 @@ namespace Assets.Scripts.Base
             }
         }
 
-        #endregion
+        #endregion public methods
 
         #region private methods
 
         private ValType TryGetValue<ValType>(Dictionary<string, object> dict, string propertyName, bool failIfNotFound)
         {
             object value = null;
-            if(!dict.TryGetValue(propertyName, out value))
+            if (!dict.TryGetValue(propertyName, out value))
             {
-                if(failIfNotFound)
+                if (failIfNotFound)
                 {
                     throw new ValueNotFoundException(propertyName, typeof(T));
                 }
                 return default(ValType);
             }
 
-            if(!(value is ValType))
+            if (!(value is ValType))
             {
                 throw new WrongValueType(propertyName, typeof(ValType), value.GetType());
             }
@@ -63,8 +62,8 @@ namespace Assets.Scripts.Base
 
         protected abstract T ConvertToObject(Dictionary<string, object> item);
 
-        #endregion
+        #endregion private methods
     }
 
-    #endregion
+    #endregion JSONParser
 }

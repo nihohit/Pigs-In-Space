@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using Assets.Scripts.Base;
+﻿using Assets.Scripts.Base;
+using System.Collections.Generic;
 
 namespace Assets.Scripts.UnityBase
 {

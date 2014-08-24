@@ -35,7 +35,6 @@ using System.Text;
 
 namespace Assets.Scripts.Base
 {
-
     // Example usage:
     //
     //  using UnityEngine;
@@ -94,16 +93,16 @@ namespace Assets.Scripts.Base
             return Parser.Parse(json);
         }
 
-        sealed class Parser : IDisposable
+        private sealed class Parser : IDisposable
         {
-            const string WORD_BREAK = "{}[],:\"";
+            private const string WORD_BREAK = "{}[],:\"";
 
             public static bool IsWordBreak(char c)
             {
                 return Char.IsWhiteSpace(c) || WORD_BREAK.IndexOf(c) != -1;
             }
 
-            enum TOKEN
+            private enum TOKEN
             {
                 NONE,
                 CURLY_OPEN,
@@ -119,9 +118,9 @@ namespace Assets.Scripts.Base
                 NULL
             };
 
-            StringReader json;
+            private StringReader json;
 
-            Parser(string jsonString)
+            private Parser(string jsonString)
             {
                 json = new StringReader(jsonString);
             }
@@ -140,7 +139,7 @@ namespace Assets.Scripts.Base
                 json = null;
             }
 
-            Dictionary<string, object> ParseObject()
+            private Dictionary<string, object> ParseObject()
             {
                 Dictionary<string, object> table = new Dictionary<string, object>();
 
@@ -154,10 +153,12 @@ namespace Assets.Scripts.Base
                     {
                         case TOKEN.NONE:
                             return null;
+
                         case TOKEN.COMMA:
                             continue;
                         case TOKEN.CURLY_CLOSE:
                             return table;
+
                         default:
                             // name
                             string name = ParseString();
@@ -181,7 +182,7 @@ namespace Assets.Scripts.Base
                 }
             }
 
-            List<object> ParseArray()
+            private List<object> ParseArray()
             {
                 List<object> array = new List<object>();
 
@@ -198,11 +199,13 @@ namespace Assets.Scripts.Base
                     {
                         case TOKEN.NONE:
                             return null;
+
                         case TOKEN.COMMA:
                             continue;
                         case TOKEN.SQUARED_CLOSE:
                             parsing = false;
                             break;
+
                         default:
                             object value = ParseByToken(nextToken);
 
@@ -214,36 +217,43 @@ namespace Assets.Scripts.Base
                 return array;
             }
 
-            object ParseValue()
+            private object ParseValue()
             {
                 TOKEN nextToken = NextToken;
                 return ParseByToken(nextToken);
             }
 
-            object ParseByToken(TOKEN token)
+            private object ParseByToken(TOKEN token)
             {
                 switch (token)
                 {
                     case TOKEN.STRING:
                         return ParseString();
+
                     case TOKEN.NUMBER:
                         return ParseNumber();
+
                     case TOKEN.CURLY_OPEN:
                         return ParseObject();
+
                     case TOKEN.SQUARED_OPEN:
                         return ParseArray();
+
                     case TOKEN.TRUE:
                         return true;
+
                     case TOKEN.FALSE:
                         return false;
+
                     case TOKEN.NULL:
                         return null;
+
                     default:
                         return null;
                 }
             }
 
-            string ParseString()
+            private string ParseString()
             {
                 StringBuilder s = new StringBuilder();
                 char c;
@@ -254,7 +264,6 @@ namespace Assets.Scripts.Base
                 bool parsing = true;
                 while (parsing)
                 {
-
                     if (json.Peek() == -1)
                     {
                         parsing = false;
@@ -267,6 +276,7 @@ namespace Assets.Scripts.Base
                         case '"':
                             parsing = false;
                             break;
+
                         case '\\':
                             if (json.Peek() == -1)
                             {
@@ -282,21 +292,27 @@ namespace Assets.Scripts.Base
                                 case '/':
                                     s.Append(c);
                                     break;
+
                                 case 'b':
                                     s.Append('\b');
                                     break;
+
                                 case 'f':
                                     s.Append('\f');
                                     break;
+
                                 case 'n':
                                     s.Append('\n');
                                     break;
+
                                 case 'r':
                                     s.Append('\r');
                                     break;
+
                                 case 't':
                                     s.Append('\t');
                                     break;
+
                                 case 'u':
                                     var hex = new char[4];
 
@@ -309,6 +325,7 @@ namespace Assets.Scripts.Base
                                     break;
                             }
                             break;
+
                         default:
                             s.Append(c);
                             break;
@@ -318,7 +335,7 @@ namespace Assets.Scripts.Base
                 return s.ToString();
             }
 
-            object ParseNumber()
+            private object ParseNumber()
             {
                 string number = NextWord;
 
@@ -334,7 +351,7 @@ namespace Assets.Scripts.Base
                 return parsedDouble;
             }
 
-            void EatWhitespace()
+            private void EatWhitespace()
             {
                 while (Char.IsWhiteSpace(PeekChar))
                 {
@@ -347,7 +364,7 @@ namespace Assets.Scripts.Base
                 }
             }
 
-            char PeekChar
+            private char PeekChar
             {
                 get
                 {
@@ -355,7 +372,7 @@ namespace Assets.Scripts.Base
                 }
             }
 
-            char NextChar
+            private char NextChar
             {
                 get
                 {
@@ -363,7 +380,7 @@ namespace Assets.Scripts.Base
                 }
             }
 
-            string NextWord
+            private string NextWord
             {
                 get
                 {
@@ -383,7 +400,7 @@ namespace Assets.Scripts.Base
                 }
             }
 
-            TOKEN NextToken
+            private TOKEN NextToken
             {
                 get
                 {
@@ -398,21 +415,28 @@ namespace Assets.Scripts.Base
                     {
                         case '{':
                             return TOKEN.CURLY_OPEN;
+
                         case '}':
                             json.Read();
                             return TOKEN.CURLY_CLOSE;
+
                         case '[':
                             return TOKEN.SQUARED_OPEN;
+
                         case ']':
                             json.Read();
                             return TOKEN.SQUARED_CLOSE;
+
                         case ',':
                             json.Read();
                             return TOKEN.COMMA;
+
                         case '"':
                             return TOKEN.STRING;
+
                         case ':':
                             return TOKEN.COLON;
+
                         case '0':
                         case '1':
                         case '2':
@@ -431,8 +455,10 @@ namespace Assets.Scripts.Base
                     {
                         case "false":
                             return TOKEN.FALSE;
+
                         case "true":
                             return TOKEN.TRUE;
+
                         case "null":
                             return TOKEN.NULL;
                     }
@@ -452,11 +478,11 @@ namespace Assets.Scripts.Base
             return Serializer.Serialize(obj);
         }
 
-        sealed class Serializer
+        private sealed class Serializer
         {
-            StringBuilder builder;
+            private StringBuilder builder;
 
-            Serializer()
+            private Serializer()
             {
                 builder = new StringBuilder();
             }
@@ -470,7 +496,7 @@ namespace Assets.Scripts.Base
                 return instance.builder.ToString();
             }
 
-            void SerializeValue(object value)
+            private void SerializeValue(object value)
             {
                 IList asList;
                 IDictionary asDict;
@@ -506,7 +532,7 @@ namespace Assets.Scripts.Base
                 }
             }
 
-            void SerializeObject(IDictionary obj)
+            private void SerializeObject(IDictionary obj)
             {
                 bool first = true;
 
@@ -530,7 +556,7 @@ namespace Assets.Scripts.Base
                 builder.Append('}');
             }
 
-            void SerializeArray(IList anArray)
+            private void SerializeArray(IList anArray)
             {
                 builder.Append('[');
 
@@ -551,7 +577,7 @@ namespace Assets.Scripts.Base
                 builder.Append(']');
             }
 
-            void SerializeString(string str)
+            private void SerializeString(string str)
             {
                 builder.Append('\"');
 
@@ -563,24 +589,31 @@ namespace Assets.Scripts.Base
                         case '"':
                             builder.Append("\\\"");
                             break;
+
                         case '\\':
                             builder.Append("\\\\");
                             break;
+
                         case '\b':
                             builder.Append("\\b");
                             break;
+
                         case '\f':
                             builder.Append("\\f");
                             break;
+
                         case '\n':
                             builder.Append("\\n");
                             break;
+
                         case '\r':
                             builder.Append("\\r");
                             break;
+
                         case '\t':
                             builder.Append("\\t");
                             break;
+
                         default:
                             int codepoint = Convert.ToInt32(c);
                             if ((codepoint >= 32) && (codepoint <= 126))
@@ -599,7 +632,7 @@ namespace Assets.Scripts.Base
                 builder.Append('\"');
             }
 
-            void SerializeOther(object value)
+            private void SerializeOther(object value)
             {
                 // NOTE: decimals lose precision during serialization.
                 // They always have, I'm just letting you know.

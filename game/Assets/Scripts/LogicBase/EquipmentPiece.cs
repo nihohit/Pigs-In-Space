@@ -1,9 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using Assets.Scripts.Base;
-using UnityEngine;
-using System.Linq;
+﻿using Assets.Scripts.Base;
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
 namespace Assets.Scripts.LogicBase
 {
@@ -14,14 +14,14 @@ namespace Assets.Scripts.LogicBase
     public delegate IEnumerator TimedSquareEffect(SquareScript square);
 
     [Flags]
-    public enum SpecialEffects 
-    { 
-        None = 0, 
-        RockBreaking = 1, 
-        Piercing = 2, 
+    public enum SpecialEffects
+    {
+        None = 0,
+        RockBreaking = 1,
+        Piercing = 2,
     }
 
-    #endregion
+    #endregion enums and delegate
 
     #region ActionableItem
 
@@ -52,7 +52,7 @@ namespace Assets.Scripts.LogicBase
 
         #region constructors
 
-        public ActionableItem(SpecialEffects type, double minPower, double maxPower, 
+        public ActionableItem(SpecialEffects type, double minPower, double maxPower,
             float range, Entity owner, int shotsAmount, int shotSpread, int effectSize)
         {
             Range = range;
@@ -67,7 +67,7 @@ namespace Assets.Scripts.LogicBase
             m_hash = Hasher.GetHashCode(Range, MinPower, MaxPower, ShotsAmount, ShotSpread, EffectSize, EffectSize);
         }
 
-        #endregion constructor
+        #endregion constructors
 
         #region public methods
 
@@ -76,7 +76,7 @@ namespace Assets.Scripts.LogicBase
             var item = obj as ActionableItem;
             return item != null &&
                 Range == item.Range &&
-                MinPower == item.MinPower && 
+                MinPower == item.MinPower &&
                 MaxPower == item.MaxPower &&
                 ShotsAmount == item.ShotsAmount &&
                 ShotSpread == item.ShotSpread &&
@@ -119,7 +119,7 @@ namespace Assets.Scripts.LogicBase
             return m_hash;
         }
 
-        #endregion
+        #endregion public methods
 
         #region private methods
 
@@ -134,7 +134,6 @@ namespace Assets.Scripts.LogicBase
                 square.TerrainType = TerrainType.Empty;
             }
         }
-
 
         private void ActOn(SquareScript square)
         {
@@ -151,7 +150,6 @@ namespace Assets.Scripts.LogicBase
                 }
             }
         }
-            
 
         private IEnumerable<SquareScript> FindHitSquares(SquareScript target)
         {
@@ -201,8 +199,8 @@ namespace Assets.Scripts.LogicBase
 
         #region constructors
 
-        public EquipmentPiece(SpecialEffects type, double minPower, double maxPower, float range, int shotsAmount, 
-            int shotSpread, int effectSize, string name, double energyCost, Loot cost, 
+        public EquipmentPiece(SpecialEffects type, double minPower, double maxPower, float range, int shotsAmount,
+            int shotSpread, int effectSize, string name, double energyCost, Loot cost,
             IEnumerable<EquipmentPiece> upgrades) :
             base(type, minPower, maxPower, range, Entity.Player, shotsAmount, shotSpread, effectSize)
         {
@@ -213,7 +211,7 @@ namespace Assets.Scripts.LogicBase
             m_hash = Hasher.GetHashCode(base.GetHashCode(), Name, Cost, EnergyCost);
         }
 
-        #endregion constructor
+        #endregion constructors
 
         #region object overrides
 
@@ -236,7 +234,7 @@ namespace Assets.Scripts.LogicBase
             return m_hash;
         }
 
-        #endregion
+        #endregion object overrides
     }
 
     #endregion EquipmentPiece
