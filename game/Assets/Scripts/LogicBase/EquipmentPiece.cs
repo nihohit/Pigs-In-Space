@@ -2,7 +2,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace Assets.Scripts.LogicBase
@@ -40,7 +39,7 @@ namespace Assets.Scripts.LogicBase
 
         public int ShotsAmount { get; private set; }
 
-        public int ShotSpread { get; private set; }
+        public float ShotSpread { get; private set; }
 
         public double MinPower { get; private set; }
 
@@ -53,7 +52,7 @@ namespace Assets.Scripts.LogicBase
         #region constructors
 
         public ActionableItem(SpecialEffects type, double minPower, double maxPower,
-            float range, Entity owner, int shotsAmount, int shotSpread, int effectSize)
+            float range, Entity owner, int shotsAmount, float shotSpread, int effectSize)
         {
             Range = range;
             Effects = type;
@@ -87,23 +86,11 @@ namespace Assets.Scripts.LogicBase
 
         public virtual IEnumerator Effect(SquareScript square)
         {
-            // shoot random shots at the square and its surroundings
-            var squares = new List<SquareScript>();
-            squares.Add(square);
-            for (int i = 0; i < ShotSpread; i++)
-            {
-                var tempSquares = squares.Select(target => target).Materialize();
-                foreach (var potentialTarget in tempSquares)
-                {
-                    squares.AddRange(potentialTarget.GetNeighbours(true));
-                }
-            }
-
             float timePerShot = ((0.2f + (ShotsAmount / 10)) / (ShotsAmount));
 
             for (int i = 0; i < ShotsAmount; i++)
             {
-                ActOn(squares.ChooseRandomValue());
+                ActOn(square);
                 yield return new WaitForSeconds(timePerShot);
             }
         }
@@ -155,7 +142,7 @@ namespace Assets.Scripts.LogicBase
         {
             var laser = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("laser"), Entity.Player.Location.transform.position, Quaternion.identity));
             var ShotScript = laser.GetComponent<ShotScript>();
-            ShotScript.Init(target, Entity.Player.Location, "Laser shot", Range, Effects.HasFlag(SpecialEffects.Piercing), EffectSize);
+            ShotScript.Init(target, Entity.Player.Location, "Laser shot", Range, Effects.HasFlag(SpecialEffects.Piercing), EffectSize, ShotSpread);
             return ShotScript.HitSquares;
         }
 
@@ -200,7 +187,7 @@ namespace Assets.Scripts.LogicBase
         #region constructors
 
         public EquipmentPiece(SpecialEffects type, double minPower, double maxPower, float range, int shotsAmount,
-            int shotSpread, int effectSize, string name, double energyCost, Loot cost,
+            float shotSpread, int effectSize, string name, double energyCost, Loot cost,
             IEnumerable<EquipmentPiece> upgrades) :
             base(type, minPower, maxPower, range, Entity.Player, shotsAmount, shotSpread, effectSize)
         {

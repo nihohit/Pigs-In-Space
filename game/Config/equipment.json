@@ -27,7 +27,7 @@
 	"MaxPower" :  5.0, 
 	"Range": 7.0, 
     "ShotSAmount" :  5,
-    "ShotSpread" :  1, 
+    "ShotSpread" :  1.0, 
 	"EnergyCost" :  4.0
 },
 {

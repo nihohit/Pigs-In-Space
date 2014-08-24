@@ -214,7 +214,7 @@ public class MapSceneScript : MonoBehaviour
             }
         }
 
-        if(m_equipmentChange && m_freeToEndTurn)
+        if (m_equipmentChange && m_freeToEndTurn)
         {
             m_freeToEndTurn = false;
             yield return new WaitForSeconds(0.15f);

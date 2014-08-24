@@ -1,6 +1,5 @@
 ﻿using Assets.Scripts.Base;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace Assets.Scripts.LogicBase
 {
@@ -16,7 +15,7 @@ namespace Assets.Scripts.LogicBase
                 TryGetValueAndFail<float>(item, "MaxPower"),
                 TryGetValueAndFail<float>(item, "Range"),
                 TryGetValueOrSetDefaultValue<int>(item, "ShotSAmount", 1),
-                TryGetValueOrSetDefaultValue<int>(item, "ShotSpread", 0),
+                TryGetValueOrSetDefaultValue<float>(item, "ShotSpread", 0),
                 TryGetValueOrSetDefaultValue<int>(item, "EffectSize", 0),
                 TryGetValueAndFail<string>(item, "Name"),
                 TryGetValueAndFail<float>(item, "EnergyCost"),

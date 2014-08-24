@@ -1,4 +1,5 @@
-﻿using Assets.Scripts.UnityBase;
+﻿using Assets.Scripts.Base;
+using Assets.Scripts.UnityBase;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -23,13 +24,13 @@ namespace Assets.Scripts
 
         #endregion fields
 
-        public void Init(SquareScript to, SquareScript from, string name, float range, bool piercing, int effectSize)
+        public void Init(SquareScript to, SquareScript from, string name, float range, bool piercing, int effectSize, float shotSpread)
         {
             m_effectSize = effectSize;
             m_hitSquares = new List<SquareScript>();
             m_piercing = piercing;
             m_startingPoint = from.transform.position;
-            m_endPoint = RaycastToTarget(to.transform.position, m_startingPoint, range);
+            m_endPoint = RaycastToTarget(to.transform.position, m_startingPoint, range, shotSpread);
             transform.position = m_startingPoint;
             m_started = true;
             var differenceVector = m_endPoint - m_startingPoint;
@@ -43,12 +44,12 @@ namespace Assets.Scripts
             Destroy(gameObject, 1f);
         }
 
-        private Vector2 RaycastToTarget(Vector2 to, Vector2 from, float range)
+        private Vector2 RaycastToTarget(Vector2 to, Vector2 from, float range, float shotSpread)
         {
             var layerMask = 1 << LayerMask.NameToLayer("Ground");
 
             // return all colliders that the ray passes through
-            var rayHits = Physics2D.RaycastAll(from, to - from, range, layerMask);
+            var rayHits = Physics2D.RaycastAll(from, GetDirection(to, from, range, shotSpread), range, layerMask);
             foreach (var rayHit in rayHits)
             {
                 var square = rayHit.collider.gameObject.GetComponent<SquareScript>();
@@ -65,6 +66,17 @@ namespace Assets.Scripts
             var lastHit = rayHits[rayHits.Length - 1];
             m_hitSquares.Add(lastHit.collider.gameObject.GetComponent<SquareScript>());
             return lastHit.point;
+        }
+
+        private Vector2 GetDirection(Vector2 to, Vector2 from, float range, float shotSpread)
+        {
+            var direction = to - from;
+            return (direction.normalized * range) + GetShotSpread(shotSpread);
+        }
+
+        private Vector2 GetShotSpread(float shotSpread)
+        {
+            return new Vector2((float)Randomiser.NextDouble(-shotSpread, shotSpread), (float)Randomiser.NextDouble(-shotSpread, shotSpread));
         }
 
         // This only checks if the square in general blocks, it ignores whether a shot is piercing
