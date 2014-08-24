@@ -10,23 +10,18 @@ namespace Assets.Scripts.LogicBase
     {
         protected override EquipmentPiece ConvertToObject(Dictionary<string, object> item)
         {
-            //TODO - debugging only. reduce to single line
-            var temp = new EquipmentPiece(
-                (SpecialEffects)TryGetValue<long>(item, "EffectType"),
-                TryGetValue<double>(item, "MinPower"),
-                TryGetValue<double>(item, "MaxPower"),
-                (float)TryGetValue<double>(item, "Range"),
-                (int)TryGetValue<long>(item, "ShotSAmount", 1),
-                (int)TryGetValue<long>(item, "ShotSpread", 0),
-                (int)TryGetValue<long>(item, "EffectSize", 0),
-                TryGetValue<string>(item, "Name"),
-                TryGetValue<double>(item, "EnergyCost"),
-                TryGetValue<Loot>(item, "Cost", null),
-                TryGetValue<IEnumerable<EquipmentPiece>>(item, "Upgrades", null));
-
-            Debug.Log(temp.ToString());
-
-            return temp;
+            return new EquipmentPiece(
+                (SpecialEffects)TryGetValueOrSetDefaultValue<int>(item, "EffectType", 0),
+                TryGetValueAndFail<float>(item, "MinPower"),
+                TryGetValueAndFail<float>(item, "MaxPower"),
+                TryGetValueAndFail<float>(item, "Range"),
+                TryGetValueOrSetDefaultValue<int>(item, "ShotSAmount", 1),
+                TryGetValueOrSetDefaultValue<int>(item, "ShotSpread", 0),
+                TryGetValueOrSetDefaultValue<int>(item, "EffectSize", 0),
+                TryGetValueAndFail<string>(item, "Name"),
+                TryGetValueAndFail<float>(item, "EnergyCost"),
+                TryGetValueOrSetDefaultValue<Loot>(item, "Cost", null),
+                TryGetValueOrSetDefaultValue<IEnumerable<EquipmentPiece>>(item, "Upgrades", null));
         }
     }
 

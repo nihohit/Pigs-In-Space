@@ -25,16 +25,13 @@ namespace Assets.Scripts.Base
 
         #region private methods
 
-        private ValType TryGetValue<ValType>(Dictionary<string, object> dict, string propertyName, bool failIfNotFound)
+        private bool TryGetValue<ValType>(Dictionary<string, object> dict, string propertyName, out ValType result)
         {
+            result = default(ValType);
             object value = null;
             if (!dict.TryGetValue(propertyName, out value))
             {
-                if (failIfNotFound)
-                {
-                    throw new ValueNotFoundException(propertyName, typeof(T));
-                }
-                return default(ValType);
+                return false;
             }
 
             if (!(value is ValType))
@@ -42,22 +39,29 @@ namespace Assets.Scripts.Base
                 throw new WrongValueType(propertyName, typeof(ValType), value.GetType());
             }
 
-            return (ValType)value;
+            result = (ValType)value;
+            return true;
         }
 
-        protected ValType TryGetValue<ValType>(Dictionary<string, object> dict, string propertyName)
+        protected ValType TryGetValueAndFail<ValType>(Dictionary<string, object> dict, string propertyName)
         {
-            return TryGetValue<ValType>(dict, propertyName, true);
-        }
-
-        protected ValType TryGetValue<ValType>(Dictionary<string, object> dict, string propertyName, ValType defaultValue)
-        {
-            var initialResult = TryGetValue<ValType>(dict, propertyName, false);
-            if (EqualityComparer<ValType>.Default.Equals(initialResult, default(ValType)))
+            ValType result;
+            if (!TryGetValue<ValType>(dict, propertyName, out result))
             {
-                initialResult = defaultValue;
+                throw new ValueNotFoundException(propertyName, typeof(T));
             }
-            return initialResult;
+            return result;
+        }
+
+        protected ValType TryGetValueOrSetDefaultValue<ValType>
+            (Dictionary<string, object> dict, string propertyName, ValType defaultValue)
+        {
+            ValType result;
+            if (!TryGetValue<ValType>(dict, propertyName, out result))
+            {
+                result = defaultValue;
+            }
+            return result;
         }
 
         protected abstract T ConvertToObject(Dictionary<string, object> item);

@@ -1,7 +1,6 @@
 [
 {
 	"Name":"pistol",
-	"EffectType": 0, 
 	"MinPower" :  2.0,
 	"MaxPower" :  5.0, 
 	"Range": 5.0, 
@@ -17,7 +16,6 @@
 },
 {
 	"Name":"rifle",
-	"EffectType": 0, 
 	"MinPower" :  3.0,
 	"MaxPower" :  5.0, 
 	"Range": 10.0, 
@@ -25,7 +23,6 @@
 },
 {
 	"Name":"machinegun",
-	"EffectType": 0, 
 	"MinPower" :  3.0,
 	"MaxPower" :  5.0, 
 	"Range": 7.0, 

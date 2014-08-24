@@ -341,13 +341,13 @@ namespace Assets.Scripts.Base
 
                 if (number.IndexOf('.') == -1)
                 {
-                    long parsedInt;
-                    Int64.TryParse(number, out parsedInt);
+                    int parsedInt;
+                    Int32.TryParse(number, out parsedInt);
                     return parsedInt;
                 }
 
-                double parsedDouble;
-                Double.TryParse(number, out parsedDouble);
+                float parsedDouble;
+                Single.TryParse(number, out parsedDouble);
                 return parsedDouble;
             }
 

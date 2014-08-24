@@ -52,9 +52,7 @@ namespace Assets.Scripts
             foreach (var rayHit in rayHits)
             {
                 var square = rayHit.collider.gameObject.GetComponent<SquareScript>();
-                if (BlockingSquare(square) ||
-                    (to.x == square.transform.position.x &&
-                     to.y == square.transform.position.y))
+                if (BlockingSquare(square))
                 {
                     m_hitSquares.Add(square);
                     if (square.TraversingCondition == Traversability.Blocking || !m_piercing)
