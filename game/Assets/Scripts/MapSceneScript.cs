@@ -18,6 +18,8 @@ public class MapSceneScript : MonoBehaviour
 
     public const float UnitsToPixelsRatio = 1f / 100f;
     private bool m_mouseOnUI;
+    private bool m_equipmentChange;
+    private bool m_freeToEndTurn = true;
 
     public static void ChangeGameState(GameState state)
     {
@@ -160,9 +162,15 @@ public class MapSceneScript : MonoBehaviour
                 if (GUI.Button(new Rect(widthPosition, currentHeight, relativeWidth, heightSliver), m_textureManager.GetTexture(equipment)))
                 {
                     if (Event.current.button == 0)
+                    {
                         Entity.Player.LeftHandEquipment = equipment;
+                        m_equipmentChange = true;
+                    }
                     else if (Event.current.button == 1)
+                    {
                         Entity.Player.RightHandEquipment = equipment;
+                        m_equipmentChange = true;
+                    }
                 }
             }
         }
@@ -201,9 +209,18 @@ public class MapSceneScript : MonoBehaviour
             if (Entity.Player.Move(Entity.Player.Location.GetNextSquare(x, y)))
             {
                 //transform.position = new Vector3(m_playerSprite.transform.position.x, m_playerSprite.transform.position.y, transform.position.z);
-                yield return new WaitForSeconds(0.25f);
+                yield return new WaitForSeconds(0.15f);
                 Entity.Player.EndTurn(0);
             }
+        }
+
+        if(m_equipmentChange && m_freeToEndTurn)
+        {
+            m_freeToEndTurn = false;
+            yield return new WaitForSeconds(0.15f);
+            Entity.Player.EndTurn(0);
+            m_freeToEndTurn = true;
+            m_equipmentChange = false;
         }
 
         if (Input.GetMouseButtonUp(0) && !m_mouseOnUI)
