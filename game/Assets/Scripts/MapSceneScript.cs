@@ -108,30 +108,20 @@ public class MapSceneScript : MonoBehaviour
 
     private void OnGUI()
     {
-        var unit = Screen.height / 576;
-
-        var guiStyle = new GUIStyle
-        {
-            fontStyle = FontStyle.Bold,
-            fontSize = Convert.ToInt32(10 * unit),
-            normal = new GUIStyleState
-            {
-                textColor = Color.white,
-            },
-        };
+        var unit = (float)Screen.height / 400;
 
         // load game ending message
         if (s_gameState != GameState.Ongoing)
         {
             GUI.BeginGroup(new Rect(320, 265, 384, 256));
             GUI.DrawTexture(new Rect(0, 0, 384, 256), m_textureManager.GetUIBackground(), ScaleMode.StretchToFill);
-            guiStyle.fontSize = Convert.ToInt32(32 * unit);
+            s_guiStyle.fontSize = Convert.ToInt32(32 * unit);
             var message = (s_gameState == GameState.Lost) ? "Game Over" : "You Win :)";
-            GUI.Label(new Rect(110, 45, 60, 60), message, guiStyle);
-            guiStyle.fontSize = Convert.ToInt32(10 * unit);
-            GUI.Label(new Rect(176, 127, 30, 30), String.Format("X {0}", (int)Entity.Player.BlueCrystal), guiStyle);
-            GUI.Label(new Rect(176, 165, 30, 30), String.Format("X {0}", EnemyEntity.KilledEnemies), guiStyle);
-            GUI.Label(new Rect(176, 205, 30, 30), String.Format("X {0}", (int)Hive.KilledHives), guiStyle);
+            GUI.Label(new Rect(110, 45, 60, 60), message, s_guiStyle);
+            s_guiStyle.fontSize = Convert.ToInt32(10 * unit);
+            GUI.Label(new Rect(176, 127, 30, 30), String.Format("X {0}", (int)Entity.Player.BlueCrystal), s_guiStyle);
+            GUI.Label(new Rect(176, 165, 30, 30), String.Format("X {0}", EnemyEntity.KilledEnemies), s_guiStyle);
+            GUI.Label(new Rect(176, 205, 30, 30), String.Format("X {0}", (int)Hive.KilledHives), s_guiStyle);
 
             if (GUI.Button(new Rect(110, 230, 150, 30), "Spaceship"))
             {
@@ -163,19 +153,19 @@ public class MapSceneScript : MonoBehaviour
 
             // display stats
             DrawSpriteToGUI(SpriteManager.CardiacIcon, new Rect(oneSliver, currentHeight, 24 * unit, 24 * unit));
-            GUI.Label(new Rect(oneSliver + 26 * unit, 24 * unit, 22 * unit, 22 * unit), String.Format("X {0}", (int)Entity.Player.Health), guiStyle);
+            GUI.Label(new Rect(oneSliver + 26 * unit, 24 * unit, 22 * unit, 22 * unit), String.Format("X {0}", (int)Entity.Player.Health), s_guiStyle);
 
             currentHeight += heightSliver;
             DrawSpriteToGUI(SpriteManager.LightningIcon, new Rect(oneSliver, currentHeight, 24 * unit, 24 * unit));
-            GUI.Label(new Rect(oneSliver + 26 * unit, currentHeight + 8 * unit, 22 * unit, 22 * unit), String.Format("X {0}", (int)Entity.Player.Energy), guiStyle);
+            GUI.Label(new Rect(oneSliver + 26 * unit, currentHeight + 8 * unit, 22 * unit, 22 * unit), String.Format("X {0}", (int)Entity.Player.Energy), s_guiStyle);
 
             currentHeight += heightSliver;
             DrawSpriteToGUI(SpriteManager.OxygenTank, new Rect(oneSliver, currentHeight, 24 * unit, 24 * unit));
-            GUI.Label(new Rect(oneSliver + 26 * unit, currentHeight + 8 * unit, 22 * unit, 22 * unit), String.Format("X {0}", (int)Entity.Player.Oxygen), guiStyle);
+            GUI.Label(new Rect(oneSliver + 26 * unit, currentHeight + 8 * unit, 22 * unit, 22 * unit), String.Format("X {0}", (int)Entity.Player.Oxygen), s_guiStyle);
 
             currentHeight += heightSliver;
             DrawSpriteToGUI(SpriteManager.Crystal, new Rect(oneSliver, currentHeight, 24 * unit, 24 * unit));
-            GUI.Label(new Rect(oneSliver + 26 * unit, currentHeight + 8 * unit, 22 * unit, 22 * unit), String.Format("X {0}", (int)Entity.Player.BlueCrystal), guiStyle);
+            GUI.Label(new Rect(oneSliver + 26 * unit, currentHeight + 8 * unit, 22 * unit, 22 * unit), String.Format("X {0}", (int)Entity.Player.BlueCrystal), s_guiStyle);
 
             // separate status and weapons 
             currentHeight += heightSliver;
