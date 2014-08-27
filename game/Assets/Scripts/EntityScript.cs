@@ -416,10 +416,16 @@ public class EnemyEntity : AttackingEntity, IHostileEntity
 
 public class Hive : Entity, IHostileEntity
 {
-    private static double s_chanceToSpawn = 0.01;
-    private static int s_killed_Hives = 0;
+    private static double s_chanceToSpawn;
+    private static int s_killed_Hives;
 
     public static int KilledHives { get { return s_killed_Hives; } }
+
+    public static void Init()
+    {
+        s_chanceToSpawn = 0.01;
+        s_killed_Hives = 0;
+    }
 
     public Hive(double health, SquareScript location, IUnityMarker image) :
         base(health, location, image)
