@@ -171,7 +171,6 @@ public abstract class AttackingEntity : Entity
         {
             return false;
         }
-        ApplyGroundEffects(newLocation);
         Location.OccupyingEntity = null;
         newLocation.OccupyingEntity = this;
         Location = newLocation;
@@ -214,7 +213,7 @@ public abstract class AttackingEntity : Entity
         {
             if (location.GroundEffect.Type == GroundEffectType.Acid)
             {
-                Damage(location.GroundEffect.Damage);
+                Damage(location.GroundEffect.Power);
             }
         }
     }
@@ -298,6 +297,7 @@ public class PlayerEntity : AttackingEntity
 
     public void EndTurn(double energyCost)
     {
+        ApplyGroundEffects(Location);
         Energy -= energyCost;
         double timeSinceLastAction = m_playerActionTimer.ElapsedMilliseconds / 1000.0;
         m_playerActionTimer.Reset();
@@ -405,6 +405,7 @@ public class EnemyEntity : AttackingEntity, IHostileEntity
             {
                 MoveTowards();
             }
+            ApplyGroundEffects(this.Location);
         }
     }
 
@@ -415,7 +416,6 @@ public class EnemyEntity : AttackingEntity, IHostileEntity
         var absY = Math.Abs(direction.y);
         var possibleLocationMovingX = Location.GetNextSquare((int)(direction.x / absX), 0);
         var possibleLocationMovingY = Location.GetNextSquare(0, (int)(direction.y / absY));
-        SquareScript newLocation;
         if (absX > absY)
         {
             if(!TryMoveTo(possibleLocationMovingX))

@@ -36,15 +36,7 @@ public class MapSceneScript : MonoBehaviour
         //Clear and clean everything for reusablity of the game
         EnemiesManager.Init();
         s_Markers.Clear();
-        s_guiStyle = new GUIStyle
-        {
-            fontStyle = FontStyle.Bold,
-            fontSize = 12,
-            normal = new GUIStyleState
-            {
-                textColor = Color.white,
-            },
-        };
+        s_squaresWithEffect.Clear();
 
         m_textureManager = new TextureManager();
         SquareScript.LoadFromTMX(@"Maps\testMap3.tmx");
@@ -101,8 +93,7 @@ public class MapSceneScript : MonoBehaviour
 
     private void OnGUI()
     {
-        var heightSliver = Screen.height / 12f;
-        var unit = heightSliver / 48;
+        var unit = Screen.height / 576;
 
         var guiStyle = new GUIStyle
         {
@@ -129,7 +120,7 @@ public class MapSceneScript : MonoBehaviour
 
             if (GUI.Button(new Rect(110, 230, 150, 30), "Spaceship"))
             {
-                Application.LoadLevel("SpaceShipScene");             
+                Application.LoadLevel("SpaceShipScene");
             }
             GUI.EndGroup();
 
@@ -139,9 +130,9 @@ public class MapSceneScript : MonoBehaviour
         if (Entity.Player != null)
         {
             // define the area of the UI
+            var heightSliver = unit * 48;
             var relativeWidth = heightSliver * 4 / 3;
             var oneSliver = Screen.width - relativeWidth;
-            //var twoSlivers = Screen.width - 2 * relativeWidth;
             var currentHeight = 16f;
             Rect UIArea = new Rect(oneSliver, 0, 2 * relativeWidth, Screen.height);
 

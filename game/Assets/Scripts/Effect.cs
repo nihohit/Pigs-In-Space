@@ -12,12 +12,12 @@ namespace Assets.Scripts
     public class GroundEffect
     {
         public int Duration { get; set; }
-        public double Damage { get; private set; } 
+        public double Power { get; private set; } 
         public GroundEffectType Type { get; set; }
         public Sprite Sprite { get { return Type.EffectSprite; } }
 
-        public static GroundEffect NoEffect = new GroundEffect { Duration = 0, Damage = 0, Type = GroundEffectType.None };
-        public static GroundEffect StandardAcid { get { return new GroundEffect { Duration = 10, Damage = 1.0, Type = GroundEffectType.Acid }; } } 
+        public static GroundEffect NoEffect = new GroundEffect { Duration = 0, Power = 0, Type = GroundEffectType.None };
+        public static GroundEffect StandardAcid { get { return new GroundEffect { Duration = 10, Power = 1.0, Type = GroundEffectType.Acid }; } } 
     }
 
     public class GroundEffectType
