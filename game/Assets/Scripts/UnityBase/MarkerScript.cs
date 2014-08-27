@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Assets.scripts.UnityBase
+namespace Assets.Scripts.UnityBase
 {
     /// <summary>
     /// A script meant to handle movement and display of sprites.

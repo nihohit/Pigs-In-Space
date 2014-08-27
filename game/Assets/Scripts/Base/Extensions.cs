@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Assets.scripts.Base
+namespace Assets.Scripts.Base
 {
     public interface IIdentifiable
     {
@@ -43,6 +43,11 @@ namespace Assets.scripts.Base
         public static float DegreesToRadians(this float degrees)
         {
             return (float)Math.PI * degrees / 180;
+        }
+
+        public static bool HasFlag(this Enum value, Enum flag)
+        {
+            return (Convert.ToInt64(value) & Convert.ToInt64(flag)) > 0;
         }
 
         #region timing

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Assets.scripts.Base
+namespace Assets.Scripts.Base
 {
     /// <summary>
     /// A static class that holds all the timers running throughout the program.

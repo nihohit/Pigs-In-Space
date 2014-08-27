@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Assets.scripts.Base
+namespace Assets.Scripts.Base
 {
     /// <summary>
     /// Initializes a single Random object for the whole program, in order to overcome flaws in Random implementation.

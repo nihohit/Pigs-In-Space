@@ -11,10 +11,14 @@ public class MapSceneScript : MonoBehaviour
 {
     #region private members 
 
+    private const int c_playStartPositionX = 5;
+    private const int c_playStartPositionY = 5;
+
     private Vector2 CameraMax = new Vector2(0f, 0f);        // The maximum x and y coordinates the camera can have.
     private Vector2 CameraMin = new Vector2(0f, 0f);        // The minimum x and y coordinates the camera can have.
     private TextureManager m_textureManager;
     private static Dictionary<Action, Marker> s_Markers = new Dictionary<Action, Marker>();
+    private static GUIStyle s_guiStyle;
 
     /// <summary>
     /// List of all the squares with an active effect, each turn all these effects durability is reduced 
@@ -23,6 +27,8 @@ public class MapSceneScript : MonoBehaviour
     private static GameState s_gameState = GameState.Ongoing;
     public const float UnitsToPixelsRatio = 1f / 100f;
     private bool m_mouseOnUI;
+    private bool m_equipmentChange;
+    private bool m_freeToEndTurn = true;
 
     #endregion
 
@@ -37,10 +43,19 @@ public class MapSceneScript : MonoBehaviour
         EnemiesManager.Init();
         s_Markers.Clear();
         s_squaresWithEffect.Clear();
+        s_guiStyle = new GUIStyle
+        {
+            fontStyle = FontStyle.Bold,
+            fontSize = 12,
+            normal = new GUIStyleState
+            {
+                textColor = Color.white,
+            },
+        };
 
         m_textureManager = new TextureManager();
         SquareScript.LoadFromTMX(@"Maps\testMap3.tmx");
-        Entity.Player = Entity.CreatePlayerEntity(5, 5);
+        Entity.CreatePlayerEntity(c_playStartPositionX, c_playStartPositionY);
 
         var squareSize = SquareScript.PixelsPerSquare * MapSceneScript.UnitsToPixelsRatio; // 1f
 
@@ -170,11 +185,11 @@ public class MapSceneScript : MonoBehaviour
             {
                 GUI.color = new Color32(128, 128, 128, 196);
 
-                if (equipment == Entity.Player.LeftHandEquipment)
+                if (equipment.Equals(Entity.Player.LeftHandEquipment))
                 {
                     GUI.color = new Color32(128, 128, 255, 255);
                 }
-                if (equipment == Entity.Player.RightHandEquipment)
+                if (equipment.Equals(Entity.Player.RightHandEquipment))
                 {
                     GUI.color = new Color32(255, 128, 128, 255);
                 }
@@ -182,9 +197,15 @@ public class MapSceneScript : MonoBehaviour
                 if (GUI.Button(new Rect(oneSliver, currentHeight, relativeWidth, heightSliver / 2), m_textureManager.GetTexture(equipment)))
                 {
                     if (Event.current.button == 0)
+                    {
                         Entity.Player.LeftHandEquipment = equipment;
+                        m_equipmentChange = true;
+                    }
                     else if (Event.current.button == 1)
+                    {
                         Entity.Player.RightHandEquipment = equipment;
+                        m_equipmentChange = true;
+                    }
                 }
 
                 currentHeight += heightSliver / 2;
@@ -229,9 +250,18 @@ public class MapSceneScript : MonoBehaviour
             if (Entity.Player.Move(Entity.Player.Location.GetNextSquare(x, y)))
             {
                 //transform.position = new Vector3(m_playerSprite.transform.position.x, m_playerSprite.transform.position.y, transform.position.z);
-                yield return new WaitForSeconds(0.25f);
+                yield return new WaitForSeconds(0.15f);
                 Entity.Player.EndTurn(0);
             }
+        }
+
+        if (m_equipmentChange && m_freeToEndTurn)
+        {
+            m_freeToEndTurn = false;
+            yield return new WaitForSeconds(0.15f);
+            Entity.Player.EndTurn(0);
+            m_freeToEndTurn = true;
+            m_equipmentChange = false;
         }
 
         if (Input.GetMouseButtonUp(0) && !m_mouseOnUI)

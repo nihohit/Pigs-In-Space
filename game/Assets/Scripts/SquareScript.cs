@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Assets.Scripts.LogicBase;
+using Assets.Scripts.UnityBase;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
 using Assets.Scripts;
-using Assets.scripts.UnityBase;
-using Assets.Scripts.LogicBase;
 using UnityEngine;
 
 public enum Traversability { Walkable, Flyable, Blocking }

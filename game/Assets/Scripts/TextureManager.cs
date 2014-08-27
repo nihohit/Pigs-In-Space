@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Assets.Scripts.LogicBase;
+using System.Collections.Generic;
 using System.Linq;
-using Assets.Scripts.LogicBase;
 using UnityEngine;
 
 public class TextureManager
