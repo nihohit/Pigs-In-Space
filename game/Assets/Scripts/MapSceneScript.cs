@@ -29,7 +29,9 @@ public class MapSceneScript : MonoBehaviour
 
     public void Init()
     {
+        //Clear and clean everything for reusablity of the game
         EnemiesManager.Init();
+        s_Markers.Clear();
         s_guiStyle = new GUIStyle
         {
             fontStyle = FontStyle.Bold,
@@ -72,7 +74,7 @@ public class MapSceneScript : MonoBehaviour
 
     #region UnityMethods
 
-    public void Awake()
+    private void Awake()
     {
         camera.orthographicSize = (Screen.height * UnitsToPixelsRatio);
     }
