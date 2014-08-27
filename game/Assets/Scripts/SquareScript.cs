@@ -594,6 +594,7 @@ public class TmxManager
             case "36": break;
             case "37": SquareScript.GetSquare(x, y).AddLoot(new Loot(UnityEngine.Random.Range(0, 10), false)); break;
             case "38": Entity.CreateHive(x, y); break;
+            case "39": Entity.CreateSlime(x, y); break;
         }
     }
 

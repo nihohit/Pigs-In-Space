@@ -346,8 +346,19 @@ public class MapSceneScript : MonoBehaviour
     public static void AddGroundEffect(GroundEffect effect, int x, int y)
     {
         var squareScript = SquareScript.GetSquare(x, y);
-        squareScript.GroundEffect = effect;
-        s_squaresWithEffect.Add(squareScript);
+        AddGroundEffect(effect, squareScript);
+    }
+
+    /// <summary>
+    /// Add a effect at given location
+    /// </summary>
+    public static void AddGroundEffect(GroundEffect effect, SquareScript square)
+    {
+        if(square.TraversingCondition == Traversability.Walkable)
+        {
+            square.GroundEffect = effect;
+            s_squaresWithEffect.Add(square);
+        }
     }
 
     #endregion
