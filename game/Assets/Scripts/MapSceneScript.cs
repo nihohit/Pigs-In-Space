@@ -8,38 +8,40 @@ public enum GameState { Ongoing, Won, Lost }
 
 public class MapSceneScript : MonoBehaviour
 {
+    #region private members 
+
     private Vector2 CameraMax = new Vector2(0f, 0f);        // The maximum x and y coordinates the camera can have.
     private Vector2 CameraMin = new Vector2(0f, 0f);        // The minimum x and y coordinates the camera can have.
     private TextureManager m_textureManager;
     private static Dictionary<Action, Marker> s_Markers = new Dictionary<Action, Marker>();
     private static GameState s_gameState = GameState.Ongoing;
 
-    private static GUIStyle s_guiStyle = new GUIStyle
-    {
-        fontStyle = FontStyle.Bold,
-        fontSize = 12,
-        normal = new GUIStyleState
-        {
-            textColor = Color.white,
-        },
-    };
-
+    private static GUIStyle s_guiStyle;
     public const float UnitsToPixelsRatio = 1f / 100f;
     private bool m_mouseOnUI;
+
+    #endregion
 
     public static void ChangeGameState(GameState state)
     {
         s_gameState = state;
     }
 
-    public void Awake()
+    public void Init()
     {
-        camera.orthographicSize = (Screen.height * UnitsToPixelsRatio);
-    }
+        //Clear and clean everything for reusablity of the game
+        EnemiesManager.Init();
+        s_Markers.Clear();
+        s_guiStyle = new GUIStyle
+        {
+            fontStyle = FontStyle.Bold,
+            fontSize = 12,
+            normal = new GUIStyleState
+            {
+                textColor = Color.white,
+            },
+        };
 
-    // Use this for initialization
-    private void Start()
-    {
         m_textureManager = new TextureManager();
         SquareScript.LoadFromTMX(@"Maps\testMap3.tmx");
         Entity.Player = Entity.CreatePlayerEntity(5, 5);
@@ -67,6 +69,20 @@ public class MapSceneScript : MonoBehaviour
 
         SquareScript.InitFog();
         Entity.Player.Location.FogOfWar();
+        ChangeGameState(GameState.Ongoing);
+    }
+
+    #region UnityMethods
+
+    private void Awake()
+    {
+        camera.orthographicSize = (Screen.height * UnitsToPixelsRatio);
+    }
+
+    // Use this for initialization
+    private void Start()
+    {
+        Init();
     }
 
     // Update is called once per frame
@@ -84,7 +100,7 @@ public class MapSceneScript : MonoBehaviour
         // load game ending message
         if (s_gameState != GameState.Ongoing)
         {
-            GUI.BeginGroup(new Rect(320, 265, 384, 256));
+            GUI.BeginGroup(new Rect(320, 265, 384, 300));
             GUI.DrawTexture(new Rect(0, 0, 384, 256), m_textureManager.GetUIBackground(), ScaleMode.StretchToFill);
             s_guiStyle.fontSize = 32;
             var message = (s_gameState == GameState.Lost) ? "Game Over" : "You Win :)";
@@ -93,7 +109,14 @@ public class MapSceneScript : MonoBehaviour
             GUI.Label(new Rect(176, 127, 30, 30), String.Format("X {0}", (int)Entity.Player.BlueCrystal), s_guiStyle);
             GUI.Label(new Rect(176, 165, 30, 30), String.Format("X {0}", EnemyEntity.KilledEnemies), s_guiStyle);
             GUI.Label(new Rect(176, 205, 30, 30), String.Format("X {0}", (int)Hive.KilledHives), s_guiStyle);
+
+            if (GUI.Button(new Rect(110, 230, 150, 30), "Spaceship"))
+            {
+                Application.LoadLevel("SpaceShipScene");             
+            }
             GUI.EndGroup();
+
+
         }
 
         if (Entity.Player != null)
@@ -166,6 +189,10 @@ public class MapSceneScript : MonoBehaviour
             }
         }
     }
+
+    #endregion
+
+    #region private methods
 
     private void DrawSpriteToGUI(Sprite sprite, Rect position)
     {
@@ -254,6 +281,10 @@ public class MapSceneScript : MonoBehaviour
         transform.position = new Vector3(targetX, targetY, transform.position.z);
     }
 
+    #endregion
+
+    #region public methods
+
     public static void EnterEscapeMode()
     {
         Hive.EnterEscapeMode();
@@ -268,6 +299,8 @@ public class MapSceneScript : MonoBehaviour
     {
         s_Markers.Add(action, marker);
     }
+
+    #endregion
 }
 
 public enum Marker
