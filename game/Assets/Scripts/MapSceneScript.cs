@@ -8,6 +8,9 @@ public enum GameState { Ongoing, Won, Lost }
 
 public class MapSceneScript : MonoBehaviour
 {
+    private const int c_playStartPositionX = 5;
+    private const int c_playStartPositionY = 5;
+
     private Vector2 CameraMax = new Vector2(0f, 0f);        // The maximum x and y coordinates the camera can have.
     private Vector2 CameraMin = new Vector2(0f, 0f);        // The minimum x and y coordinates the camera can have.
     private TextureManager m_textureManager;
@@ -45,7 +48,7 @@ public class MapSceneScript : MonoBehaviour
     {
         m_textureManager = new TextureManager();
         SquareScript.LoadFromTMX(@"Maps\testMap3.tmx");
-        Entity.CreatePlayerEntity(5, 5);
+        Entity.CreatePlayerEntity(c_playStartPositionX, c_playStartPositionY);
 
         var squareSize = SquareScript.PixelsPerSquare * MapSceneScript.UnitsToPixelsRatio; // 1f
 

@@ -222,6 +222,9 @@ public class PlayerEntity : AttackingEntity
 
     private bool m_hasFuelCell = false;
 
+    private const int c_minimumEquipmentAmount = 2;
+    private const int c_maximumEquipmentAmount = 8;
+
     #endregion fields
 
     #region Properties
@@ -261,8 +264,8 @@ public class PlayerEntity : AttackingEntity
     public void SetEquipment(IEnumerable<EquipmentPiece> equipment)
     {
         Equipment = equipment;
-        Assert.EqualOrLesser(Equipment.Count(), 8);
-        Assert.EqualOrGreater(Equipment.Count(), 2);
+        Assert.EqualOrLesser(Equipment.Count(), c_maximumEquipmentAmount);
+        Assert.EqualOrGreater(Equipment.Count(), c_minimumEquipmentAmount);
         LeftHandEquipment = Equipment.First();
         RightHandEquipment = Equipment.ElementAt(1);
     }

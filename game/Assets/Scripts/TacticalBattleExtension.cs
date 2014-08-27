@@ -6,6 +6,7 @@ namespace Assets.Scripts
 {
     public static class TacticalBattleExtension
     {
+        // return all squares in range of this square
         public static IEnumerable<SquareScript> MultiplyBySize(this SquareScript original, int size)
         {
             var newSquares = new List<SquareScript>();
@@ -20,6 +21,7 @@ namespace Assets.Scripts
             return newSquares.Distinct();
         }
 
+        // find all squares in range of these squares
         public static IEnumerable<SquareScript> MultiplyBySize(this IEnumerable<SquareScript> originals, int size)
         {
             return originals.SelectMany(square => square.MultiplyBySize(size)).Distinct();

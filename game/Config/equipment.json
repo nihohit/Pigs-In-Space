@@ -40,7 +40,7 @@
 },
 {
 	"Name":"rocketlauncher",
-	"EffectType": 5 
+	"EffectType": 1, 
 	"MinPower" :  8.0,
 	"MaxPower" :  16.0, 
 	"EffectSize" : 1, 
