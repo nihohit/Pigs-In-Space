@@ -19,15 +19,6 @@ public class MapSceneScript : MonoBehaviour
     /// </summary>
     private static List<SquareScript> s_squaresWithEffect = new List<SquareScript>();
     private static GameState s_gameState = GameState.Ongoing;
-    private static GUIStyle s_guiStyle = new GUIStyle
-    {
-        fontStyle = FontStyle.Bold,
-        fontSize = 12,
-        normal = new GUIStyleState
-        {
-            textColor = Color.white,
-        },
-    };
 
     public const float UnitsToPixelsRatio = 1f / 100f;
     private bool m_mouseOnUI;
@@ -86,33 +77,45 @@ public class MapSceneScript : MonoBehaviour
 
     private void OnGUI()
     {
+        var heightSliver = Screen.height / 12f;
+        var unit = heightSliver / 48;
+
+        var guiStyle = new GUIStyle
+        {
+            fontStyle = FontStyle.Bold,
+            fontSize = Convert.ToInt32(10 * unit),
+            normal = new GUIStyleState
+            {
+                textColor = Color.white,
+            },
+        };
+
         // load game ending message
         if (s_gameState != GameState.Ongoing)
         {
             GUI.BeginGroup(new Rect(320, 265, 384, 256));
             GUI.DrawTexture(new Rect(0, 0, 384, 256), m_textureManager.GetUIBackground(), ScaleMode.StretchToFill);
-            s_guiStyle.fontSize = 32;
+            guiStyle.fontSize = Convert.ToInt32(32 * unit);
             var message = (s_gameState == GameState.Lost) ? "Game Over" : "You Win :)";
-            GUI.Label(new Rect(110, 45, 60, 60), message, s_guiStyle);
-            s_guiStyle.fontSize = 12;
-            GUI.Label(new Rect(176, 127, 30, 30), String.Format("X {0}", (int)Entity.Player.BlueCrystal), s_guiStyle);
-            GUI.Label(new Rect(176, 165, 30, 30), String.Format("X {0}", EnemyEntity.KilledEnemies), s_guiStyle);
-            GUI.Label(new Rect(176, 205, 30, 30), String.Format("X {0}", (int)Hive.KilledHives), s_guiStyle);
+            GUI.Label(new Rect(110, 45, 60, 60), message, guiStyle);
+            guiStyle.fontSize = Convert.ToInt32(10 * unit);
+            GUI.Label(new Rect(176, 127, 30, 30), String.Format("X {0}", (int)Entity.Player.BlueCrystal), guiStyle);
+            GUI.Label(new Rect(176, 165, 30, 30), String.Format("X {0}", EnemyEntity.KilledEnemies), guiStyle);
+            GUI.Label(new Rect(176, 205, 30, 30), String.Format("X {0}", (int)Hive.KilledHives), guiStyle);
             GUI.EndGroup();
         }
 
         if (Entity.Player != null)
         {
             // define the area of the UI
-            var heightSliver = Screen.height / 7f;
             var relativeWidth = heightSliver * 4 / 3;
             var oneSliver = Screen.width - relativeWidth;
-            var twoSlivers = Screen.width - 2 * relativeWidth;
+            //var twoSlivers = Screen.width - 2 * relativeWidth;
             var currentHeight = 16f;
-            Rect UIArea = new Rect(twoSlivers, 0, 2 * relativeWidth, Screen.height);
+            Rect UIArea = new Rect(oneSliver, 0, 2 * relativeWidth, Screen.height);
 
             //load the UI background
-            GUI.DrawTexture(UIArea, Resources.Load<Texture2D>(@"Sprites/PlayerStateDisplay"), ScaleMode.StretchToFill);
+            //GUI.DrawTexture(UIArea, Resources.Load<Texture2D>(@"Sprites/PlayerStateDisplay"), ScaleMode.StretchToFill);
 
             //every
             m_mouseOnUI = false;
@@ -122,52 +125,47 @@ public class MapSceneScript : MonoBehaviour
             }
 
             // display stats
-            DrawSpriteToGUI(SpriteManager.CardiacIcon, new Rect(twoSlivers + 10, currentHeight, 32, 32));
-            GUI.Label(new Rect(twoSlivers + 52, 24, 30, 30), String.Format("X {0}", (int)Entity.Player.Health), s_guiStyle);
-
-            DrawSpriteToGUI(SpriteManager.LightningIcon, new Rect(oneSliver + 10, currentHeight, 32, 32));
-            GUI.Label(new Rect(oneSliver + 52, 24, 30, 30), String.Format("X {0}", (int)Entity.Player.Energy), s_guiStyle);
+            DrawSpriteToGUI(SpriteManager.CardiacIcon, new Rect(oneSliver, currentHeight, 24 * unit, 24 * unit));
+            GUI.Label(new Rect(oneSliver + 26 * unit, 24 * unit, 22 * unit, 22 * unit), String.Format("X {0}", (int)Entity.Player.Health), guiStyle);
 
             currentHeight += heightSliver;
-            DrawSpriteToGUI(SpriteManager.OxygenTank, new Rect(twoSlivers + 10, currentHeight, 32, 32));
-            GUI.Label(new Rect(twoSlivers + 52, currentHeight + 8, 30, 30), String.Format("X {0}", (int)Entity.Player.Oxygen), s_guiStyle);
+            DrawSpriteToGUI(SpriteManager.LightningIcon, new Rect(oneSliver, currentHeight, 24 * unit, 24 * unit));
+            GUI.Label(new Rect(oneSliver + 26 * unit, currentHeight + 8 * unit, 22 * unit, 22 * unit), String.Format("X {0}", (int)Entity.Player.Energy), guiStyle);
 
-            DrawSpriteToGUI(SpriteManager.Crystal, new Rect(oneSliver + 10, currentHeight, 32, 32));
-            GUI.Label(new Rect(oneSliver + 52, currentHeight + 8, 30, 30), String.Format("X {0}", (int)Entity.Player.BlueCrystal), s_guiStyle);
+            currentHeight += heightSliver;
+            DrawSpriteToGUI(SpriteManager.OxygenTank, new Rect(oneSliver, currentHeight, 24 * unit, 24 * unit));
+            GUI.Label(new Rect(oneSliver + 26 * unit, currentHeight + 8 * unit, 22 * unit, 22 * unit), String.Format("X {0}", (int)Entity.Player.Oxygen), guiStyle);
+
+            currentHeight += heightSliver;
+            DrawSpriteToGUI(SpriteManager.Crystal, new Rect(oneSliver, currentHeight, 24 * unit, 24 * unit));
+            GUI.Label(new Rect(oneSliver + 26 * unit, currentHeight + 8 * unit, 22 * unit, 22 * unit), String.Format("X {0}", (int)Entity.Player.BlueCrystal), guiStyle);
+
+            // separate status and weapons 
+            currentHeight += heightSliver;
 
             // display choosable equipment
-            bool goDown = false;
             foreach (var equipment in Entity.Player.Equipment)
             {
-                goDown = !goDown;
-                float widthPosition = 0;
-                if (goDown)
-                {
-                    currentHeight += heightSliver;
-                    widthPosition = twoSlivers;
-                }
-                else
-                {
-                    widthPosition = oneSliver;
-                }
-                GUI.color = Color.gray;
+                GUI.color = new Color32(128, 128, 128, 196);
 
                 if (equipment == Entity.Player.LeftHandEquipment)
                 {
-                    GUI.color = Color.blue;
+                    GUI.color = new Color32(128, 128, 255, 255);
                 }
                 if (equipment == Entity.Player.RightHandEquipment)
                 {
-                    GUI.color = Color.red;
+                    GUI.color = new Color32(255, 128, 128, 255);
                 }
 
-                if (GUI.Button(new Rect(widthPosition, currentHeight, relativeWidth, heightSliver), m_textureManager.GetTexture(equipment)))
+                if (GUI.Button(new Rect(oneSliver, currentHeight, relativeWidth, heightSliver / 2), m_textureManager.GetTexture(equipment)))
                 {
                     if (Event.current.button == 0)
                         Entity.Player.LeftHandEquipment = equipment;
                     else if (Event.current.button == 1)
                         Entity.Player.RightHandEquipment = equipment;
                 }
+
+                currentHeight += heightSliver / 2;
             }
         }
     }
