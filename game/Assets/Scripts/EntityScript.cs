@@ -509,83 +509,20 @@ public class Hive : Entity, IHostileEntity
 
 #region Slime
 
-public class Slime : AttackingEntity, IHostileEntity
+public class Slime : EnemyEntity
 {
-    private static int s_killed_Slimes = 0;
-
-    public static int KilledSlimes { get { return s_killed_Slimes; } }
-
     protected override void Destroy()
     {
         base.Destroy();
-        MapSceneScript.AddGroundEffect(GroundEffect.StandardAcid, Location);
-        MapSceneScript.AddGroundEffect(GroundEffect.StandardAcid, Location.GetNextSquare(1, 0));
-        MapSceneScript.AddGroundEffect(GroundEffect.StandardAcid, Location.GetNextSquare(1, 1));
-        MapSceneScript.AddGroundEffect(GroundEffect.StandardAcid, Location.GetNextSquare(0, 1));
-        MapSceneScript.AddGroundEffect(GroundEffect.StandardAcid, Location.GetNextSquare(-1, 1));
-        MapSceneScript.AddGroundEffect(GroundEffect.StandardAcid, Location.GetNextSquare(-1, 0));
-        MapSceneScript.AddGroundEffect(GroundEffect.StandardAcid, Location.GetNextSquare(-1, -1));
-        MapSceneScript.AddGroundEffect(GroundEffect.StandardAcid, Location.GetNextSquare(0, -1));
-        MapSceneScript.AddGroundEffect(GroundEffect.StandardAcid, Location.GetNextSquare(1, -1));
-        MapSceneScript.AddGroundEffect(GroundEffect.StandardAcid, Location.GetNextSquare(2, 0));
-        MapSceneScript.AddGroundEffect(GroundEffect.StandardAcid, Location.GetNextSquare(-2, 0));
-        MapSceneScript.AddGroundEffect(GroundEffect.StandardAcid, Location.GetNextSquare(0, 2));
-        MapSceneScript.AddGroundEffect(GroundEffect.StandardAcid, Location.GetNextSquare(0, -2));
-        EnemiesManager.Remove(this);
-        s_killed_Slimes++;
+        foreach( var squareScript in Location.MultiplyBySize(2))
+        {
+            MapSceneScript.AddGroundEffect(GroundEffect.StandardAcid, squareScript);
+        }
     }
 
     public Slime(double health, double attackRange, float minDamage, float maxDamage, SquareScript location, IUnityMarker image, MovementType movementType) :
         base(health, attackRange, minDamage, maxDamage, location, image, movementType)
     {
-        EnemiesManager.AddEnemy(this);
-    }
-
-    public void Act()
-    {
-        if (m_active)
-        {
-            if (WithinRange(Player))
-            {
-                //Show hit action
-                var Location = Player.Location.transform.position;
-                var otherLocation = this.Location.transform.position;
-                var powPosition = new Vector3((Location.x + otherLocation.x) / 2, (Location.y + otherLocation.y) / 2, Location.z);
-
-                var pow = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("pow"), powPosition, Quaternion.identity));
-                UnityEngine.Object.Destroy(pow, 0.3f);
-
-                Attack(Player);
-            }
-            else
-            {
-                MoveTowards();
-            }
-            ApplyGroundEffects(this.Location);
-        }
-    }
-
-    private void MoveTowards()
-    {
-        var direction = new Vector2(Player.Location.transform.position.x - Location.transform.position.x, Location.transform.position.y - Player.Location.transform.position.y);
-        var absX = Math.Abs(direction.x);
-        var absY = Math.Abs(direction.y);
-        var possibleLocationMovingX = Location.GetNextSquare((int)(direction.x / absX), 0);
-        var possibleLocationMovingY = Location.GetNextSquare(0, (int)(direction.y / absY));
-        if (absX > absY)
-        {
-            if (!TryMoveTo(possibleLocationMovingX))
-            {
-                TryMoveTo(possibleLocationMovingY);
-            }
-        }
-        else
-        {
-            if (!TryMoveTo(possibleLocationMovingY))
-            {
-                TryMoveTo(possibleLocationMovingX);
-            }
-        }
     }
 }
 
