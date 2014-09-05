@@ -388,7 +388,7 @@ public class SquareScript : MonoBehaviour
 
     private void OnMouseOver()
     {
-        if (OccupyingEntity != null && !(OccupyingEntity is PlayerEntity))
+        if (OccupyingEntity != null && !(OccupyingEntity is PlayerEntity) && !m_fogOfWar.Visible)
         {
             s_attackMarker.Mark(transform.position);
 
