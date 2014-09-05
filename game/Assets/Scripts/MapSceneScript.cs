@@ -1,15 +1,16 @@
-﻿using System;
+﻿using Assets.Scripts;
+using Assets.Scripts.LogicBase;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using Assets.Scripts;
 
 public enum GameState { Ongoing, Won, Lost }
 
 public class MapSceneScript : MonoBehaviour
 {
-    #region private members 
+    #region private members
 
     private const int c_playStartPositionX = 5;
     private const int c_playStartPositionY = 5;
@@ -21,16 +22,17 @@ public class MapSceneScript : MonoBehaviour
     private static GUIStyle s_guiStyle;
 
     /// <summary>
-    /// List of all the squares with an active effect, each turn all these effects durability is reduced 
+    /// List of all the squares with an active effect, each turn all these effects durability is reduced
     /// </summary>
     private static List<SquareScript> s_squaresWithEffect = new List<SquareScript>();
+
     private static GameState s_gameState = GameState.Ongoing;
     public const float UnitsToPixelsRatio = 1f / 100f;
     private bool m_mouseOnUI;
     private bool m_equipmentChange;
     private bool m_freeToEndTurn = true;
 
-    #endregion
+    #endregion private members
 
     public static void ChangeGameState(GameState state)
     {
@@ -54,6 +56,8 @@ public class MapSceneScript : MonoBehaviour
         };
 
         m_textureManager = new TextureManager();
+        ActionableItem.Init(m_textureManager);
+
         SquareScript.LoadFromTMX(@"Maps\testMap3.tmx");
         Entity.CreatePlayerEntity(c_playStartPositionX, c_playStartPositionY);
 
@@ -128,8 +132,6 @@ public class MapSceneScript : MonoBehaviour
                 Application.LoadLevel("SpaceShipScene");
             }
             GUI.EndGroup();
-
-
         }
 
         if (Entity.Player != null)
@@ -167,7 +169,7 @@ public class MapSceneScript : MonoBehaviour
             DrawSpriteToGUI(SpriteManager.Crystal, new Rect(oneSliver, currentHeight, 24 * unit, 24 * unit));
             GUI.Label(new Rect(oneSliver + 26 * unit, currentHeight + 8 * unit, 22 * unit, 22 * unit), String.Format("X {0}", (int)Entity.Player.BlueCrystal), s_guiStyle);
 
-            // separate status and weapons 
+            // separate status and weapons
             currentHeight += heightSliver;
 
             // display choosable equipment
@@ -203,7 +205,7 @@ public class MapSceneScript : MonoBehaviour
         }
     }
 
-    #endregion
+    #endregion UnityMethods
 
     #region private methods
 
@@ -303,7 +305,7 @@ public class MapSceneScript : MonoBehaviour
         transform.position = new Vector3(targetX, targetY, transform.position.z);
     }
 
-    #endregion
+    #endregion private methods
 
     #region public methods
 
@@ -328,10 +330,10 @@ public class MapSceneScript : MonoBehaviour
     public static void ReduceEffectsDuration()
     {
         var toBeRemoved = new List<SquareScript>();
-        foreach( var squareWithEffect in s_squaresWithEffect)
+        foreach (var squareWithEffect in s_squaresWithEffect)
         {
             squareWithEffect.GroundEffect.Duration--;
-            if(squareWithEffect.GroundEffect.Duration <= 0)
+            if (squareWithEffect.GroundEffect.Duration <= 0)
             {
                 toBeRemoved.Add(squareWithEffect);
                 squareWithEffect.GroundEffect = GroundEffect.NoEffect;
@@ -354,14 +356,14 @@ public class MapSceneScript : MonoBehaviour
     /// </summary>
     public static void AddGroundEffect(GroundEffect effect, SquareScript square)
     {
-        if(square.TraversingCondition == Traversability.Walkable)
+        if (square.TraversingCondition == Traversability.Walkable)
         {
             square.GroundEffect = effect;
             s_squaresWithEffect.Add(square);
         }
     }
 
-    #endregion
+    #endregion public methods
 }
 
 public enum Marker

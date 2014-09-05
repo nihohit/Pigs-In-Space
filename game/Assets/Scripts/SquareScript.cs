@@ -1,10 +1,11 @@
-﻿using Assets.Scripts.LogicBase;
+﻿using Assets.Scripts;
+using Assets.Scripts.Base;
+using Assets.Scripts.LogicBase;
 using Assets.Scripts.UnityBase;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
-using Assets.Scripts;
 using UnityEngine;
 
 public enum Traversability { Walkable, Flyable, Blocking }
@@ -103,7 +104,7 @@ public class SquareScript : MonoBehaviour
         get { return m_groundEffect; }
         set
         {
-            if(value.Type != GroundEffectType.None)
+            if (value.Type != GroundEffectType.None)
             {
                 m_squareEffect.Renderer.sprite = value.Sprite;
                 m_squareEffect.Visible = true;
@@ -134,7 +135,7 @@ public class SquareScript : MonoBehaviour
 
         m_squareEffect = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("EmptyMarker"), transform.position, Quaternion.identity)).GetComponent<MarkerScript>();
         GroundEffect = GroundEffect.NoEffect;
-        
+
         Visible = true;
     }
 
@@ -406,6 +407,7 @@ public class SquareScript : MonoBehaviour
         s_squareMarker.Unmark();
         s_attackMarker.Unmark();
     }
+
     #endregion private methods
 }
 
@@ -499,7 +501,7 @@ public class SpriteManager
         {
             s_sprites = Resources.LoadAll<Sprite>("Sprites").ToDictionary(sprite => sprite.name);
         }
-        return s_sprites[spriteName];
+        return s_sprites.Get(spriteName, "Square sprites dictionary");
     }
 
     public static Sprite Empty = GetSprite("Terrain_0");

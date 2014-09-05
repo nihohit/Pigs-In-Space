@@ -25,7 +25,7 @@ namespace Assets.Scripts
         #endregion fields
 
         // initialize the shot with its information
-        public void Init(SquareScript to, SquareScript from, string name, float range, bool piercing, int effectSize, float shotSpread)
+        public void Init(SquareScript to, SquareScript from, float range, bool piercing, int effectSize, float shotSpread)
         {
             m_effectSize = effectSize;
             m_hitSquares = new List<SquareScript>();
@@ -37,7 +37,7 @@ namespace Assets.Scripts
             // find the point the shot will end in
             m_endPoint = RaycastToTarget(to.transform.position, m_startingPoint, range, shotSpread);
 
-            // find the angle the shot goes in 
+            // find the angle the shot goes in
             var differenceVector = m_endPoint - m_startingPoint;
             var angle = Vector2.Angle(new Vector2(1, 0), differenceVector);
             if (differenceVector.y < 0)
@@ -53,7 +53,7 @@ namespace Assets.Scripts
             Destroy(gameObject, 1f);
         }
 
-        // find the spot the shot will end on, and on the way, find all the squares affected by it. 
+        // find the spot the shot will end on, and on the way, find all the squares affected by it.
         private Vector2 RaycastToTarget(Vector2 to, Vector2 from, float range, float shotSpread)
         {
             var layerMask = 1 << LayerMask.NameToLayer("Ground");

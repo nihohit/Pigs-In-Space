@@ -1,3 +1,4 @@
+using Assets.Scripts;
 using Assets.Scripts.Base;
 using Assets.Scripts.LogicBase;
 using Assets.Scripts.UnityBase;
@@ -15,7 +16,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Assets.Scripts;
 using UnityEngine;
 
 public enum MovementType { Walking, Flying }
@@ -441,7 +441,7 @@ public class EnemyEntity : AttackingEntity, IHostileEntity
         var possibleLocationMovingY = Location.GetNextSquare(0, (int)(direction.y / absY));
         if (absX > absY)
         {
-            if(!TryMoveTo(possibleLocationMovingX))
+            if (!TryMoveTo(possibleLocationMovingX))
             {
                 TryMoveTo(possibleLocationMovingY);
             }
@@ -514,7 +514,7 @@ public class Slime : EnemyEntity
     protected override void Destroy()
     {
         base.Destroy();
-        foreach( var squareScript in Location.MultiplyBySize(2))
+        foreach (var squareScript in Location.MultiplyBySize(2))
         {
             MapSceneScript.AddGroundEffect(GroundEffect.StandardAcid, squareScript);
         }
@@ -526,4 +526,4 @@ public class Slime : EnemyEntity
     }
 }
 
-#endregion EnemyEntity
+#endregion Slime

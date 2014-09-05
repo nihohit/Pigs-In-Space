@@ -13,7 +13,6 @@ public static class EnemiesManager
     {
         s_activeEntities.Clear();
         Hive.Init();
-
     }
 
     public static void AddEnemy(IHostileEntity enemy)

@@ -27,7 +27,13 @@ namespace Assets.Scripts.LogicBase
     // represent an item that can affect squares
     public class ActionableItem
     {
+        #region private fields
+
+        private static TextureManager s_textureManager;
+
         private int m_hash;
+
+        #endregion private fields
 
         #region properties
 
@@ -47,12 +53,14 @@ namespace Assets.Scripts.LogicBase
 
         public Entity Owner { get; private set; }
 
+        public string ShotType { get; private set; }
+
         #endregion properties
 
         #region constructors
 
         public ActionableItem(SpecialEffects type, double minPower, double maxPower,
-            float range, Entity owner, int shotsAmount, float shotSpread, int effectSize)
+            float range, Entity owner, int shotsAmount, float shotSpread, int effectSize, string shotType)
         {
             Range = range;
             Effects = type;
@@ -62,8 +70,14 @@ namespace Assets.Scripts.LogicBase
             MaxPower = maxPower;
             Owner = owner;
             EffectSize = effectSize;
+            ShotType = shotType;
 
-            m_hash = Hasher.GetHashCode(Range, MinPower, MaxPower, ShotsAmount, ShotSpread, EffectSize, EffectSize);
+            m_hash = Hasher.GetHashCode(Range, MinPower, MaxPower, ShotsAmount, ShotSpread, EffectSize, EffectSize, ShotType);
+        }
+
+        public static void Init(TextureManager manager)
+        {
+            s_textureManager = manager;
         }
 
         #endregion constructors
@@ -81,7 +95,8 @@ namespace Assets.Scripts.LogicBase
                 ShotSpread == item.ShotSpread &&
                 Effects == item.Effects &&
                 Owner.Equals(item.Owner) &&
-                EffectSize == item.EffectSize;
+                EffectSize == item.EffectSize &&
+                ShotType.Equals(item.ShotType);
         }
 
         public virtual IEnumerator Effect(SquareScript square)
@@ -97,8 +112,8 @@ namespace Assets.Scripts.LogicBase
 
         public override string ToString()
         {
-            return "Range: {0} MinPower: {1} MaxPower: {2} ShotsAmount: {3} ShotSpread {4} Effects {5} EffectSize {6}".FormatWith(
-                Range, MinPower, MaxPower, ShotsAmount, ShotSpread, Effects, EffectSize);
+            return "Range: {0} MinPower: {1} MaxPower: {2} ShotsAmount: {3} ShotSpread {4} Effects {5} EffectSize {6} ShotType {7}".FormatWith(
+                Range, MinPower, MaxPower, ShotsAmount, ShotSpread, Effects, EffectSize, ShotType);
         }
 
         public override int GetHashCode()
@@ -140,9 +155,10 @@ namespace Assets.Scripts.LogicBase
 
         private IEnumerable<SquareScript> FindHitSquares(SquareScript target)
         {
-            var laser = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("laser"), Entity.Player.Location.transform.position, Quaternion.identity));
-            var ShotScript = laser.GetComponent<ShotScript>();
-            ShotScript.Init(target, Entity.Player.Location, "Laser shot", Range, Effects.HasFlag(SpecialEffects.Piercing), EffectSize, ShotSpread);
+            var shot = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("shot"), Entity.Player.Location.transform.position, Quaternion.identity));
+            var ShotScript = shot.GetComponent<ShotScript>();
+            s_textureManager.ReplaceTexture(ShotScript, ShotType);
+            ShotScript.Init(target, Entity.Player.Location, Range, Effects.HasFlag(SpecialEffects.Piercing), EffectSize, ShotSpread);
             return ShotScript.HitSquares;
         }
 
@@ -187,9 +203,9 @@ namespace Assets.Scripts.LogicBase
         #region constructors
 
         public EquipmentPiece(SpecialEffects type, double minPower, double maxPower, float range, int shotsAmount,
-            float shotSpread, int effectSize, string name, double energyCost, Loot cost,
+            float shotSpread, int effectSize, string shotType, string name, double energyCost, Loot cost,
             IEnumerable<EquipmentPiece> upgrades) :
-            base(type, minPower, maxPower, range, Entity.Player, shotsAmount, shotSpread, effectSize)
+            base(type, minPower, maxPower, range, Entity.Player, shotsAmount, shotSpread, effectSize, shotType)
         {
             Cost = cost;
             EnergyCost = energyCost;

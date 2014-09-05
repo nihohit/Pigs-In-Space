@@ -1,21 +1,20 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public class SpaceshipSceneScript : MonoBehaviour
 {
-
     #region private members
 
     private TextureManager m_textureManager;
 
     private static GUIStyle s_guiStyle;
 
-    #endregion 
+    #endregion private members
 
     #region Unity methods
 
     // Use this for initialization
-	void Start () {
+    private void Start()
+    {
         m_textureManager = new TextureManager();
         s_guiStyle = new GUIStyle
         {
@@ -26,11 +25,12 @@ public class SpaceshipSceneScript : MonoBehaviour
                 textColor = Color.white,
             },
         };
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	}
+    }
+
+    // Update is called once per frame
+    private void Update()
+    {
+    }
 
     private void OnGUI()
     {
@@ -53,5 +53,6 @@ public class SpaceshipSceneScript : MonoBehaviour
         }
         GUI.EndGroup();
     }
-    #endregion 
+
+    #endregion Unity methods
 }
