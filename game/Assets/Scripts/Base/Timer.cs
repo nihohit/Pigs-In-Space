@@ -28,7 +28,7 @@ namespace Assets.Scripts.Base
 #if DEBUG
             lock (s_timers)
             {
-                s_timers.Get(name, "Timers dictionary").Get(operation, name).Stop();
+                s_timers[name][operation].Stop();
             }
 #endif
         }
@@ -46,7 +46,7 @@ namespace Assets.Scripts.Base
 
         public static TimeSpan GetTime(string name, string operation)
         {
-            return s_timers.Get(name, "Timers dictionary").Get(operation, name).Elapsed;
+            return s_timers[name][operation].Elapsed;
         }
     }
 }

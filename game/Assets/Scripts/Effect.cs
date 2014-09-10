@@ -11,10 +11,7 @@ namespace Assets.Scripts
 
         public double Power { get; private set; }
 
-
-
         public GroundEffectType EffectType { get; set; }
-
 
         public Sprite Sprite { get; private set; }
 

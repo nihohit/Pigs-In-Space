@@ -9,12 +9,7 @@ namespace Assets.Scripts.Base
     /// </summary>
     public static class Assert
     {
-        public static void DictionaryContains<Tkey, Tvalue>(IDictionary<Tkey, Tvalue> dict, Tkey key, string dictionaryName = "")
-        {
-            AssertConditionMet(dict.ContainsKey(key), "Key {0} not found in dictionary {1}".FormatWith(key, dictionaryName));
-        }
-
-   	public static void NotEqual(object first, object second, string additionalMessage = "")	  
+        public static void NotEqual(object first, object second, string additionalMessage = "")
         {
             AssertConditionMet(!first.Equals(second), additionalMessage);
         }

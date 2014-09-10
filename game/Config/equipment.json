@@ -4,7 +4,7 @@
 	"MinPower" :  2.0,
 	"MaxPower" :  5.0, 
 	"Range": 5.0, 
-	"EnergyCost" :  1.0,
+	"EnergyCost" :  1.0
 },
 {
 	"Name":"digger",
@@ -12,14 +12,14 @@
 	"MinPower" :  4.0,
 	"MaxPower" :  8.0, 
 	"Range": 0.5, 
-	"EnergyCost" :  1.0,
+	"EnergyCost" :  1.0
 },
 {
 	"Name":"rifle",
 	"MinPower" :  3.0,
 	"MaxPower" :  5.0, 
 	"Range": 10.0, 
-	"EnergyCost" :  2.0,
+	"EnergyCost" :  2.0
 },
 {
 	"Name":"machinegun",
@@ -28,7 +28,7 @@
 	"Range": 7.0, 
     "ShotSAmount" :  5,
     "ShotSpread" :  1.0, 
-	"EnergyCost" :  4.0,
+	"EnergyCost" :  4.0
 },
 {
 	"Name":"railgun",
@@ -36,8 +36,7 @@
 	"MinPower" :  2.0,
 	"MaxPower" :  5.0, 
 	"Range": 15.0, 
-	"EnergyCost" :  2.0,
-	"ShotType" : "rail",
+	"EnergyCost" :  2.0
 },
 {
 	"Name":"rocketlauncher",
@@ -46,7 +45,6 @@
 	"MaxPower" :  16.0, 
 	"EffectSize" : 1, 
 	"Range": 10.0, 
-	"EnergyCost" :  8.0,
-	"ShotType" : "rocket",
+	"EnergyCost" :  8.0
 }
 ]

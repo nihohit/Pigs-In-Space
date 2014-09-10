@@ -1,7 +1,6 @@
 ﻿using Assets.Scripts;
-using Assets.Scripts.LogicBase;
-using System;
 using Assets.Scripts.Base;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -59,8 +58,6 @@ public class MapSceneScript : MonoBehaviour
         };
 
         m_textureManager = new TextureManager();
-        ActionableItem.Init(m_textureManager);
-
         SquareScript.LoadFromTMX(@"Maps\testMap3.tmx");
         Entity.CreatePlayerEntity(c_playStartPositionX, c_playStartPositionY);
 
@@ -361,7 +358,7 @@ public class MapSceneScript : MonoBehaviour
     /// </summary>
     public static void AddGroundEffect(GroundEffect effect, SquareScript square)
     {
-        if (square.TraversingCondition == Traversability.Walkable)
+        if(square.TraversingCondition == Traversability.Walkable)
         {
             square.GroundEffect = effect;
             s_squaresWithEffect.Add(square);
