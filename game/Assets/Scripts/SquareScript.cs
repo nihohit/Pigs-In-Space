@@ -1,4 +1,5 @@
 ﻿using Assets.Scripts;
+using Assets.Scripts.Base;
 using Assets.Scripts.LogicBase;
 using Assets.Scripts.UnityBase;
 using System;
@@ -388,7 +389,7 @@ public class SquareScript : MonoBehaviour
 
     private void OnMouseOver()
     {
-        if (OccupyingEntity != null && !(OccupyingEntity is PlayerEntity))
+        if (OccupyingEntity != null && !(OccupyingEntity is PlayerEntity) && !m_fogOfWar.Visible)
         {
             s_attackMarker.Mark(transform.position);
 
@@ -500,7 +501,7 @@ public class SpriteManager
         {
             s_sprites = Resources.LoadAll<Sprite>("Sprites").ToDictionary(sprite => sprite.name);
         }
-        return s_sprites[spriteName];
+        return s_sprites.Get(spriteName, "Square sprites dictionary");
     }
 
     public static Sprite Empty = GetSprite("Terrain_0");

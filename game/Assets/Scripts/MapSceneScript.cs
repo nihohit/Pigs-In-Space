@@ -1,5 +1,6 @@
 ﻿using Assets.Scripts;
 using Assets.Scripts.Base;
+using Assets.Scripts.LogicBase;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -33,8 +34,10 @@ public class MapSceneScript : MonoBehaviour
     private bool m_startCoRoutine = true;
 
     #endregion private members
-
+    
     public static bool EscapeMode { get; set; }
+
+    #region public methods
 
     public static void ChangeGameState(GameState state)
     {
@@ -58,6 +61,8 @@ public class MapSceneScript : MonoBehaviour
         };
 
         m_textureManager = new TextureManager();
+        ActionableItem.Init(m_textureManager);
+
         SquareScript.LoadFromTMX(@"Maps\testMap3.tmx");
         Entity.CreatePlayerEntity(c_playStartPositionX, c_playStartPositionY);
 
@@ -87,6 +92,65 @@ public class MapSceneScript : MonoBehaviour
         ChangeGameState(GameState.Ongoing);
     }
 
+    public static void EnterEscapeMode()
+    {
+        EscapeMode = true;
+        var escapeGameEvents = s_Markers.Where(entry => entry.Value == Marker.OnEscape).Select(entry => entry.Key);
+        foreach (var gameEvent in escapeGameEvents)
+        {
+            gameEvent();
+        }
+    }
+
+    public static void SetEvent(Action action, Marker marker)
+    {
+        s_Markers.Add(action, marker);
+    }
+
+    /// <summary>
+    /// Reduce durability for all active effects
+    /// </summary>
+    public static void ReduceEffectsDuration()
+    {
+        var toBeRemoved = new List<SquareScript>();
+        foreach (var squareWithEffect in s_squaresWithEffect)
+        {
+            if (squareWithEffect.OccupyingEntity != null)
+            {
+                squareWithEffect.OccupyingEntity.ApplyGroundEffects();
+            }
+            squareWithEffect.GroundEffect.Duration--;
+            if (squareWithEffect.GroundEffect.Duration <= 0)
+            {
+                toBeRemoved.Add(squareWithEffect);
+                squareWithEffect.GroundEffect = GroundEffect.NoEffect;
+            }
+        }
+        s_squaresWithEffect = s_squaresWithEffect.Except(toBeRemoved).ToHashSet();
+    }
+
+    /// <summary>
+    /// Add a effect at given location
+    /// </summary>
+    public static void AddGroundEffect(GroundEffect effect, int x, int y)
+    {
+        AddGroundEffect(effect, SquareScript.GetSquare(x, y));
+    }
+
+    /// <summary>
+    /// Add a effect at given location
+    /// </summary>
+    public static void AddGroundEffect(GroundEffect effect, SquareScript square)
+    {
+        if (square.TraversingCondition == Traversability.Walkable)
+        {
+            square.GroundEffect = effect;
+            s_squaresWithEffect.Add(square);
+        }
+    }
+
+    #endregion public methods
+
     #region UnityMethods
 
     private void Awake()
@@ -115,23 +179,63 @@ public class MapSceneScript : MonoBehaviour
 
     private void OnGUI()
     {
-        var unit = (float)Screen.height / 400;
+        var height = Screen.height;
+        var width = Screen.width;
+        var unit = (float)height / 400;
 
         // load game ending message
         if (s_gameState != GameState.Ongoing)
         {
-            StopAllCoroutines();
-            GUI.BeginGroup(new Rect(320, 265, 384, 256));
-            GUI.DrawTexture(new Rect(0, 0, 384, 256), m_textureManager.GetUIBackground(), ScaleMode.StretchToFill);
+            // boxing the GUI screen
+            var widthDivider = width / 7;
+            var heightDivider = height / 7;
+            var widthMultiplier = 5 * widthDivider;
+            var heightMultiplier = 5 * heightDivider;
+            GUI.BeginGroup(new Rect(widthDivider, heightDivider, widthMultiplier, heightMultiplier));
+            GUI.DrawTexture(new Rect(0, 0, widthMultiplier, heightMultiplier), m_textureManager.GetUIBackground(), ScaleMode.StretchToFill);
+
+            // placing the main message
             s_guiStyle.fontSize = Convert.ToInt32(32 * unit);
             var message = (s_gameState == GameState.Lost) ? "Game Over" : "You Win :)";
-            GUI.Label(new Rect(110, 45, 60, 60), message, s_guiStyle);
-            s_guiStyle.fontSize = Convert.ToInt32(10 * unit);
-            GUI.Label(new Rect(176, 127, 30, 30), String.Format("X {0}", (int)Entity.Player.BlueCrystal), s_guiStyle);
-            GUI.Label(new Rect(176, 165, 30, 30), String.Format("X {0}", EnemiesManager.KilledTentacles), s_guiStyle);
-            GUI.Label(new Rect(176, 205, 30, 30), String.Format("X {0}", EnemiesManager.KilledHives), s_guiStyle);
+            var messageSize = s_guiStyle.CalcSize(new GUIContent(message));
+            var messageLength = messageSize.x;
+            var messageHeight = messageSize.y;
+            var middleWidth = widthMultiplier / 2;
+            var accumulatingHeight = messageHeight * 1.1f;
+            GUI.Label(new Rect(middleWidth - messageLength / 2, accumulatingHeight, messageLength, messageHeight), message, s_guiStyle);
+            accumulatingHeight += messageHeight * 2;
 
-            if (GUI.Button(new Rect(110, 230, 150, 30), "Spaceship"))
+            // placing the statistics
+            s_guiStyle.fontSize = Convert.ToInt32(15 * unit);
+            message = "Crystals collected: {0}".FormatWith((int)Entity.Player.BlueCrystal);
+            messageSize = s_guiStyle.CalcSize(new GUIContent(message));
+            messageLength = messageSize.x;
+            messageHeight = messageSize.y;
+            GUI.Label(new Rect(middleWidth - messageLength / 2, accumulatingHeight, messageLength, messageHeight), message, s_guiStyle);
+            accumulatingHeight += messageHeight * 2;
+
+            message = "Tentacle monsters killed: {0}".FormatWith((int)EnemiesManager.KilledTentacles);
+            messageSize = s_guiStyle.CalcSize(new GUIContent(message));
+            messageLength = messageSize.x;
+            messageHeight = messageSize.y;
+            GUI.Label(new Rect(middleWidth - messageLength / 2, accumulatingHeight, messageLength, messageHeight), message, s_guiStyle);
+            accumulatingHeight += messageHeight * 2;
+
+            message = "slimes killed: {0}".FormatWith((int)EnemiesManager.KilledSlimes);
+            messageSize = s_guiStyle.CalcSize(new GUIContent(message));
+            messageLength = messageSize.x;
+            messageHeight = messageSize.y;
+            GUI.Label(new Rect(middleWidth - messageLength / 2, accumulatingHeight, messageLength, messageHeight), message, s_guiStyle);
+            accumulatingHeight += messageHeight * 2;
+
+            message = "Hives killed: {0}".FormatWith((int)EnemiesManager.KilledHives);
+            messageSize = s_guiStyle.CalcSize(new GUIContent(message));
+            messageLength = messageSize.x;
+            messageHeight = messageSize.y;
+            GUI.Label(new Rect(middleWidth - messageLength / 2, accumulatingHeight, messageLength, messageHeight), message, s_guiStyle);
+            accumulatingHeight += messageHeight * 2;
+
+            if (GUI.Button(new Rect(middleWidth - 80, accumulatingHeight, 160, 30), "Spaceship"))
             {
                 Application.LoadLevel("SpaceShipScene");
             }
@@ -141,16 +245,13 @@ public class MapSceneScript : MonoBehaviour
         if (Entity.Player != null)
         {
             // define the area of the UI
-            var heightSliver = unit * 48;
-            var relativeWidth = heightSliver * 4 / 3;
+            var heightSliver = height / 10;
+            var aspectRatio = (float)width / height;
+            var relativeWidth = heightSliver + s_guiStyle.CalcSize(new GUIContent("8 Letters")).x;
             var oneSliver = Screen.width - relativeWidth;
-            var currentHeight = 16f;
             Rect UIArea = new Rect(oneSliver, 0, 2 * relativeWidth, Screen.height);
 
-            //load the UI background
-            //GUI.DrawTexture(UIArea, Resources.Load<Texture2D>(@"Sprites/PlayerStateDisplay"), ScaleMode.StretchToFill);
-
-            //every
+            // check whether mouse is over UI
             m_mouseOnUI = false;
             if (UIArea.Contains(Input.mousePosition))
             {
@@ -158,25 +259,26 @@ public class MapSceneScript : MonoBehaviour
             }
 
             // display stats
-            DrawSpriteToGUI(SpriteManager.CardiacIcon, new Rect(oneSliver, currentHeight, 24 * unit, 24 * unit));
-            GUI.Label(new Rect(oneSliver + 26 * unit, 24 * unit, 22 * unit, 22 * unit), String.Format("X {0}", (int)Entity.Player.Health), s_guiStyle);
+            var heightSize = 24 * unit;
+            var currentHeight = heightSize / 2;
+            DrawSpriteToGUI(SpriteManager.CardiacIcon, new Rect(oneSliver, heightSize / 2, heightSliver, heightSliver));
+            GUI.Label(new Rect(oneSliver + heightSliver, heightSize, relativeWidth, heightSliver), "X {0}".FormatWith((int)Entity.Player.Health), s_guiStyle);
 
             currentHeight += heightSliver;
-            DrawSpriteToGUI(SpriteManager.LightningIcon, new Rect(oneSliver, currentHeight, 24 * unit, 24 * unit));
-            GUI.Label(new Rect(oneSliver + 26 * unit, currentHeight + 8 * unit, 22 * unit, 22 * unit), String.Format("X {0}", (int)Entity.Player.Energy), s_guiStyle);
+            DrawSpriteToGUI(SpriteManager.LightningIcon, new Rect(oneSliver, currentHeight, heightSliver, heightSliver));
+            GUI.Label(new Rect(oneSliver + heightSliver, currentHeight + heightSliver / 3, relativeWidth, heightSliver), "X {0}".FormatWith((int)Entity.Player.Energy), s_guiStyle);
 
             currentHeight += heightSliver;
-            DrawSpriteToGUI(SpriteManager.OxygenTank, new Rect(oneSliver, currentHeight, 24 * unit, 24 * unit));
-            GUI.Label(new Rect(oneSliver + 26 * unit, currentHeight + 8 * unit, 22 * unit, 22 * unit), String.Format("X {0}", (int)Entity.Player.Oxygen), s_guiStyle);
+            DrawSpriteToGUI(SpriteManager.OxygenTank, new Rect(oneSliver, currentHeight, heightSliver, heightSliver));
+            GUI.Label(new Rect(oneSliver + heightSliver, currentHeight + heightSliver / 3, relativeWidth, heightSliver), "X {0}".FormatWith((int)Entity.Player.Oxygen), s_guiStyle);
 
             currentHeight += heightSliver;
-            DrawSpriteToGUI(SpriteManager.Crystal, new Rect(oneSliver, currentHeight, 24 * unit, 24 * unit));
-            GUI.Label(new Rect(oneSliver + 26 * unit, currentHeight + 8 * unit, 22 * unit, 22 * unit), String.Format("X {0}", (int)Entity.Player.BlueCrystal), s_guiStyle);
+            DrawSpriteToGUI(SpriteManager.Crystal, new Rect(oneSliver, currentHeight, heightSliver, heightSliver));
+            GUI.Label(new Rect(oneSliver + heightSliver, currentHeight + heightSliver / 3, relativeWidth, heightSliver), "X {0}".FormatWith((int)Entity.Player.BlueCrystal), s_guiStyle);
 
             // separate status and weapons
-            currentHeight += heightSliver;
-
             // display choosable equipment
+            currentHeight += heightSliver;
             foreach (var equipment in Entity.Player.Equipment)
             {
                 GUI.color = new Color32(128, 128, 128, 196);
@@ -305,67 +407,6 @@ public class MapSceneScript : MonoBehaviour
     }
 
     #endregion private methods
-
-    #region public methods
-
-    public static void EnterEscapeMode()
-    {
-        EscapeMode = true;
-        var escapeGameEvents = s_Markers.Where(entry => entry.Value == Marker.OnEscape).Select(entry => entry.Key);
-        foreach (var gameEvent in escapeGameEvents)
-        {
-            gameEvent();
-        }
-    }
-
-    public static void SetEvent(Action action, Marker marker)
-    {
-        s_Markers.Add(action, marker);
-    }
-
-    /// <summary>
-    /// Reduce durability for all active effects
-    /// </summary>
-    public static void ReduceEffectsDuration()
-    {
-        var toBeRemoved = new List<SquareScript>();
-        foreach (var squareWithEffect in s_squaresWithEffect)
-        {
-            if (squareWithEffect.OccupyingEntity != null)
-            {
-                squareWithEffect.OccupyingEntity.ApplyGroundEffects();
-            }
-            squareWithEffect.GroundEffect.Duration--;
-            if (squareWithEffect.GroundEffect.Duration <= 0)
-            {
-                toBeRemoved.Add(squareWithEffect);
-                squareWithEffect.GroundEffect = GroundEffect.NoEffect;
-            }
-        }
-        s_squaresWithEffect = s_squaresWithEffect.Except(toBeRemoved).ToHashSet();
-    }
-
-    /// <summary>
-    /// Add a effect at given location
-    /// </summary>
-    public static void AddGroundEffect(GroundEffect effect, int x, int y)
-    {
-        AddGroundEffect(effect, SquareScript.GetSquare(x, y));
-    }
-
-    /// <summary>
-    /// Add a effect at given location
-    /// </summary>
-    public static void AddGroundEffect(GroundEffect effect, SquareScript square)
-    {
-        if(square.TraversingCondition == Traversability.Walkable)
-        {
-            square.GroundEffect = effect;
-            s_squaresWithEffect.Add(square);
-        }
-    }
-
-    #endregion public methods
 }
 
 public enum Marker

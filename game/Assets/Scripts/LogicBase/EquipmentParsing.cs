@@ -30,7 +30,8 @@ namespace Assets.Scripts.LogicBase
                     TryGetValueOrSetDefaultValue<float>(item, "Range", 0),
                     TryGetValueOrSetDefaultValue<int>(item, "ShotSAmount", 1),
                     TryGetValueOrSetDefaultValue<float>(item, "ShotSpread", 0),
-                    TryGetValueOrSetDefaultValue<int>(item, "EffectSize", 0));
+                    TryGetValueOrSetDefaultValue<int>(item, "EffectSize", 0),
+                    TryGetValueOrSetDefaultValue<string>(item, "ShotType", "slimeball"));
             }
         }
 
@@ -67,6 +68,7 @@ namespace Assets.Scripts.LogicBase
                     TryGetValueOrSetDefaultValue<int>(item, "ShotSAmount", 1),
                     TryGetValueOrSetDefaultValue<float>(item, "ShotSpread", 0),
                     TryGetValueOrSetDefaultValue<int>(item, "EffectSize", 0),
+                    TryGetValueOrSetDefaultValue<string>(item, "ShotType", "laser"),
                     TryGetValueAndFail<float>(item, "EnergyCost"),
                     TryGetValueOrSetDefaultValue<Loot>(item, "Cost", null),
                     TryGetValueOrSetDefaultValue<IEnumerable<string>>(item, "Upgrades", null));

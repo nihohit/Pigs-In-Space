@@ -128,6 +128,12 @@ namespace Assets.Scripts.Base
             return Randomiser.ChooseValues(group, amount);
         }
 
+        public static TVal Get<TKey, TVal>(this IDictionary<TKey, TVal> dict, TKey key, string dictionaryName = "")
+        {
+            Assert.DictionaryContains(dict, key, dictionaryName);
+            return dict[key];
+        }
+
         // Converts an IEnumerator to IEnumerable
         public static IEnumerable<object> ToEnumerable(this IEnumerator enumerator)
         {

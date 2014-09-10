@@ -22,6 +22,8 @@ public static class EnemiesManager
 
     public static int KilledHives { get { return s_deadMonsters["Hive"]; } }
 
+    public static int KilledSlimes { get { return s_deadMonsters["Slime"]; } }
+
     #endregion properties
 
     #region public methods

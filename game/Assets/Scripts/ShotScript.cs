@@ -25,7 +25,7 @@ namespace Assets.Scripts
         #endregion fields
 
         // initialize the shot with its information
-        public void Init(SquareScript to, SquareScript from, string name, float range, bool piercing, int effectSize, float shotSpread)
+        public void Init(SquareScript to, SquareScript from, float range, bool piercing, int effectSize, float shotSpread)
         {
             m_effectSize = effectSize;
             m_hitSquares = new List<SquareScript>();
