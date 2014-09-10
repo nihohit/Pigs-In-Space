@@ -8,7 +8,7 @@
 },
 {
 	"Name":"digger",
-	"EffectType": 1, 
+	"EffectType": 3, 
 	"MinPower" :  4.0,
 	"MaxPower" :  8.0, 
 	"Range": 0.5, 
@@ -32,7 +32,7 @@
 },
 {
 	"Name":"railgun",
-	"EffectType": 2, 
+	"EffectType": 5, 
 	"MinPower" :  2.0,
 	"MaxPower" :  5.0, 
 	"Range": 15.0, 
@@ -41,7 +41,7 @@
 },
 {
 	"Name":"rocketlauncher",
-	"EffectType": 1, 
+	"EffectType": 3, 
 	"MinPower" :  8.0,
 	"MaxPower" :  16.0, 
 	"EffectSize" : 1, 

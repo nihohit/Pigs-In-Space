@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -133,6 +134,25 @@ namespace Assets.Scripts.Base
             return dict[key];
         }
 
+        // Converts an IEnumerator to IEnumerable
+        public static IEnumerable<object> ToEnumerable(this IEnumerator enumerator)
+        {
+            while (enumerator.MoveNext())
+            {
+                yield return enumerator.Current;
+            }
+        }
+
+        // Join two enumerators into a new one
+        public static IEnumerator Join(this IEnumerator enumerator, IEnumerator other)
+        {
+            if (other != null)
+            {
+                return enumerator.ToEnumerable().Union(other.ToEnumerable()).GetEnumerator();
+            }
+            return enumerator;
+        }
+
         #endregion IEnumerable
     }
 
@@ -163,5 +183,21 @@ namespace Assets.Scripts.Base
                 return hash;
             }
         }
+    }
+
+    public class EmptyEnumerator : IEnumerator
+    {
+        public object Current
+        {
+            get { throw new UnreachableCodeException(); }
+        }
+
+        public bool MoveNext()
+        {
+            return false;
+        }
+
+        public void Reset()
+        { }
     }
 }

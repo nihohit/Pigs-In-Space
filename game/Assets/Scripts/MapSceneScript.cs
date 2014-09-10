@@ -1,6 +1,7 @@
 ﻿using Assets.Scripts;
 using Assets.Scripts.LogicBase;
 using System;
+using Assets.Scripts.Base;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,15 +25,17 @@ public class MapSceneScript : MonoBehaviour
     /// <summary>
     /// List of all the squares with an active effect, each turn all these effects durability is reduced
     /// </summary>
-    private static List<SquareScript> s_squaresWithEffect = new List<SquareScript>();
+    private static HashSet<SquareScript> s_squaresWithEffect = new HashSet<SquareScript>();
 
     private static GameState s_gameState = GameState.Ongoing;
     public const float UnitsToPixelsRatio = 1f / 100f;
     private bool m_mouseOnUI;
     private bool m_equipmentChange;
-    private bool m_freeToEndTurn = true;
+    private bool m_startCoRoutine = true;
 
     #endregion private members
+
+    public static bool EscapeMode { get; set; }
 
     public static void ChangeGameState(GameState state)
     {
@@ -106,7 +109,10 @@ public class MapSceneScript : MonoBehaviour
         if (s_gameState == GameState.Ongoing)
         {
             CameraTrackPlayer();
-            StartCoroutine(PlayerAction());
+            if (m_startCoRoutine)
+            {
+                StartCoroutine(PlayerAction());
+            }
         }
     }
 
@@ -117,6 +123,7 @@ public class MapSceneScript : MonoBehaviour
         // load game ending message
         if (s_gameState != GameState.Ongoing)
         {
+            StopAllCoroutines();
             GUI.BeginGroup(new Rect(320, 265, 384, 256));
             GUI.DrawTexture(new Rect(0, 0, 384, 256), m_textureManager.GetUIBackground(), ScaleMode.StretchToFill);
             s_guiStyle.fontSize = Convert.ToInt32(32 * unit);
@@ -124,8 +131,8 @@ public class MapSceneScript : MonoBehaviour
             GUI.Label(new Rect(110, 45, 60, 60), message, s_guiStyle);
             s_guiStyle.fontSize = Convert.ToInt32(10 * unit);
             GUI.Label(new Rect(176, 127, 30, 30), String.Format("X {0}", (int)Entity.Player.BlueCrystal), s_guiStyle);
-            GUI.Label(new Rect(176, 165, 30, 30), String.Format("X {0}", EnemyEntity.KilledEnemies), s_guiStyle);
-            GUI.Label(new Rect(176, 205, 30, 30), String.Format("X {0}", (int)Hive.KilledHives), s_guiStyle);
+            GUI.Label(new Rect(176, 165, 30, 30), String.Format("X {0}", EnemiesManager.KilledTentacles), s_guiStyle);
+            GUI.Label(new Rect(176, 205, 30, 30), String.Format("X {0}", EnemiesManager.KilledHives), s_guiStyle);
 
             if (GUI.Button(new Rect(110, 230, 150, 30), "Spaceship"))
             {
@@ -219,6 +226,8 @@ public class MapSceneScript : MonoBehaviour
 
     private IEnumerator PlayerAction()
     {
+        m_startCoRoutine = false;
+        IEnumerator returnedEnumerator = new EmptyEnumerator();
         var x = 0;
         var y = 0;
         if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W))
@@ -242,39 +251,32 @@ public class MapSceneScript : MonoBehaviour
             if (Entity.Player.Move(Entity.Player.Location.GetNextSquare(x, y)))
             {
                 //transform.position = new Vector3(m_playerSprite.transform.position.x, m_playerSprite.transform.position.y, transform.position.z);
-                yield return new WaitForSeconds(0.15f);
-                Entity.Player.EndTurn(0);
+                returnedEnumerator = this.WaitAndEndTurn(0, 0.1f);
             }
         }
 
-        if (m_equipmentChange && m_freeToEndTurn)
+        if (m_equipmentChange)
         {
-            m_freeToEndTurn = false;
-            yield return new WaitForSeconds(0.15f);
-            Entity.Player.EndTurn(0);
-            m_freeToEndTurn = true;
             m_equipmentChange = false;
+
+            returnedEnumerator = this.WaitAndEndTurn(0, 0.1f);
         }
 
         if (Input.GetMouseButtonUp(0) && !m_mouseOnUI)
-        { // left click
-            //Get Mouse direction, let's assume it's right for now
-            //create laser object
-            var enumerator = Entity.Player.LeftHandEquipment.Effect(SquareScript.s_markedSquare);
-            while (enumerator.MoveNext())
-            {
-                yield return enumerator.Current;
-            }
+        {
+            returnedEnumerator = Entity.Player.LeftHandEquipment.Effect(SquareScript.s_markedSquare, 0.15f);
         }
 
         if (Input.GetMouseButtonUp(1) && !m_mouseOnUI)
         {
-            var enumerator = Entity.Player.RightHandEquipment.Effect(SquareScript.s_markedSquare);
-            while (enumerator.MoveNext())
-            {
-                yield return enumerator.Current;
-            }
+            returnedEnumerator = Entity.Player.RightHandEquipment.Effect(SquareScript.s_markedSquare, 0.15f);
         }
+
+        while (returnedEnumerator.MoveNext())
+        {
+            yield return returnedEnumerator.Current;
+        }
+        m_startCoRoutine = true;
     }
 
     private void CameraTrackPlayer()
@@ -311,7 +313,7 @@ public class MapSceneScript : MonoBehaviour
 
     public static void EnterEscapeMode()
     {
-        Hive.EnterEscapeMode();
+        EscapeMode = true;
         var escapeGameEvents = s_Markers.Where(entry => entry.Value == Marker.OnEscape).Select(entry => entry.Key);
         foreach (var gameEvent in escapeGameEvents)
         {
@@ -332,6 +334,10 @@ public class MapSceneScript : MonoBehaviour
         var toBeRemoved = new List<SquareScript>();
         foreach (var squareWithEffect in s_squaresWithEffect)
         {
+            if (squareWithEffect.OccupyingEntity != null)
+            {
+                squareWithEffect.OccupyingEntity.ApplyGroundEffects();
+            }
             squareWithEffect.GroundEffect.Duration--;
             if (squareWithEffect.GroundEffect.Duration <= 0)
             {
@@ -339,7 +345,7 @@ public class MapSceneScript : MonoBehaviour
                 squareWithEffect.GroundEffect = GroundEffect.NoEffect;
             }
         }
-        s_squaresWithEffect = s_squaresWithEffect.Except(toBeRemoved).ToList();
+        s_squaresWithEffect = s_squaresWithEffect.Except(toBeRemoved).ToHashSet();
     }
 
     /// <summary>
@@ -347,8 +353,7 @@ public class MapSceneScript : MonoBehaviour
     /// </summary>
     public static void AddGroundEffect(GroundEffect effect, int x, int y)
     {
-        var squareScript = SquareScript.GetSquare(x, y);
-        AddGroundEffect(effect, squareScript);
+        AddGroundEffect(effect, SquareScript.GetSquare(x, y));
     }
 
     /// <summary>

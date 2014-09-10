@@ -32,7 +32,7 @@ public class TextureManager
 
     #region public methods
 
-    public Texture2D GetTexture(EquipmentPiece equipment)
+    public Texture2D GetTexture(PlayerEquipment equipment)
     {
         return m_knownEquipmentTextures.Get(equipment.Name, "Equipment textures");
     }

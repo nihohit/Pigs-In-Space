@@ -87,7 +87,7 @@ public class SquareScript : MonoBehaviour
             if (OccupyingEntity != null)
             {
                 OccupyingEntity.Image.Visible = value;
-                OccupyingEntity.SetActive(value);
+                OccupyingEntity.Active = value;
             }
             if (m_lootMarker != null)
             {
@@ -104,7 +104,7 @@ public class SquareScript : MonoBehaviour
         get { return m_groundEffect; }
         set
         {
-            if (value.Type != GroundEffectType.None)
+            if (value.EffectType != GroundEffectType.None)
             {
                 m_squareEffect.Renderer.sprite = value.Sprite;
                 m_squareEffect.Visible = true;
@@ -591,12 +591,12 @@ public class TmxManager
         switch (gid)
         {
             case "33": SquareScript.GetSquare(x, y).AddLoot(new Loot(16, true)); break;
-            case "34": Entity.CreateTentacleMonster(x, y); break;
+            case "34": EnemiesManager.CreateTentacleMonster(x, y); break;
             case "35": break;
             case "36": break;
             case "37": SquareScript.GetSquare(x, y).AddLoot(new Loot(UnityEngine.Random.Range(0, 10), false)); break;
-            case "38": Entity.CreateHive(x, y); break;
-            case "39": Entity.CreateSlime(x, y); break;
+            case "38": EnemiesManager.CreateHive(x, y); break;
+            case "39": EnemiesManager.CreateSlime(x, y); break;
         }
     }
 
@@ -604,7 +604,7 @@ public class TmxManager
     {
         switch (gid)
         {
-            case "68": MapSceneScript.SetEvent(() => Entity.CreateTentacleMonster(x, y), Marker.OnEscape); break;
+            case "68": MapSceneScript.SetEvent(() => EnemiesManager.CreateTentacleMonster(x, y), Marker.OnEscape); break;
             case "74": MapSceneScript.AddGroundEffect(GroundEffect.StandardAcid, x, y); break;
         }
     }

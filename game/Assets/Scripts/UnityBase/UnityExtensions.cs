@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 namespace Assets.Scripts.UnityBase
 {
@@ -41,6 +44,7 @@ namespace Assets.Scripts.UnityBase
             return Vector2.Distance(point, otherPoint);
         }
 
+        // return the bounds of a collider
         public static Rect Bounds(this BoxCollider2D collider)
         {
             var size = collider.size;
@@ -50,6 +54,7 @@ namespace Assets.Scripts.UnityBase
             return new Rect(startingPoint.x, startingPoint.y, size.x, size.y);
         }
 
+        // find the coordinates in an array of a certain item
         public static Vector2 GetCoordinates<T>(this T[,] array, T searchedItem)
         {
             for (int i = 0; i < array.GetLength(0); i++)
@@ -63,6 +68,24 @@ namespace Assets.Scripts.UnityBase
                 }
             }
             throw new Exception("item not found");
+        }
+
+        // Create the Wait function as an enumerator
+        public static IEnumerator Wait(this object obj, float time)
+        {
+            yield return new WaitForSeconds(time);
+        }
+
+        // divide a measure of time between different items, with a small addition per item.
+        public static float TimePerItem<T>(this IEnumerable<T> collection, float baseTime, float minimum)
+        {
+            return baseTime.TimePerAmount(collection.Count(), minimum);
+        }
+
+        // divide a measure of time between different items, with a small addition per item.
+        public static float TimePerAmount(this float baseTime, int amountOfItems, float minimum)
+        {
+            return Mathf.Max(baseTime / amountOfItems, minimum);
         }
     }
 }

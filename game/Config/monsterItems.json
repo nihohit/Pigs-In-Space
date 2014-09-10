@@ -1,0 +1,28 @@
+[
+{
+	"Name" : "TentacleSwipe",
+	"MinPower" :  1.0,
+	"MaxPower" :  2.0, 
+	"Range": 1.0
+},
+{
+	"Name" : "AcidSpit",
+	"MinPower" :  1.0,
+	"MaxPower" :  2.0, 
+	"Range": 5.0,
+	"ShotSAmount" : 3,
+	"ShotSpread" : 1.5,
+	"EffectType" : 17
+},
+{
+	"Name" : "AcidExplosion",
+	"EffectSize" : 2,
+	"EffectType" : 16
+},
+{
+	"Name" : "TentacleCreation",
+	"MinPower" :  0.01,
+	"MaxPower" :  0.1, 
+	"EffectType" : 8
+}
+]

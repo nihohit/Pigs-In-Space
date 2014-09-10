@@ -1,0 +1,20 @@
+[
+{
+	"Name":"TentacleMonster",
+	"Health" : 10.0,
+	"ActionItem" : "TentacleSwipe",
+},
+{
+	"Name":"Hive",
+	"Health" : 20.0, 
+	"MovementType" :  0,
+	"Tactics" :  0,
+	"ActionItem" : "TentacleCreation",
+},
+{
+	"Name":"Slime",
+	"Health" : 10.0,
+	"ActionItem" : "AcidSpit",
+	"DestructionItem" : "AcidExplosion"
+}
+]

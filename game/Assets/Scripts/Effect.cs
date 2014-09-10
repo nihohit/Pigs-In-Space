@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Assets.Scripts
 {
@@ -12,20 +11,17 @@ namespace Assets.Scripts
 
         public double Power { get; private set; }
 
-        public GroundEffectType Type { get; set; }
 
-        public Sprite Sprite { get { return Type.EffectSprite; } }
 
-        public static GroundEffect NoEffect = new GroundEffect { Duration = 0, Power = 0, Type = GroundEffectType.None };
+        public GroundEffectType EffectType { get; set; }
 
-        public static GroundEffect StandardAcid { get { return new GroundEffect { Duration = 10, Power = 2.0, Type = GroundEffectType.Acid }; } }
+
+        public Sprite Sprite { get; private set; }
+
+        public static GroundEffect NoEffect = new GroundEffect { Duration = 0, Power = 0, EffectType = GroundEffectType.None, Sprite = SpriteManager.EmptyMarker };
+
+        public static GroundEffect StandardAcid { get { return new GroundEffect { Duration = 10, Power = 1.0, EffectType = GroundEffectType.Acid, Sprite = SpriteManager.Acid }; } }
     }
 
-    public class GroundEffectType
-    {
-        public Sprite EffectSprite { get; private set; }
-
-        public static GroundEffectType Acid = new GroundEffectType { EffectSprite = SpriteManager.Acid };
-        public static GroundEffectType None = new GroundEffectType { EffectSprite = SpriteManager.EmptyMarker };
-    }
+    public enum GroundEffectType { Acid, None }
 }
