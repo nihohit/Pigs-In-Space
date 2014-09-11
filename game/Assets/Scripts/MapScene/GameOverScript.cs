@@ -1,22 +1,25 @@
 ﻿using UnityEngine;
 
-public class GameOverScript : MonoBehaviour
+namespace Assets.Scripts.MapScene
 {
-    public string Message { get; set; }
-
-    // Use this for initialization
-    private void Start()
+    public class GameOverScript : MonoBehaviour
     {
-    }
+        public string Message { get; set; }
 
-    private void OnGUI()
-    {
-        // Make a background box
-        GUI.Box(new Rect(100, 100, 500, 600), Message);
-    }
+        // Use this for initialization
+        private void Start()
+        {
+        }
 
-    // Update is called once per frame
-    private void Update()
-    {
+        private void OnGUI()
+        {
+            // Make a background box
+            GUI.Box(new Rect(100, 100, 500, 600), Message);
+        }
+
+        // Update is called once per frame
+        private void Update()
+        {
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Assets.Scripts.MapScene;
+using System;
 using System.Collections;
 
 namespace Assets.Scripts.LogicBase
