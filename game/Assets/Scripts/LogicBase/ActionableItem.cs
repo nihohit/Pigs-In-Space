@@ -1,4 +1,5 @@
 ﻿using Assets.Scripts.Base;
+using Assets.Scripts.MapScene;
 using Assets.Scripts.UnityBase;
 using System.Collections;
 using System.Collections.Generic;

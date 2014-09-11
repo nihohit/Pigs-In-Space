@@ -3,7 +3,7 @@ using Assets.Scripts.UnityBase;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Assets.Scripts
+namespace Assets.Scripts.MapScene
 {
     /// <summary>
     ///  Script wrapper for shots moving across the screen

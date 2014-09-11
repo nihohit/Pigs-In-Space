@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Assets.Scripts
+namespace Assets.Scripts.MapScene
 {
     /// <summary>
     /// Currently effects only cause damage
