@@ -52,12 +52,12 @@ namespace Assets.Scripts.LogicBase
             protected override MonsterTemplate ConvertToObject(Dictionary<string, object> item)
             {
                 return new MonsterTemplate(
-                    TryGetValueAndFail<string>(item, "Name"),
-                    TryGetValueAndFail<float>(item, "Health"),
-                    (MovementType)TryGetValueOrSetDefaultValue<int>(item, "MovementType", 1),
-                    (EntityTactics)TryGetValueOrSetDefaultValue<int>(item, "Tactics", 1),
-                    TryGetValueAndFail<string>(item, "ActionItem"),
-                    TryGetValueOrSetDefaultValue<string>(item, "DestructionItem", null));
+                    TryGetValueAndFail<string>("Name"),
+                    TryGetValueAndFail<float>("Health"),
+                    TryGetValueOrSetDefaultValue<MovementType>("MovementType", MovementType.Walking),
+                    TryGetValueOrSetDefaultValue<EntityTactics>("Tactics", EntityTactics.ActInRange),
+                    TryGetValueAndFail<string>("ActionItem"),
+                    TryGetValueOrSetDefaultValue<string>("DestructionItem", null));
             }
         }
     }

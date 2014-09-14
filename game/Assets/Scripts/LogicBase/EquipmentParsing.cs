@@ -23,15 +23,15 @@ namespace Assets.Scripts.LogicBase
             protected override ActionableItem ConvertToObject(Dictionary<string, object> item)
             {
                 return new ActionableItem(
-                    TryGetValueAndFail<string>(item, "Name"),
-                    (EffectTypes)TryGetValueOrSetDefaultValue<int>(item, "EffectType", 1),
-                    TryGetValueOrSetDefaultValue<float>(item, "MinPower", 0),
-                    TryGetValueOrSetDefaultValue<float>(item, "MaxPower", 0),
-                    TryGetValueOrSetDefaultValue<float>(item, "Range", 0),
-                    TryGetValueOrSetDefaultValue<int>(item, "ShotSAmount", 1),
-                    TryGetValueOrSetDefaultValue<float>(item, "ShotSpread", 0),
-                    TryGetValueOrSetDefaultValue<int>(item, "EffectSize", 0),
-                    TryGetValueOrSetDefaultValue<string>(item, "ShotType", "slimeball"));
+                    TryGetValueAndFail<string>("Name"),
+                    TryGetValueOrSetDefaultValue<EffectTypes>("EffectType", EffectTypes.DamageDealing),
+                    TryGetValueOrSetDefaultValue<float>("MinPower", 0),
+                    TryGetValueOrSetDefaultValue<float>("MaxPower", 0),
+                    TryGetValueOrSetDefaultValue<float>("Range", 0),
+                    TryGetValueOrSetDefaultValue<int>("ShotSAmount", 1),
+                    TryGetValueOrSetDefaultValue<float>("ShotSpread", 0),
+                    TryGetValueOrSetDefaultValue<int>("EffectSize", 0),
+                    TryGetValueOrSetDefaultValue<string>("ShotType", "slimeball"));
             }
         }
 
