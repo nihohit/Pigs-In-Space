@@ -20,7 +20,7 @@ namespace Assets.Scripts.LogicBase
 
         private sealed class ItemJSONParser : JSONParser<ActionableItem>
         {
-            protected override ActionableItem ConvertToObject(Dictionary<string, object> item)
+            protected override ActionableItem ConvertCurrentItemToObject()
             {
                 return new ActionableItem(
                     TryGetValueAndFail<string>("Name"),
@@ -57,21 +57,21 @@ namespace Assets.Scripts.LogicBase
 
         private sealed class EquipmentJSONParser : JSONParser<PlayerEquipment>
         {
-            protected override PlayerEquipment ConvertToObject(Dictionary<string, object> item)
+            protected override PlayerEquipment ConvertCurrentItemToObject()
             {
                 return new PlayerEquipment(
-                    TryGetValueAndFail<string>(item, "Name"),
-                    (EffectTypes)TryGetValueOrSetDefaultValue<int>(item, "EffectType", 1),
-                    TryGetValueAndFail<float>(item, "MinPower"),
-                    TryGetValueAndFail<float>(item, "MaxPower"),
-                    TryGetValueAndFail<float>(item, "Range"),
-                    TryGetValueOrSetDefaultValue<int>(item, "ShotSAmount", 1),
-                    TryGetValueOrSetDefaultValue<float>(item, "ShotSpread", 0),
-                    TryGetValueOrSetDefaultValue<int>(item, "EffectSize", 0),
-                    TryGetValueOrSetDefaultValue<string>(item, "ShotType", "laser"),
-                    TryGetValueAndFail<float>(item, "EnergyCost"),
-                    TryGetValueOrSetDefaultValue<Loot>(item, "Cost", null),
-                    TryGetValueOrSetDefaultValue<IEnumerable<string>>(item, "Upgrades", null));
+                    TryGetValueAndFail<string>("Name"),
+                    TryGetValueOrSetDefaultValue<EffectTypes>("EffectType", EffectTypes.DamageDealing),
+                    TryGetValueAndFail<float>("MinPower"),
+                    TryGetValueAndFail<float>("MaxPower"),
+                    TryGetValueAndFail<float>("Range"),
+                    TryGetValueOrSetDefaultValue<int>("ShotSAmount", 1),
+                    TryGetValueOrSetDefaultValue<float>("ShotSpread", 0),
+                    TryGetValueOrSetDefaultValue<int>("EffectSize", 0),
+                    TryGetValueOrSetDefaultValue<string>("ShotType", "laser"),
+                    TryGetValueAndFail<float>("EnergyCost"),
+                    TryGetValueOrSetDefaultValue<Loot>("Cost", null),
+                    TryGetValueOrSetDefaultValue<IEnumerable<string>>("Upgrades", null));
             }
         }
 

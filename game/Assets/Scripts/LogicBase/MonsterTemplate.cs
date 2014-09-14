@@ -49,7 +49,7 @@ namespace Assets.Scripts.LogicBase
 
         private sealed class MonsterJSONParser : JSONParser<MonsterTemplate>
         {
-            protected override MonsterTemplate ConvertToObject(Dictionary<string, object> item)
+            protected override MonsterTemplate ConvertCurrentItemToObject()
             {
                 return new MonsterTemplate(
                     TryGetValueAndFail<string>("Name"),
