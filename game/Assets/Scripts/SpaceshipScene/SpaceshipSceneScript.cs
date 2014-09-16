@@ -1,4 +1,5 @@
-﻿using Assets.Scripts.UnityBase;
+﻿using Assets.Scripts.IntersceneCommunication;
+using Assets.Scripts.UnityBase;
 using UnityEngine;
 
 namespace Assets.Scripts.SpaceshipScene
@@ -9,6 +10,8 @@ namespace Assets.Scripts.SpaceshipScene
 
         private TextureManager m_textureManager;
 
+        private EndLevelInfo m_endLevelInfo;
+
         private static GUIStyle s_guiStyle;
 
         #endregion private members
@@ -18,6 +21,8 @@ namespace Assets.Scripts.SpaceshipScene
         // Use this for initialization
         private void Start()
         {
+            m_endLevelInfo = GlobalState.EndLevel;
+            GlobalState.EndLevel = null;
             m_textureManager = new TextureManager();
             s_guiStyle = new GUIStyle
             {

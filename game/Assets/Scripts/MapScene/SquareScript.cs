@@ -49,6 +49,10 @@ namespace Assets.Scripts.MapScene
 
         #region properties
 
+        public static int Width { get { return s_map.GetLength(0); } }
+
+        public static int Height { get { return s_map.GetLength(1); } }
+
         public Entity OccupyingEntity { get; set; }
 
         public TerrainType TerrainType
@@ -130,15 +134,15 @@ namespace Assets.Scripts.MapScene
 
         #region public methods
 
-        private void Awake()
+        public static void Clear()
         {
-            m_fogOfWar = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("FogOfWar"), transform.position, Quaternion.identity)).GetComponent<MarkerScript>();
-            FogOfWarType = FogOfWarType.Full;
+            s_map = null;
+        }
 
-            m_squareEffect = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("EmptyMarker"), transform.position, Quaternion.identity)).GetComponent<MarkerScript>();
-            GroundEffect = GroundEffect.NoEffect;
-
-            Visible = true;
+        public static void Init()
+        {
+            LoadFromTMX(@"Maps\testMap3.tmx");
+            InitFog();
         }
 
         public static void LoadFromTMX(string filename)
@@ -216,17 +220,7 @@ namespace Assets.Scripts.MapScene
             return GetSquare(x, y);
         }
 
-        public static int Weidth()
-        {
-            return s_map.GetLength(0);
-        }
-
-        public static int Height()
-        {
-            return s_map.GetLength(1);
-        }
-
-        internal Loot TakeLoot()
+        public Loot TakeLoot()
         {
             if (m_droppedLoot == null)
             {
@@ -336,7 +330,18 @@ namespace Assets.Scripts.MapScene
 
         #region private methods
 
-        public HashSet<SquareScript> SeenFrom()
+        private void Awake()
+        {
+            m_fogOfWar = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("FogOfWar"), transform.position, Quaternion.identity)).GetComponent<MarkerScript>();
+            FogOfWarType = FogOfWarType.Full;
+
+            m_squareEffect = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("EmptyMarker"), transform.position, Quaternion.identity)).GetComponent<MarkerScript>();
+            GroundEffect = GroundEffect.NoEffect;
+
+            Visible = true;
+        }
+
+        private HashSet<SquareScript> SeenFrom()
         {
             HashSet<SquareScript> seenSquaresSet = new HashSet<SquareScript>();
 

@@ -30,7 +30,7 @@ namespace Assets.Scripts.MapScene
 
         #region public methods
 
-        public static void Init()
+        public static void Clear()
         {
             s_activeEntities.Clear();
             s_deadMonsters.Clear();

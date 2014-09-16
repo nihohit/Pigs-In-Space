@@ -1,5 +1,6 @@
 ﻿using Assets.Scripts;
 using Assets.Scripts.Base;
+using Assets.Scripts.IntersceneCommunication;
 using Assets.Scripts.LogicBase;
 using Assets.Scripts.UnityBase;
 using System;
@@ -35,6 +36,7 @@ namespace Assets.Scripts.MapScene
         private bool m_mouseOnUI;
         private bool m_equipmentChange;
         private bool m_startCoRoutine = true;
+        private bool m_displayGUI = true;
 
         #endregion private members
 
@@ -49,49 +51,13 @@ namespace Assets.Scripts.MapScene
 
         public void Init()
         {
-            //Clear and clean everything for reusablity of the game
-            EnemiesManager.Init();
-            s_Markers.Clear();
-            s_squaresWithEffect.Clear();
-            s_guiStyle = new GUIStyle
-            {
-                fontStyle = FontStyle.Bold,
-                fontSize = 12,
-                normal = new GUIStyleState
-                {
-                    textColor = Color.white,
-                },
-            };
-
             m_textureManager = new TextureManager();
             ActionableItem.Init(m_textureManager);
 
-            SquareScript.LoadFromTMX(@"Maps\testMap3.tmx");
-            Entity.CreatePlayerEntity(c_playStartPositionX, c_playStartPositionY);
-
-            var squareSize = SquareScript.PixelsPerSquare * MapSceneScript.UnitsToPixelsRatio; // 1f
-
-            var minCameraX = 0f - squareSize / 2 + camera.orthographicSize * camera.aspect;
-            var maxCameraX = minCameraX + squareSize * SquareScript.Weidth() - 2 * camera.orthographicSize * camera.aspect;
-            if (maxCameraX < minCameraX)
-            {
-                // camera not moving in x axis
-                maxCameraX = minCameraX = (maxCameraX + minCameraX) / 2;
-            }
-
-            var minCameraY = 0f - squareSize / 2 + camera.orthographicSize;
-            var maxCameraY = minCameraY + squareSize * SquareScript.Height() - 2 * camera.orthographicSize;
-            if (maxCameraY < minCameraY)
-            {
-                // camera not moving in y axis
-                maxCameraY = minCameraY = (maxCameraY + minCameraY) / 2;
-            }
-
-            CameraMin = new Vector2(minCameraX, minCameraY);
-            CameraMax = new Vector2(maxCameraX, maxCameraY);
-
-            SquareScript.InitFog();
-            Entity.Player.Location.FogOfWar();
+            SquareScript.Init();
+            ScreenSizeInit();
+            GUIStyleInit();
+            PlayerInit();
             ChangeGameState(GameState.Ongoing);
         }
 
@@ -137,6 +103,7 @@ namespace Assets.Scripts.MapScene
         /// </summary>
         public static void AddGroundEffect(GroundEffect effect, int x, int y)
         {
+            AddGroundEffect(effect, SquareScript.GetSquare(x, y));
             AddGroundEffect(effect, SquareScript.GetSquare(x, y));
         }
 
@@ -187,7 +154,7 @@ namespace Assets.Scripts.MapScene
             var unit = (float)height / 400;
 
             // load game ending message
-            if (s_gameState != GameState.Ongoing)
+            if (s_gameState != GameState.Ongoing && m_displayGUI)
             {
                 // boxing the GUI screen
                 var widthDivider = width / 7;
@@ -210,7 +177,7 @@ namespace Assets.Scripts.MapScene
 
                 // placing the statistics
                 s_guiStyle.fontSize = Convert.ToInt32(15 * unit);
-                message = "Crystals collected: {0}".FormatWith((int)Entity.Player.BlueCrystal);
+                message = "Crystals collected: {0}".FormatWith((int)Entity.Player.GainedLoot.BlueCrystal);
                 messageSize = s_guiStyle.CalcSize(new GUIContent(message));
                 messageLength = messageSize.x;
                 messageHeight = messageSize.y;
@@ -240,6 +207,9 @@ namespace Assets.Scripts.MapScene
 
                 if (GUI.Button(new Rect(middleWidth - 80, accumulatingHeight, 160, 30), "Spaceship"))
                 {
+                    m_displayGUI = false;
+                    GlobalState.EndLevel = new EndLevelInfo(Entity.Player.GainedLoot);
+                    ClearData();
                     Application.LoadLevel("SpaceShipScene");
                 }
                 GUI.EndGroup();
@@ -276,7 +246,7 @@ namespace Assets.Scripts.MapScene
 
                 currentHeight += heightSliver;
                 DrawSpriteToGUI(SpriteManager.Crystal, new Rect(oneSliver, currentHeight, heightSliver, heightSliver));
-                GUI.Label(new Rect(oneSliver + heightSliver, currentHeight + heightSliver / 3, relativeWidth, heightSliver), "X {0}".FormatWith((int)Entity.Player.BlueCrystal), s_guiStyle);
+                GUI.Label(new Rect(oneSliver + heightSliver, currentHeight + heightSliver / 3, relativeWidth, heightSliver), "X {0}".FormatWith((int)Entity.Player.GainedLoot.BlueCrystal), s_guiStyle);
 
                 // separate status and weapons
                 // display choosable equipment
@@ -406,6 +376,57 @@ namespace Assets.Scripts.MapScene
 
             // Set the camera's position to the target position with the same z component.
             transform.position = new Vector3(targetX, targetY, transform.position.z);
+        }
+
+        private void ScreenSizeInit()
+        {
+            var squareSize = SquareScript.PixelsPerSquare * MapSceneScript.UnitsToPixelsRatio; // 1f
+
+            var minCameraX = 0f - squareSize / 2 + camera.orthographicSize * camera.aspect;
+            var maxCameraX = minCameraX + squareSize * SquareScript.Width - 2 * camera.orthographicSize * camera.aspect;
+            if (maxCameraX < minCameraX)
+            {
+                // camera not moving in x axis
+                maxCameraX = minCameraX = (maxCameraX + minCameraX) / 2;
+            }
+
+            var minCameraY = 0f - squareSize / 2 + camera.orthographicSize;
+            var maxCameraY = minCameraY + squareSize * SquareScript.Height - 2 * camera.orthographicSize;
+            if (maxCameraY < minCameraY)
+            {
+                // camera not moving in y axis
+                maxCameraY = minCameraY = (maxCameraY + minCameraY) / 2;
+            }
+
+            CameraMin = new Vector2(minCameraX, minCameraY);
+            CameraMax = new Vector2(maxCameraX, maxCameraY);
+        }
+
+        private void GUIStyleInit()
+        {
+            s_guiStyle = new GUIStyle
+            {
+                fontStyle = FontStyle.Bold,
+                fontSize = 12,
+                normal = new GUIStyleState
+                {
+                    textColor = Color.white,
+                },
+            };
+        }
+
+        private void ClearData()
+        {
+            EnemiesManager.Clear();
+            s_Markers.Clear();
+            s_squaresWithEffect.Clear();
+            SquareScript.Clear();
+        }
+
+        private void PlayerInit()
+        {
+            Entity.CreatePlayerEntity(c_playStartPositionX, c_playStartPositionY);
+            Entity.Player.Location.FogOfWar();
         }
 
         #endregion private methods

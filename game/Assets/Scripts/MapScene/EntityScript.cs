@@ -316,7 +316,6 @@ namespace Assets.Scripts.MapScene
 
         public double Oxygen { get; private set; }
 
-        public double BlueCrystal { get; private set; }
 
         public IEnumerable<SquareScript> LastSeen { get; set; }
 
@@ -326,6 +325,7 @@ namespace Assets.Scripts.MapScene
 
         public PlayerEquipment RightHandEquipment { get; set; }
 
+        public Loot GainedLoot { get; set; }
         #endregion Properties
 
         #region constructor
@@ -337,6 +337,7 @@ namespace Assets.Scripts.MapScene
             Oxygen = oxygen;
             m_playerActionTimer = new Stopwatch();
             m_playerActionTimer.Start();
+            GainedLoot = new Loot();
         }
 
         #endregion constructor
@@ -437,8 +438,7 @@ namespace Assets.Scripts.MapScene
             var loot = newLocation.TakeLoot();
             if (loot != null)
             {
-                BlueCrystal += loot.BlueCrystal;
-                loot.BlueCrystal = 0;
+                GainedLoot.AddLoot(loot);
                 if (loot.FuelCell)
                 {
                     m_hasFuelCell = true;
