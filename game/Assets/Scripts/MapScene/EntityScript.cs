@@ -316,7 +316,6 @@ namespace Assets.Scripts.MapScene
 
         public double Oxygen { get; private set; }
 
-
         public IEnumerable<SquareScript> LastSeen { get; set; }
 
         public IEnumerable<PlayerEquipment> Equipment { get; private set; }
@@ -326,6 +325,7 @@ namespace Assets.Scripts.MapScene
         public PlayerEquipment RightHandEquipment { get; set; }
 
         public Loot GainedLoot { get; set; }
+
         #endregion Properties
 
         #region constructor

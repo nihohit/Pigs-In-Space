@@ -1,6 +1,6 @@
-﻿using Assets.Scripts;
-using Assets.Scripts.Base;
+﻿using Assets.Scripts.Base;
 using Assets.Scripts.LogicBase;
+using Assets.Scripts.MapScene.MapGenerator;
 using Assets.Scripts.UnityBase;
 using System;
 using System.Collections.Generic;
@@ -141,15 +141,14 @@ namespace Assets.Scripts.MapScene
 
         public static void Init()
         {
-            LoadFromTMX(@"Maps\testMap3.tmx");
-            InitFog();
+            var generator = new CaveMapGenerator();
+            s_map = generator.GenerateMap(40, 40);
+            InitMarkers();
+            //InitFog();
         }
 
         public static void LoadFromTMX(string filename)
         {
-            s_squareMarker = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("squareSelectionBox"), new Vector2(1000000, 1000000), Quaternion.identity)).GetComponent<MarkerScript>();
-            s_attackMarker = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("AttackMark"), new Vector2(1000000, 1000000), Quaternion.identity)).GetComponent<MarkerScript>();
-
             var root = new XmlDocument();
             root.Load(filename);
             var mapWidth = Int32.Parse(root.SelectSingleNode(@"map/@width").Value);
@@ -193,11 +192,6 @@ namespace Assets.Scripts.MapScene
         public static SquareScript GetSquare(int x, int y)
         {
             return s_map[x, y];
-        }
-
-        public static void SetSquare(SquareScript square, int x, int y)
-        {
-            s_map[x, y] = square;
         }
 
         public void setLocation(int x, int y)
@@ -329,6 +323,12 @@ namespace Assets.Scripts.MapScene
         #endregion public methods
 
         #region private methods
+
+        private static void InitMarkers()
+        {
+            s_squareMarker = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("squareSelectionBox"), new Vector2(1000000, 1000000), Quaternion.identity)).GetComponent<MarkerScript>();
+            s_attackMarker = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("AttackMark"), new Vector2(1000000, 1000000), Quaternion.identity)).GetComponent<MarkerScript>();
+        }
 
         private void Awake()
         {
@@ -566,7 +566,7 @@ namespace Assets.Scripts.MapScene
             var tile = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("SquareTileResource"), universalLocation, Quaternion.identity));
             var script = tile.GetComponent<SquareScript>();
             script.setLocation(x, y);
-            SquareScript.SetSquare(script, x, y);
+            //SquareScript.SetSquare(script, x, y);
             switch (gid)
             {
                 case "0": script.TerrainType = TerrainType.Empty; break;

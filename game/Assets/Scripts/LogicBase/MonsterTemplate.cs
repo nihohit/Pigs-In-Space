@@ -1,5 +1,4 @@
 ﻿using Assets.Scripts.Base;
-using System.Collections.Generic;
 
 namespace Assets.Scripts.LogicBase
 {
