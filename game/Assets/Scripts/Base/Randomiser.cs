@@ -40,6 +40,7 @@ namespace Assets.Scripts.Base
         public static bool ProbabilityCheck(double chance)
         {
             Assert.EqualOrLesser(chance, 1, "we can't have a probablity higher than 1");
+            Assert.EqualOrGreater(chance, 0, "we can't have a probablity lower than 0");
             return (NextDouble() <= chance);
         }
 
@@ -68,6 +69,11 @@ namespace Assets.Scripts.Base
                 totalAmount--;
             }
             return list;
+        }
+
+        internal static bool CoinToss()
+        {
+            return Next(2) > 0;
         }
     }
 }

@@ -139,38 +139,38 @@ namespace Assets.Scripts.MapScene
             s_map = null;
         }
 
-        public static void Init()
+        public static void Init(ITerrainGenerator terrainGenerator, IMonsterPopulator monsterPopulator)
         {
-            var generator = new CaveMapGenerator();
-            s_map = generator.GenerateMap(40, 40);
+            s_map = AddWallsAndLandingArea(terrainGenerator.GenerateMap(40, 40));
+            monsterPopulator.PopulateMap(s_map);
+            CorrectSquaresImages();
             InitMarkers();
-            //InitFog();
+            InitFog();
         }
 
-        public static void LoadFromTMX(string filename)
+        private static SquareScript[,] AddWallsAndLandingArea(SquareScript[,] squares)
         {
-            var root = new XmlDocument();
-            root.Load(filename);
-            var mapWidth = Int32.Parse(root.SelectSingleNode(@"map/@width").Value);
-            var mapHeight = Int32.Parse(root.SelectSingleNode(@"map/@height").Value);
-            var terrain = root.SelectNodes(@"map/layer[@name='Terrain']/data/tile").Cast<XmlNode>().Select(node => node.Attributes["gid"].Value).ToList();
-            var entities = root.SelectNodes(@"map/layer[@name='Entities']/data/tile").Cast<XmlNode>().Select(node => node.Attributes["gid"].Value).ToList();
-            var markers = root.SelectNodes(@"map/layer[@name='Markers']/data/tile").Cast<XmlNode>().Select(node => node.Attributes["gid"].Value).ToList();
-
-            s_map = new SquareScript[mapWidth, mapHeight];
-            var squareSize = PixelsPerSquare * MapSceneScript.UnitsToPixelsRatio; // 1f
-            var currentPosition = Vector3.zero;
-            for (int j = mapHeight - 1; j >= 0; j--) // invert y axis
+            for (int i = 0; i < squares.GetLength(0); i++)
             {
-                for (int i = 0; i < mapWidth; i++)
-                {
-                    TmxManager.HandleTerrain(terrain[j * mapWidth + i], i, j, currentPosition);
-                    TmxManager.HandleEntity(entities[j * mapWidth + i], i, j);
-                    TmxManager.HandleMarker(markers[j * mapWidth + i], i, j);
-                    currentPosition = new Vector3(currentPosition.x + squareSize, currentPosition.y, 0);
-                }
-                currentPosition = new Vector3(0, currentPosition.y + squareSize, 0);
+                squares[i, 0].TerrainType = TerrainType.Rock_Full;
+                squares[i, squares.GetLength(1) - 1].TerrainType = TerrainType.Rock_Full;
             }
+
+            for (int i = 0; i < squares.GetLength(1); i++)
+            {
+                squares[0, i].TerrainType = TerrainType.Rock_Full;
+                squares[squares.GetLength(0) - 1, i].TerrainType = TerrainType.Rock_Full;
+            }
+
+            for (int i = 1; i < 10; i++)
+            {
+                for (int j = 1; j < 10; j++)
+                {
+                    squares[i, j].TerrainType = TerrainType.Empty;
+                }
+            }
+
+            return squares;
         }
 
         public void AddLoot(Loot loot)
@@ -323,6 +323,11 @@ namespace Assets.Scripts.MapScene
         #endregion public methods
 
         #region private methods
+
+        private static void CorrectSquaresImages()
+        {
+            //throw new NotImplementedException();
+        }
 
         private static void InitMarkers()
         {

@@ -1,6 +1,7 @@
 ﻿using Assets.Scripts.Base;
 using Assets.Scripts.IntersceneCommunication;
 using Assets.Scripts.LogicBase;
+using Assets.Scripts.MapScene.MapGenerator;
 using Assets.Scripts.UnityBase;
 using System;
 using System.Collections;
@@ -53,7 +54,7 @@ namespace Assets.Scripts.MapScene
             m_textureManager = new TextureManager();
             ActionableItem.Init(m_textureManager);
 
-            SquareScript.Init();
+            MapInit();
             ScreenSizeInit();
             GUIStyleInit();
             PlayerInit();
@@ -426,6 +427,13 @@ namespace Assets.Scripts.MapScene
         {
             Entity.CreatePlayerEntity(c_playStartPositionX, c_playStartPositionY);
             Entity.Player.Location.FogOfWar();
+        }
+
+        private void MapInit()
+        {
+            var terrainGenerator = new CellularAutomataCaveMapGenerator();
+            var monsterPopulator = new UniformCaveMonsterPopulator(null);
+            SquareScript.Init(terrainGenerator, monsterPopulator);
         }
 
         #endregion private methods
