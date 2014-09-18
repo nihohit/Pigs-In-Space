@@ -415,7 +415,7 @@ public class PlayerEntity : Entity
 
     public void EndGame(GameState state)
     {
-        MapSceneScript.ChangeGameState(state);
+        MapSceneScript.GameState =state;
     }
 
     #endregion public methods

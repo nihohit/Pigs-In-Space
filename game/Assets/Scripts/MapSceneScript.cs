@@ -39,9 +39,17 @@ public class MapSceneScript : MonoBehaviour
 
     #region public methods
 
-    public static void ChangeGameState(GameState state)
+    public static GameState GameState
     {
-        s_gameState = state;
+        get
+        {
+            return s_gameState;
+        }
+        set
+        {
+            s_gameState = value;
+        }
+
     }
 
     public void Init()
@@ -89,7 +97,7 @@ public class MapSceneScript : MonoBehaviour
 
         SquareScript.InitFog();
         Entity.Player.Location.FogOfWar();
-        ChangeGameState(GameState.Ongoing);
+        GameState= GameState.Ongoing;
     }
 
     public static void EnterEscapeMode()
@@ -237,6 +245,8 @@ public class MapSceneScript : MonoBehaviour
 
             if (GUI.Button(new Rect(middleWidth - 80, accumulatingHeight, 160, 30), "Spaceship"))
             {
+                ShipData.Get.FinishLevel();
+
                 Application.LoadLevel("SpaceShipScene");
             }
             GUI.EndGroup();
