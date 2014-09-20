@@ -17,7 +17,7 @@ namespace Assets.Scripts.MapScene.MapGenerator
 
     public interface ITerrainGenerator
     {
-        SquareScript[,] GenerateMap(int x, int y);
+        SquareScript[,] GenerateMap(int x, int y, int playerStartX, int playerStartY);
     }
 
     #endregion ITerrainGenerator

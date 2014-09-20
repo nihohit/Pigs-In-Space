@@ -23,7 +23,19 @@ namespace Assets.Scripts.MapScene.MapGenerator
             m_ySeed = UnityEngine.Random.Range(0, c_randomRange);
         }
 
-        protected override bool WallOnSpot(int x, int y)
+        protected override void CreateInitialMap(int x, int y)
+        {
+            m_boolMap = new bool[x, y];
+            for (int i = 0; i < x; i++)
+            {
+                for (int j = 0; j < x; j++)
+                {
+                    m_boolMap[i, j] = WallOnSpot(i, j);
+                }
+            }
+        }
+
+        private bool WallOnSpot(int x, int y)
         {
             var xUpdate = m_xSeed + x * c_leapSize;
             var yUpdate = m_ySeed + y * c_leapSize;

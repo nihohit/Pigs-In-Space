@@ -46,6 +46,11 @@ namespace Assets.Scripts.Base
             return (float)Math.PI * degrees / 180;
         }
 
+        public static bool ProbabilityCheck(this double chance)
+        {
+            return Randomiser.ProbabilityCheck(chance);
+        }
+
         public static bool HasFlag(this Enum value, Enum flag)
         {
             return (Convert.ToInt64(value) & Convert.ToInt64(flag)) > 0;
@@ -153,6 +158,20 @@ namespace Assets.Scripts.Base
             return enumerator;
         }
 
+        public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> group)
+        {
+            Assert.NotNull(group, "group");
+            return Randomiser.Shuffle(group);
+        }
+
+        public static IEnumerable<T> ToEnumerable<T>(this T[,] array)
+        {
+            foreach (var value in array)
+            {
+                yield return value;
+            }
+        }
+
         #endregion IEnumerable
     }
 
@@ -189,7 +208,7 @@ namespace Assets.Scripts.Base
     {
         public object Current
         {
-            get { throw new UnreachableCodeException(); }
+            get { throw new UnreachableCodeException("Shoudln't call current from empty enumerator."); }
         }
 
         public bool MoveNext()

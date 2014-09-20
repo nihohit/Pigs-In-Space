@@ -17,9 +17,6 @@ namespace Assets.Scripts.MapScene
     {
         #region private members
 
-        private const int c_playStartPositionX = 5;
-        private const int c_playStartPositionY = 5;
-
         private Vector2 CameraMax = new Vector2(0f, 0f);        // The maximum x and y coordinates the camera can have.
         private Vector2 CameraMin = new Vector2(0f, 0f);        // The minimum x and y coordinates the camera can have.
         private TextureManager m_textureManager;
@@ -57,7 +54,6 @@ namespace Assets.Scripts.MapScene
             MapInit();
             ScreenSizeInit();
             GUIStyleInit();
-            PlayerInit();
             ChangeGameState(GameState.Ongoing);
         }
 
@@ -423,17 +419,12 @@ namespace Assets.Scripts.MapScene
             SquareScript.Clear();
         }
 
-        private void PlayerInit()
-        {
-            Entity.CreatePlayerEntity(c_playStartPositionX, c_playStartPositionY);
-            Entity.Player.Location.FogOfWar();
-        }
-
         private void MapInit()
         {
             var terrainGenerator = new CellularAutomataCaveMapGenerator();
             var monsterPopulator = new UniformCaveMonsterPopulator(null);
             SquareScript.Init(terrainGenerator, monsterPopulator);
+            Entity.Player.Location.FogOfWar();
         }
 
         #endregion private methods

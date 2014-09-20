@@ -35,6 +35,9 @@ namespace Assets.Scripts.MapScene
         public IUnityMarker m_lootMarker;
         private IUnityMarker m_fogOfWar;
 
+        private const int c_playStartPositionX = 4;
+        private const int c_playStartPositionY = 3;
+
         /// <summary>
         /// Unity marker for effect
         /// </summary>
@@ -139,36 +142,36 @@ namespace Assets.Scripts.MapScene
             s_map = null;
         }
 
-        public static void Init(ITerrainGenerator terrainGenerator, IMonsterPopulator monsterPopulator)
+        public static void Init(
+            ITerrainGenerator terrainGenerator,
+            IMonsterPopulator monsterPopulator)
         {
-            s_map = AddWallsAndLandingArea(terrainGenerator.GenerateMap(40, 40));
+            s_map = AddCompulsoryTerrainFeatures(terrainGenerator.GenerateMap(40, 40, c_playStartPositionX, c_playStartPositionY));
             monsterPopulator.PopulateMap(s_map);
-            CorrectSquaresImages();
             InitMarkers();
             InitFog();
+            Entity.CreatePlayerEntity(c_playStartPositionX, c_playStartPositionY);
+            Entity.Player.Location.FogOfWar();
         }
 
-        private static SquareScript[,] AddWallsAndLandingArea(SquareScript[,] squares)
+        private static SquareScript[,] AddCompulsoryTerrainFeatures(SquareScript[,] squares)
         {
+            // add walls around the level
             for (int i = 0; i < squares.GetLength(0); i++)
             {
                 squares[i, 0].TerrainType = TerrainType.Rock_Full;
                 squares[i, squares.GetLength(1) - 1].TerrainType = TerrainType.Rock_Full;
             }
-
             for (int i = 0; i < squares.GetLength(1); i++)
             {
                 squares[0, i].TerrainType = TerrainType.Rock_Full;
                 squares[squares.GetLength(0) - 1, i].TerrainType = TerrainType.Rock_Full;
             }
 
-            for (int i = 1; i < 10; i++)
-            {
-                for (int j = 1; j < 10; j++)
-                {
-                    squares[i, j].TerrainType = TerrainType.Empty;
-                }
-            }
+            squares[c_playStartPositionX - 2, c_playStartPositionY - 1].TerrainType = TerrainType.Spaceship_Top_Left;
+            squares[c_playStartPositionX - 1, c_playStartPositionY - 1].TerrainType = TerrainType.Spaceship_Top_Right;
+            squares[c_playStartPositionX - 2, c_playStartPositionY].TerrainType = TerrainType.Spaceship_Bottom_Left;
+            squares[c_playStartPositionX - 1, c_playStartPositionY].TerrainType = TerrainType.Spaceship_Bottom_Right;
 
             return squares;
         }
@@ -323,11 +326,6 @@ namespace Assets.Scripts.MapScene
         #endregion public methods
 
         #region private methods
-
-        private static void CorrectSquaresImages()
-        {
-            //throw new NotImplementedException();
-        }
 
         private static void InitMarkers()
         {
