@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Assets.Scripts.LogicBase;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,7 +9,7 @@ namespace Assets.Scripts.MapScene.MapGenerator
 
     public interface IMonsterPopulator
     {
-        void PopulateMap(SquareScript[,] map);
+        void PopulateMap(SquareScript[,] map, IEnumerable<MonsterTemplate> monsters);
     }
 
     #endregion IMonsterPopulator

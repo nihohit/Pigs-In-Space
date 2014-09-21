@@ -127,7 +127,7 @@ namespace Assets.Scripts.MapScene
         {
             var square = SquareScript.GetSquare(x, y);
             Entity.Player = new PlayerEntity(c_startHealth, c_startEnergy, c_startOxygen, square);
-            Entity.Player.SetEquipment(new EquipmentConfigurationStorage("equipment").GetAllConfigurations());
+            Entity.Player.SetEquipment(EquipmentConfigurationStorage.Instance.GetAllConfigurations());
         }
 
         #endregion static generation methods
@@ -169,8 +169,6 @@ namespace Assets.Scripts.MapScene
     {
         #region fields
 
-        private static ActionableItemStorage s_itemStorage = new ActionableItemStorage("monsterItems");
-
         private TimedSquareEffect m_action;
 
         private ActionableItem m_mainActionItem;
@@ -185,11 +183,11 @@ namespace Assets.Scripts.MapScene
             base(template, location)
         {
             // create a copy of action / destruction items, with this entity as the owner
-            m_mainActionItem = new ActionableItem(s_itemStorage.GetConfiguration(template.ActionItem), this);
+            m_mainActionItem = new ActionableItem(ActionableItemStorage.Instance.GetConfiguration(template.ActionItem), this);
 
             if (template.DestructionItem != null)
             {
-                m_destructionItem = new ActionableItem(s_itemStorage.GetConfiguration(template.DestructionItem), this);
+                m_destructionItem = new ActionableItem(ActionableItemStorage.Instance.GetConfiguration(template.DestructionItem), this);
             }
 
             switch (template.Tactics)

@@ -147,7 +147,24 @@ namespace Assets.Scripts.MapScene
             IMonsterPopulator monsterPopulator)
         {
             s_map = AddCompulsoryTerrainFeatures(terrainGenerator.GenerateMap(40, 40, c_playStartPositionX, c_playStartPositionY));
-            monsterPopulator.PopulateMap(s_map);
+
+            var monsters = new List<MonsterTemplate>();
+            for (int i = 0; i < 7; i++)
+            {
+                monsters.Add(MonsterTemplateStorage.Instance.GetConfiguration("Hive"));
+            }
+
+            for (int i = 0; i < 7; i++)
+            {
+                monsters.Add(MonsterTemplateStorage.Instance.GetConfiguration("Slime"));
+            }
+
+            for (int i = 0; i < 25; i++)
+            {
+                monsters.Add(MonsterTemplateStorage.Instance.GetConfiguration("TentacleMonster"));
+            }
+
+            monsterPopulator.PopulateMap(s_map, monsters);
             InitMarkers();
             InitFog();
             Entity.CreatePlayerEntity(c_playStartPositionX, c_playStartPositionY);
@@ -601,12 +618,9 @@ namespace Assets.Scripts.MapScene
             switch (gid)
             {
                 case "33": SquareScript.GetSquare(x, y).AddLoot(new Loot(16, true)); break;
-                case "34": EnemiesManager.CreateTentacleMonster(x, y); break;
                 case "35": break;
                 case "36": break;
                 case "37": SquareScript.GetSquare(x, y).AddLoot(new Loot(UnityEngine.Random.Range(0, 10), false)); break;
-                case "38": EnemiesManager.CreateHive(x, y); break;
-                case "39": EnemiesManager.CreateSlime(x, y); break;
             }
         }
 
@@ -614,7 +628,6 @@ namespace Assets.Scripts.MapScene
         {
             switch (gid)
             {
-                case "68": MapSceneScript.SetEvent(() => EnemiesManager.CreateTentacleMonster(x, y), Marker.OnEscape); break;
                 case "74": MapSceneScript.AddGroundEffect(GroundEffect.StandardAcid, x, y); break;
             }
         }

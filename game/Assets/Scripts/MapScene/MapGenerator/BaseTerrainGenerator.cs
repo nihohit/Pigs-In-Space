@@ -149,6 +149,86 @@ namespace Assets.Scripts.MapScene.MapGenerator
 
         private TerrainType GetTerrainType(int x, int y)
         {
+            int newX = x - 1, newY = y;
+            bool left = (newX < 0 ||
+                m_boolMap[newX, y]);
+
+            newX = x + 1;
+            bool right = (newX >= m_boolMap.GetLength(0) ||
+                m_boolMap[newX, y]);
+
+            newY = y - 1;
+            bool up = (newY < 0 ||
+                m_boolMap[x, newY]);
+
+            newY = y + 1;
+            bool down = (newY >= m_boolMap.GetLength(1) ||
+                m_boolMap[x, newY]);
+
+            if (up &&
+                left &&
+                !down &&
+                !right)
+            {
+                return TerrainType.Rock_Top_Left_Corner;
+            }
+
+            if (up &&
+                !left &&
+                !down &&
+                right)
+            {
+                return TerrainType.Rock_Top_Right_Corner;
+            }
+
+            if (!up &&
+                left &&
+                down &&
+                !right)
+            {
+                return TerrainType.Rock_Bottom_Left_Corner;
+            }
+
+            if (!up &&
+                !left &&
+                down &&
+                right)
+            {
+                return TerrainType.Rock_Bottom_Right_Corner;
+            }
+
+            if (!up &&
+                left &&
+                !down &&
+                !right)
+            {
+                return TerrainType.Rock_Side_Left;
+            }
+
+            if (up &&
+                !left &&
+                !down &&
+                !right)
+            {
+                return TerrainType.Rock_Side_Top;
+            }
+
+            if (!up &&
+                !left &&
+                down &&
+                !right)
+            {
+                return TerrainType.Rock_Side_Bottom;
+            }
+
+            if (!up &&
+                !left &&
+                !down &&
+                right)
+            {
+                return TerrainType.Rock_Side_Right;
+            }
+
             return TerrainType.Rock_Full;
         }
 

@@ -422,7 +422,7 @@ namespace Assets.Scripts.MapScene
         private void MapInit()
         {
             var terrainGenerator = new CellularAutomataCaveMapGenerator();
-            var monsterPopulator = new UniformCaveMonsterPopulator(null);
+            var monsterPopulator = new UniformMonsterPopulator(null);
             SquareScript.Init(terrainGenerator, monsterPopulator);
             Entity.Player.Location.FogOfWar();
         }
