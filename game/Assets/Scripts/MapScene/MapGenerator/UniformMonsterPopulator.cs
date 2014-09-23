@@ -8,15 +8,8 @@ namespace Assets.Scripts.MapScene.MapGenerator
 {
     #region UniformCaveMonsterPopulator
 
-    public class UniformMonsterPopulator : IMonsterPopulator
+    public class UniformMonsterPopulator : BasePopulator, IMonsterPopulator
     {
-        private IEnumerable<MonsterTemplate> m_templates;
-
-        public UniformMonsterPopulator(IEnumerable<MonsterTemplate> enemyTemplates)
-        {
-            m_templates = enemyTemplates;
-        }
-
         public void PopulateMap(SquareScript[,] map, IEnumerable<MonsterTemplate> monsters)
         {
             monsters = monsters.Shuffle();
@@ -29,11 +22,6 @@ namespace Assets.Scripts.MapScene.MapGenerator
                 freeTilesEnumerator.MoveNext();
                 EnemiesManager.CreateEnemy(monster, freeTilesEnumerator.Current);
             }
-        }
-
-        private IEnumerable<SquareScript> GetFreeTiles(SquareScript[,] map)
-        {
-            return map.ToEnumerable().Where(square => square.TraversingCondition == Traversability.Walkable);
         }
     }
 

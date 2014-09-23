@@ -24,7 +24,6 @@ namespace Assets.Scripts.MapScene
 
         private static SquareScript[,] s_map;
         private int m_x, m_y;
-        private Loot m_droppedLoot;
         private TerrainType m_terrainType;
         private FogOfWarType m_fogOfWarType;
         public static SquareScript s_markedSquare;
@@ -57,6 +56,8 @@ namespace Assets.Scripts.MapScene
         public static int Height { get { return s_map.GetLength(1); } }
 
         public Entity OccupyingEntity { get; set; }
+
+        public Loot DroppedLoot { get; private set; }
 
         public TerrainType TerrainType
         {
@@ -144,9 +145,14 @@ namespace Assets.Scripts.MapScene
 
         public static void Init(
             ITerrainGenerator terrainGenerator,
-            IMonsterPopulator monsterPopulator)
+            IMonsterPopulator monsterPopulator,
+            ITreasurePopulator treasurePopulator)
         {
             s_map = AddCompulsoryTerrainFeatures(terrainGenerator.GenerateMap(40, 40, c_playStartPositionX, c_playStartPositionY));
+
+            Entity.CreatePlayerEntity(c_playStartPositionX, c_playStartPositionY);
+
+            treasurePopulator.PopulateMap(s_map, Enumerable.Range(0, 30).Select(number => new Loot(Randomiser.Next(1, 5), false)));
 
             var monsters = new List<MonsterTemplate>();
             for (int i = 0; i < 7; i++)
@@ -167,7 +173,6 @@ namespace Assets.Scripts.MapScene
             monsterPopulator.PopulateMap(s_map, monsters);
             InitMarkers();
             InitFog();
-            Entity.CreatePlayerEntity(c_playStartPositionX, c_playStartPositionY);
             Entity.Player.Location.FogOfWar();
         }
 
@@ -195,17 +200,17 @@ namespace Assets.Scripts.MapScene
 
         public void AddLoot(Loot loot)
         {
-            if (m_droppedLoot == null)
+            if (DroppedLoot == null)
             {
-                m_droppedLoot = loot;
-                var prefabName = (m_droppedLoot.FuelCell) ? "FuelCell" : "Crystals";
+                DroppedLoot = loot;
+                var prefabName = (DroppedLoot.FuelCell) ? "FuelCell" : "Crystals";
                 m_lootMarker = ((GameObject)MonoBehaviour.Instantiate(Resources.Load(prefabName),
                                                                          transform.position,
                                                                      Quaternion.identity)).GetComponent<MarkerScript>();
             }
             else
             {
-                m_droppedLoot.AddLoot(loot);
+                DroppedLoot.AddLoot(loot);
             }
         }
 
@@ -236,13 +241,13 @@ namespace Assets.Scripts.MapScene
 
         public Loot TakeLoot()
         {
-            if (m_droppedLoot == null)
+            if (DroppedLoot == null)
             {
                 return null;
             }
 
-            var loot = m_droppedLoot;
-            m_droppedLoot = null;
+            var loot = DroppedLoot;
+            DroppedLoot = null;
             m_lootMarker.DestroyGameObject();
             m_lootMarker = null;
             return loot;
@@ -258,15 +263,15 @@ namespace Assets.Scripts.MapScene
             List<SquareScript> neighbours = new List<SquareScript>();
 
             if (m_x > 0) neighbours.Add(GetSquare(m_x - 1, m_y));
-            if (m_x < s_map.GetLength(0)) neighbours.Add(GetSquare(m_x + 1, m_y));
+            if (m_x < s_map.GetLength(0) - 1) neighbours.Add(GetSquare(m_x + 1, m_y));
             if (m_y > 0) neighbours.Add(GetSquare(m_x, m_y - 1));
-            if (m_y < s_map.GetLength(1)) neighbours.Add(GetSquare(m_x, m_y + 1));
+            if (m_y < s_map.GetLength(1) - 1) neighbours.Add(GetSquare(m_x, m_y + 1));
             if (diagonals)
             {
                 if ((m_x > 0) && (m_y > 0)) neighbours.Add(GetSquare(m_x - 1, m_y - 1));
-                if ((m_x < s_map.GetLength(0)) && (m_y > 0)) neighbours.Add(GetSquare(m_x + 1, m_y - 1));
+                if ((m_x < s_map.GetLength(0) - 1) && (m_y > 0)) neighbours.Add(GetSquare(m_x + 1, m_y - 1));
                 if ((m_x > 0) && (m_y < s_map.GetLength(1))) neighbours.Add(GetSquare(m_x - 1, m_y + 1));
-                if ((m_x < s_map.GetLength(0)) && (m_y < s_map.GetLength(1))) neighbours.Add(GetSquare(m_x + 1, m_y + 1));
+                if ((m_x < s_map.GetLength(0) - 1) && (m_y < s_map.GetLength(1))) neighbours.Add(GetSquare(m_x + 1, m_y + 1));
             }
 
             return neighbours;

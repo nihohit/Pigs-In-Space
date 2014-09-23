@@ -14,6 +14,15 @@ namespace Assets.Scripts.MapScene.MapGenerator
 
     #endregion IMonsterPopulator
 
+    #region ITreasurePopulator
+
+    public interface ITreasurePopulator
+    {
+        void PopulateMap(SquareScript[,] map, IEnumerable<Loot> loot);
+    }
+
+    #endregion ITreasurePopulator
+
     #region ITerrainGenerator
 
     public interface ITerrainGenerator
