@@ -38,9 +38,9 @@ namespace Assets.Scripts.MapScene
 
         public static void AddEnemy(EnemyEntity enemy)
         {
-            if (!s_deadMonsters.ContainsKey(enemy.Name))
+            if (!s_deadMonsters.ContainsKey(enemy.TypeOfEntity))
             {
-                s_deadMonsters[enemy.Name] = 0;
+                s_deadMonsters[enemy.TypeOfEntity] = 0;
             }
             s_activeEntities.Add(enemy);
         }
@@ -65,7 +65,7 @@ namespace Assets.Scripts.MapScene
 
         internal static void Remove(EnemyEntity enemy)
         {
-            s_deadMonsters[enemy.Name]++;
+            s_deadMonsters[enemy.TypeOfEntity]++;
             s_activeEntities.Remove(enemy);
         }
 
