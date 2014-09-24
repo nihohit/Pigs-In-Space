@@ -47,28 +47,47 @@ namespace Assets.Scripts.Base
         //choose a single value out of a collection
         public static T ChooseValue<T>(IEnumerable<T> group)
         {
-            Assert.NotNullOrEmpty(group, "group");
-            return group.ElementAt(Next(group.Count()));
+            Assert.NotNullOrEmpty(group,"group");
+            T current = default(T);
+            int count = 0;
+            foreach (T element in group)
+            {
+                count++;
+                if (s_staticRandom.Next(count) == 0)
+                {
+                    current = element;
+                }
+            }
+            if (count == 0)
+            {
+                throw new InvalidOperationException("Sequence was empty");
+            }
+            return current;
         }
 
         //choose several values out of a collection
         public static IEnumerable<T> ChooseValues<T>(IEnumerable<T> group, int amount)
         {
+            return Shuffle(group).Take(amount);
+        }
+
+        public static IEnumerable<T> Shuffle<T>(IEnumerable<T> group)
+        {
             Assert.NotNullOrEmpty(group, "group");
-            int totalAmount = group.Count();
-            Assert.EqualOrLesser(amount, totalAmount);
-            var list = new List<T>();
-            foreach (var element in group)
+            var buffer = group.ToList();
+
+            for (int i = 0; i < buffer.Count; i++)
             {
-                if (Randomiser.ProbabilityCheck((double)amount / (double)totalAmount))
-                {
-                    list.Add(element);
-                    amount--;
-                }
-                if (amount == 0) break;
-                totalAmount--;
+                int j = s_staticRandom.Next(i, buffer.Count);
+                yield return buffer[j];
+
+                buffer[j] = buffer[i];
             }
-            return list;
+        }
+
+        internal static bool CoinToss()
+        {
+            return Next(2) > 0;
         }
 
         public static IEnumerable<T> Shuffle<T>(IEnumerable<T> group)

@@ -275,6 +275,14 @@ namespace Assets.Scripts.LogicBase
             return this.WaitAndEndTurn(0.1f, 0);
         }
 
+        public override Entity Owner
+        {
+            get
+            {
+                return Entity.Player;
+            }
+        }
+
         #endregion properties
 
         #region constructors

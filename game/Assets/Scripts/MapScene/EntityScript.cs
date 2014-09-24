@@ -4,7 +4,6 @@ using Assets.Scripts.UnityBase;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 
@@ -16,10 +15,13 @@ namespace Assets.Scripts.MapScene
     {
         #region fields
 
+        private static long s_entityId = 0;
         private static List<Entity> s_killedEntities = new List<Entity>();
         private const int c_startHealth = 15;
         private const int c_startOxygen = 200;
         private const int c_startEnergy = 10;
+
+        private readonly long m_id;
 
         private MovementType m_movementType;
 
@@ -39,6 +41,8 @@ namespace Assets.Scripts.MapScene
 
         public IUnityMarker Image { get; protected set; }
 
+        public string TypeOfEntity { get; private set; }
+
         public string Name { get; private set; }
 
         public bool Active
@@ -53,7 +57,9 @@ namespace Assets.Scripts.MapScene
 
         public Entity(EntityTemplate template, SquareScript location)
         {
-            Name = template.Name;
+            m_id = ++s_entityId;
+            Name = "{0}{1}".FormatWith(template.Name, m_id);
+            TypeOfEntity = template.Name;
             m_movementType = template.MovementType;
             this.Health = template.Health;
             this.Location = location;
@@ -89,7 +95,7 @@ namespace Assets.Scripts.MapScene
             return enumerator;
         }
 
-        public virtual bool TryMoveTo(SquareScript newLocation)
+        public bool TryMoveTo(SquareScript newLocation)
         {
             if (m_movementType == MovementType.NonMoving) return false;
             if (!CanEnter(newLocation))
@@ -213,6 +219,10 @@ namespace Assets.Scripts.MapScene
 
         public IEnumerator Act(float timePerMonster)
         {
+            if(Health <= 0)
+            {
+                return new EmptyEnumerator();
+            }
             return m_action(Player.Location, timePerMonster);
         }
 
@@ -297,7 +307,7 @@ namespace Assets.Scripts.MapScene
     {
         #region fields
 
-        private Stopwatch m_playerActionTimer;
+        private System.Diagnostics.Stopwatch m_playerActionTimer;
 
         private double m_maxEnergy = 20;
 
@@ -333,7 +343,7 @@ namespace Assets.Scripts.MapScene
         {
             Energy = energy;
             Oxygen = oxygen;
-            m_playerActionTimer = new Stopwatch();
+            m_playerActionTimer = new System.Diagnostics.Stopwatch();
             m_playerActionTimer.Start();
             GainedLoot = new Loot();
         }
