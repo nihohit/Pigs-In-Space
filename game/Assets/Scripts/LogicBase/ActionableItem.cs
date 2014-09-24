@@ -45,7 +45,7 @@ namespace Assets.Scripts.LogicBase
         public double MaxPower { get; private set; }
 
         // the item's owner
-        public Entity Owner { get; private set; }
+        public virtual Entity Owner { get; private set; }
 
         // the item's name
         public string Name { get; set; }
@@ -250,6 +250,14 @@ namespace Assets.Scripts.LogicBase
         public IEnumerable<string> PossibleUpgrades { get; private set; }
 
         public double EnergyCost { get; private set; }
+
+        public override Entity Owner
+        {
+            get
+            {
+                return Entity.Player;
+            }
+        }
 
         public override IEnumerator Effect(SquareScript square, float timePerAction)
         {
