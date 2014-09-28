@@ -20,7 +20,7 @@ namespace Assets.Scripts.MapScene.MapGenerator
             foreach (var monster in monsters)
             {
                 freeTilesEnumerator.MoveNext();
-                EnemiesManager.CreateEnemy(monster, freeTilesEnumerator.Current);
+                PlaceEnemy(freeTilesEnumerator.Current, monster);
             }
         }
     }

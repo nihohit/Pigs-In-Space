@@ -10,30 +10,53 @@ namespace Assets.Scripts.MapScene.MapGenerator
 
     public class BasePopulator
     {
-        protected IDictionary<SquareScript, int> m_distanceFromPlayer;
+        #region private fields
+
+        private List<SquareScript> m_freeOrNearSquares;
+        private List<SquareScript> m_freeSquares;
+
+        #endregion private fields
+
+        #region properties
+
+        protected IDictionary<SquareScript, int> DistanceFromPlayer { get; private set; }
+
+        protected IDictionary<SquareScript, int> SurroundingDensity { get; private set; }
+
+        #endregion properties
 
         #region protected methods
 
+        #region tile filters
+
         protected IEnumerable<SquareScript> GetFreeOrNearFreeTiles(SquareScript[,] map)
         {
-            return map.ToEnumerable().Where(square => IsEmpty(square) ||
+            if (m_freeOrNearSquares == null)
+            {
+                m_freeOrNearSquares = new List<SquareScript>(map.ToEnumerable().Where(square => IsEmpty(square) ||
                (square.TraversingCondition == Traversability.Blocking &&
-               square.GetNeighbours().Count(neighbour => neighbour.TraversingCondition == Traversability.Walkable) > 3));
+               square.GetNeighbours().Count(neighbour => neighbour.TraversingCondition == Traversability.Walkable) > 3)));
+            }
+            return m_freeOrNearSquares;
         }
 
         protected IEnumerable<SquareScript> GetFreeTiles(SquareScript[,] map)
         {
-            return map.ToEnumerable().Where(IsEmpty);
+            if (m_freeSquares == null)
+            {
+                m_freeSquares = new List<SquareScript>(map.ToEnumerable().Where(IsEmpty));
+            }
+            return m_freeSquares;
         }
 
-        protected int FindDistanceFromPlayer(SquareScript square)
+        protected int NonWalkableAmount(SquareScript square, int size)
         {
-            if (m_distanceFromPlayer == null)
-            {
-                InitializeDistanceFromPlayer();
-            }
-            return m_distanceFromPlayer.Get(square);
+            return square.MultiplyBySize(size).Count(neighbour => neighbour.TraversingCondition != Traversability.Walkable);
         }
+
+        #endregion tile filters
+
+        #region placers
 
         protected void PlaceLoot(SquareScript square, Loot loot)
         {
@@ -45,10 +68,19 @@ namespace Assets.Scripts.MapScene.MapGenerator
             square.AddLoot(loot);
         }
 
+        protected void PlaceEnemy(SquareScript square, MonsterTemplate ent)
+        {
+            EnemiesManager.CreateEnemy(ent, square);
+        }
+
+        #endregion placers
+
+        #region distance from player
+
         protected void InitializeDistanceFromPlayer()
         {
-            m_distanceFromPlayer = new Dictionary<SquareScript, int>();
-            m_distanceFromPlayer.Add(Entity.Player.Location, 0);
+            DistanceFromPlayer = new Dictionary<SquareScript, int>();
+            DistanceFromPlayer.Add(Entity.Player.Location, 0);
 
             var previousSquares = new Dictionary<SquareScript, SquareScript>();
             var queue = new Queue<SquareScript>();
@@ -62,10 +94,10 @@ namespace Assets.Scripts.MapScene.MapGenerator
             while (queue.Any())
             {
                 var square = queue.Dequeue();
-                if (m_distanceFromPlayer.ContainsKey(square))
+                if (DistanceFromPlayer.ContainsKey(square))
                     continue;
 
-                m_distanceFromPlayer.Add(square, m_distanceFromPlayer.Get(previousSquares.Get(square)) + 1);
+                DistanceFromPlayer.Add(square, DistanceFromPlayer.Get(previousSquares.Get(square)) + 1);
 
                 if (square.TraversingCondition == Traversability.Walkable)
                 {
@@ -81,13 +113,29 @@ namespace Assets.Scripts.MapScene.MapGenerator
             }
         }
 
+        #endregion distance from player
+
+        #region square density
+
+        protected void InitializeSquareDensity(SquareScript[,] map, int checkSize)
+        {
+            SurroundingDensity = new Dictionary<SquareScript, int>();
+
+            foreach (var square in GetFreeOrNearFreeTiles(map))
+            {
+                SurroundingDensity.Add(square, square.MultiplyBySize(checkSize).Count(neighbour => !IsEmpty(neighbour)));
+            }
+        }
+
+        #endregion square density
+
         #endregion protected methods
 
         #region private methods
 
         private bool IsEmpty(SquareScript square)
         {
-            return square.TraversingCondition == Traversability.Walkable && square.OccupyingEntity == null && square.DroppedLoot == null;
+            return square.TraversingCondition == Traversability.Walkable && square.OccupyingEntity == null;
         }
 
         #endregion private methods

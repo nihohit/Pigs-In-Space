@@ -255,14 +255,6 @@ namespace Assets.Scripts.LogicBase
 
         public double EnergyCost { get; private set; }
 
-        public override Entity Owner
-        {
-            get
-            {
-                return Entity.Player;
-            }
-        }
-
         public override IEnumerator Effect(SquareScript square, float timePerAction)
         {
             // if there's enough energy, act

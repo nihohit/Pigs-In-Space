@@ -23,7 +23,6 @@ namespace Assets.Scripts.MapScene
         #region fields
 
         private static SquareScript[,] s_map;
-        private int m_x, m_y;
         private TerrainType m_terrainType;
         private FogOfWarType m_fogOfWarType;
         public static SquareScript s_markedSquare;
@@ -54,6 +53,10 @@ namespace Assets.Scripts.MapScene
         public static int Width { get { return s_map.GetLength(0); } }
 
         public static int Height { get { return s_map.GetLength(1); } }
+
+        public int X { get; private set; }
+
+        public int Y { get; private set; }
 
         public Entity OccupyingEntity { get; set; }
 
@@ -221,8 +224,8 @@ namespace Assets.Scripts.MapScene
 
         public void setLocation(int x, int y)
         {
-            m_y = y;
-            m_x = x;
+            Y = y;
+            X = x;
         }
 
         public Vector2 getWorldLocation()
@@ -232,8 +235,8 @@ namespace Assets.Scripts.MapScene
 
         public SquareScript GetNextSquare(int x, int y)
         {
-            x = Mathf.Min(x + m_x, s_map.GetLength(0) - 1);
-            y = Mathf.Min(y + m_y, s_map.GetLength(1) - 1);
+            x = Mathf.Min(x + X, s_map.GetLength(0) - 1);
+            y = Mathf.Min(y + Y, s_map.GetLength(1) - 1);
             x = Mathf.Max(x, 0);
             y = Mathf.Max(y, 0);
             return GetSquare(x, y);
@@ -253,6 +256,18 @@ namespace Assets.Scripts.MapScene
             return loot;
         }
 
+        // return all squares in range of this square
+        public IEnumerable<SquareScript> MultiplyBySize(int size)
+        {
+            for (int i = Math.Max(0, X - size); i <= Math.Min(SquareScript.Width - 1, X + size); i++)
+            {
+                for (int j = Math.Max(0, Y - size); j <= Math.Min(SquareScript.Height - 1, Y + size); j++)
+                {
+                    yield return SquareScript.GetSquare(i, j);
+                }
+            }
+        }
+
         public IEnumerable<SquareScript> GetNeighbours()
         {
             return GetNeighbours(false);
@@ -262,16 +277,16 @@ namespace Assets.Scripts.MapScene
         {
             List<SquareScript> neighbours = new List<SquareScript>();
 
-            if (m_x > 0) neighbours.Add(GetSquare(m_x - 1, m_y));
-            if (m_x < s_map.GetLength(0) - 1) neighbours.Add(GetSquare(m_x + 1, m_y));
-            if (m_y > 0) neighbours.Add(GetSquare(m_x, m_y - 1));
-            if (m_y < s_map.GetLength(1) - 1) neighbours.Add(GetSquare(m_x, m_y + 1));
+            if (X > 0) neighbours.Add(GetSquare(X - 1, Y));
+            if (X < s_map.GetLength(0) - 1) neighbours.Add(GetSquare(X + 1, Y));
+            if (Y > 0) neighbours.Add(GetSquare(X, Y - 1));
+            if (Y < s_map.GetLength(1) - 1) neighbours.Add(GetSquare(X, Y + 1));
             if (diagonals)
             {
-                if ((m_x > 0) && (m_y > 0)) neighbours.Add(GetSquare(m_x - 1, m_y - 1));
-                if ((m_x < s_map.GetLength(0) - 1) && (m_y > 0)) neighbours.Add(GetSquare(m_x + 1, m_y - 1));
-                if ((m_x > 0) && (m_y < s_map.GetLength(1))) neighbours.Add(GetSquare(m_x - 1, m_y + 1));
-                if ((m_x < s_map.GetLength(0) - 1) && (m_y < s_map.GetLength(1))) neighbours.Add(GetSquare(m_x + 1, m_y + 1));
+                if ((X > 0) && (Y > 0)) neighbours.Add(GetSquare(X - 1, Y - 1));
+                if ((X < s_map.GetLength(0) - 1) && (Y > 0)) neighbours.Add(GetSquare(X + 1, Y - 1));
+                if ((X > 0) && (Y < s_map.GetLength(1))) neighbours.Add(GetSquare(X - 1, Y + 1));
+                if ((X < s_map.GetLength(0) - 1) && (Y < s_map.GetLength(1))) neighbours.Add(GetSquare(X + 1, Y + 1));
             }
 
             return neighbours;
@@ -410,8 +425,8 @@ namespace Assets.Scripts.MapScene
         private void Start()
         {
             var location = s_map.GetCoordinates(this);
-            m_x = (int)location.x;
-            m_y = (int)location.y;
+            X = (int)location.x;
+            Y = (int)location.y;
         }
 
         // Update is called once per frame
