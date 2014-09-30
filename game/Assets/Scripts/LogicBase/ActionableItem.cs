@@ -165,9 +165,6 @@ namespace Assets.Scripts.LogicBase
             if (square.GetComponent<SpriteRenderer>().sprite == SpriteManager.Rock_Crystal)
             {
                 square.GetComponent<SpriteRenderer>().sprite = SpriteManager.Empty;
-                var mineral = new Loot();
-                mineral.BlueCrystal = 5;
-                square.AddLoot(mineral);
                 square.TerrainType = TerrainType.Empty;
             }
         }
@@ -225,7 +222,8 @@ namespace Assets.Scripts.LogicBase
 
         private void CreateEnemy()
         {
-            if (Randomiser.ProbabilityCheck(MapSceneScript.EscapeMode ? MaxPower : MinPower))
+            if (Owner.Location.GetNeighbours(true).Any() &&
+                Randomiser.ProbabilityCheck(MapSceneScript.EscapeMode ? MaxPower : MinPower))
             {
                 EnemiesManager.CreateEnemy(MonsterTemplateStorage.Instance.GetConfiguration(CreatedMonsterType), ChooseRandomFreeSquare());
             }

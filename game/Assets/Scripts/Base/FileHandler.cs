@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Assets.Scripts.Base
 {
-    public enum FileAccessor { Units, TerrainGeneration, General }
+    public enum FileAccessor { TerrainGeneration }
 
     /// <summary>
     /// This class handles simple key:value predefined configuration files, for known primitives.
@@ -33,7 +33,8 @@ namespace Assets.Scripts.Base
 
         public static object GetStringProperty(string str, FileAccessor access)
         {
-            return s_navigator.Get(access.ToString(), "File Handler navigator").Get(str, "{0} dictionary".FormatWith(access));
+            Init();
+            return s_navigator.Get(access.ToString(), "File Handler navigator").Get(str.ToLower(), "{0} dictionary".FormatWith(access));
         }
 
         public static Int32 GetIntProperty(string str, FileAccessor access)
@@ -59,7 +60,7 @@ namespace Assets.Scripts.Base
             foreach (string entry in text)
             {
                 string[] temp = entry.Split(delimiters);
-                dict.Add(temp[0], temp[1]);
+                dict.Add(temp[0].Trim().ToLower(), temp[1].Trim());
             }
         }
 

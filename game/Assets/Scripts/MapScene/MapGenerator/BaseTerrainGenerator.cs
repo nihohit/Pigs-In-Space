@@ -6,19 +6,35 @@ using UnityEngine;
 
 namespace Assets.Scripts.MapScene.MapGenerator
 {
+    #region ITerrainGenerator
+
+    public interface ITerrainGenerator
+    {
+        SquareScript[,] GenerateMap(int x, int y, int playerStartX, int playerStartY);
+    }
+
+    #endregion ITerrainGenerator
+
     #region BaseTerrainGenerator
 
+    /// <summary>
+    /// Base class for all terrain generators.
+    /// </summary>
     public abstract class BaseTerrainGenerator : ITerrainGenerator
     {
-        private const double c_minimumSizeToRegenerateMap = 0.4;
+        #region fields
 
-        private const double c_requiredSizeOfMap = 0.6;
+        private readonly float c_minimumSizeToRegenerateMap = SimpleConfigurationHandler.GetFloatProperty("map re-generation bar", FileAccessor.TerrainGeneration);
 
-        private const int c_emptySpaceAroundPlayer = 3;
+        private readonly float c_requiredSizeOfMap = SimpleConfigurationHandler.GetFloatProperty("required map ratio", FileAccessor.TerrainGeneration);
+
+        private readonly int c_emptySpaceAroundPlayer = SimpleConfigurationHandler.GetIntProperty("empty space around player", FileAccessor.TerrainGeneration);
 
         protected bool[,] m_boolMap;
 
-        protected abstract void CreateInitialMap(int x, int y);
+        #endregion fields
+
+        #region public methods
 
         public virtual SquareScript[,] GenerateMap(int width, int height, int playerStartX, int playerStartY)
         {
@@ -28,6 +44,9 @@ namespace Assets.Scripts.MapScene.MapGenerator
             {
                 // get base map
                 CreateInitialMap(width, height);
+                Assert.NotNull(m_boolMap, "m_boolMap");
+                Assert.AreEqual(m_boolMap.GetLength(0), width, "map isn't in the right width");
+                Assert.AreEqual(m_boolMap.GetLength(1), height, "map isn't in the right height");
 
                 // empty space around player
                 for (int i = -c_emptySpaceAroundPlayer; i < c_emptySpaceAroundPlayer; i++)
@@ -38,28 +57,84 @@ namespace Assets.Scripts.MapScene.MapGenerator
                     }
                 }
 
-                Debug.Log("initial map: {0} squares".FormatWith(m_boolMap.ToEnumerable().Count(cell => !cell)));
+                // add walls around the level
+                for (int i = 0; i < m_boolMap.GetLength(0); i++)
+                {
+                    m_boolMap[i, 0] = true;
+                    m_boolMap[i, m_boolMap.GetLength(1) - 1] = true;
+                }
+                for (int i = 0; i < m_boolMap.GetLength(1); i++)
+                {
+                    m_boolMap[0, i] = true;
+                    m_boolMap[m_boolMap.GetLength(0) - 1, i] = true;
+                }
+
                 // remove unreachable areas
                 FindAndRemoveUnreachableSpaces(width, height, playerStartX, playerStartY);
 
                 //verify the map is still large enough
                 size = m_boolMap.ToEnumerable().Count(cell => !cell);
-                Debug.Log("after removing unreachable squares: {0} squares".FormatWith(m_boolMap.ToEnumerable().Count(cell => !cell)));
             }
 
             // add additional space until map is spacious enough
-            var mapFiller = new MinerSpawningCaveMapGenerator();
             var expectedAmount = Convert.ToInt32(width * height * c_requiredSizeOfMap);
-            Debug.Log("expected amount {0}".FormatWith(expectedAmount));
-            mapFiller.MineTheMap(m_boolMap, expectedAmount);
-            Debug.Log("after filling out the map: {0} squares".FormatWith(m_boolMap.ToEnumerable().Count(cell => !cell)));
+            FillMapToRequiredSize(expectedAmount);
+            Assert.EqualOrGreater(m_boolMap.ToEnumerable().Count(cell => !cell), expectedAmount, "map hasn't reached required size");
+
+            // add walls around the level, to ensure they're there
+            for (int i = 0; i < m_boolMap.GetLength(0); i++)
+            {
+                m_boolMap[i, 0] = true;
+                m_boolMap[i, m_boolMap.GetLength(1) - 1] = true;
+            }
+            for (int i = 0; i < m_boolMap.GetLength(1); i++)
+            {
+                m_boolMap[0, i] = true;
+                m_boolMap[m_boolMap.GetLength(0) - 1, i] = true;
+            }
 
             // create squarescript map
             return CreateSquareScriptMap(width, height);
         }
 
+        #endregion public methods
+
+        #region abstract methods
+
+        /// <summary>
+        /// increase the free space in the map until it reaches the required amount of free squares
+        /// </summary>
+        /// <param name="requiredAmountOfFreeSquares"></param>
+        protected abstract void FillMapToRequiredSize(int requiredAmountOfFreeSquares);
+
+        /// <summary>
+        /// Create a new square, in the relevant style
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="location"></param>
+        /// <returns></returns>
+        protected abstract SquareScript CreateSquare(int x, int y, Vector3 location);
+
+        /// <summary>
+        /// Create a base map, before adjustments.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        protected abstract void CreateInitialMap(int x, int y);
+
+        #endregion abstract methods
+
         #region private methods
 
+        /// <summary>
+        /// Using the Flood Fill algorithm, this method turns all squares that can't be reached from
+        /// the player's starting position into walls.
+        /// </summary>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <param name="playerStartX"></param>
+        /// <param name="playerStartY"></param>
         private void FindAndRemoveUnreachableSpaces(int width, int height, int playerStartX, int playerStartY)
         {
             var visitMap = new bool[width, height];
@@ -107,6 +182,12 @@ namespace Assets.Scripts.MapScene.MapGenerator
             }
         }
 
+        /// <summary>
+        /// converts the bool map into a square script array.
+        /// </summary>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <returns></returns>
         private SquareScript[,] CreateSquareScriptMap(int width, int height)
         {
             var squares = new SquareScript[width, height];
@@ -118,7 +199,7 @@ namespace Assets.Scripts.MapScene.MapGenerator
             {
                 for (int i = 0; i < width; i++)
                 {
-                    squares[i, j] = createSquare(i, j, currentPosition);
+                    squares[i, j] = CreateSquare(i, j, currentPosition);
 
                     currentPosition = new Vector3(currentPosition.x + squareSize, currentPosition.y, 0);
                 }
@@ -127,109 +208,6 @@ namespace Assets.Scripts.MapScene.MapGenerator
             }
 
             return squares;
-        }
-
-        private SquareScript createSquare(int x, int y, Vector3 location)
-        {
-            var tile = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("SquareTileResource"), location, Quaternion.identity));
-            var script = tile.GetComponent<SquareScript>();
-            script.setLocation(x, y);
-
-            if (m_boolMap[x, y])
-            {
-                script.TerrainType = GetTerrainType(x, y);
-            }
-            else
-            {
-                script.TerrainType = TerrainType.Empty;
-            }
-
-            return script;
-        }
-
-        private TerrainType GetTerrainType(int x, int y)
-        {
-            int newX = x - 1, newY = y;
-            bool left = (newX < 0 ||
-                m_boolMap[newX, y]);
-
-            newX = x + 1;
-            bool right = (newX >= m_boolMap.GetLength(0) ||
-                m_boolMap[newX, y]);
-
-            newY = y - 1;
-            bool up = (newY < 0 ||
-                m_boolMap[x, newY]);
-
-            newY = y + 1;
-            bool down = (newY >= m_boolMap.GetLength(1) ||
-                m_boolMap[x, newY]);
-
-            if (up &&
-                left &&
-                !down &&
-                !right)
-            {
-                return TerrainType.Rock_Top_Left_Corner;
-            }
-
-            if (up &&
-                !left &&
-                !down &&
-                right)
-            {
-                return TerrainType.Rock_Top_Right_Corner;
-            }
-
-            if (!up &&
-                left &&
-                down &&
-                !right)
-            {
-                return TerrainType.Rock_Bottom_Left_Corner;
-            }
-
-            if (!up &&
-                !left &&
-                down &&
-                right)
-            {
-                return TerrainType.Rock_Bottom_Right_Corner;
-            }
-
-            if (!up &&
-                left &&
-                !down &&
-                !right)
-            {
-                return TerrainType.Rock_Side_Left;
-            }
-
-            if (up &&
-                !left &&
-                !down &&
-                !right)
-            {
-                return TerrainType.Rock_Side_Top;
-            }
-
-            if (!up &&
-                !left &&
-                down &&
-                !right)
-            {
-                return TerrainType.Rock_Side_Bottom;
-            }
-
-            if (!up &&
-                !left &&
-                !down &&
-                right)
-            {
-                return TerrainType.Rock_Side_Right;
-            }
-
-            return TerrainType.Rock_Full;
         }
 
         #endregion private methods

@@ -5,7 +5,6 @@ using Assets.Scripts.UnityBase;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml;
 using UnityEngine;
 
 namespace Assets.Scripts.MapScene
@@ -181,18 +180,6 @@ namespace Assets.Scripts.MapScene
 
         private static SquareScript[,] AddCompulsoryTerrainFeatures(SquareScript[,] squares)
         {
-            // add walls around the level
-            for (int i = 0; i < squares.GetLength(0); i++)
-            {
-                squares[i, 0].TerrainType = TerrainType.Rock_Full;
-                squares[i, squares.GetLength(1) - 1].TerrainType = TerrainType.Rock_Full;
-            }
-            for (int i = 0; i < squares.GetLength(1); i++)
-            {
-                squares[0, i].TerrainType = TerrainType.Rock_Full;
-                squares[squares.GetLength(0) - 1, i].TerrainType = TerrainType.Rock_Full;
-            }
-
             squares[c_playStartPositionX - 2, c_playStartPositionY - 1].TerrainType = TerrainType.Spaceship_Top_Left;
             squares[c_playStartPositionX - 1, c_playStartPositionY - 1].TerrainType = TerrainType.Spaceship_Top_Right;
             squares[c_playStartPositionX - 2, c_playStartPositionY].TerrainType = TerrainType.Spaceship_Bottom_Left;
@@ -275,21 +262,7 @@ namespace Assets.Scripts.MapScene
 
         public IEnumerable<SquareScript> GetNeighbours(bool diagonals)
         {
-            List<SquareScript> neighbours = new List<SquareScript>();
-
-            if (X > 0) neighbours.Add(GetSquare(X - 1, Y));
-            if (X < s_map.GetLength(0) - 1) neighbours.Add(GetSquare(X + 1, Y));
-            if (Y > 0) neighbours.Add(GetSquare(X, Y - 1));
-            if (Y < s_map.GetLength(1) - 1) neighbours.Add(GetSquare(X, Y + 1));
-            if (diagonals)
-            {
-                if ((X > 0) && (Y > 0)) neighbours.Add(GetSquare(X - 1, Y - 1));
-                if ((X < s_map.GetLength(0) - 1) && (Y > 0)) neighbours.Add(GetSquare(X + 1, Y - 1));
-                if ((X > 0) && (Y < s_map.GetLength(1))) neighbours.Add(GetSquare(X - 1, Y + 1));
-                if ((X < s_map.GetLength(0) - 1) && (Y < s_map.GetLength(1))) neighbours.Add(GetSquare(X + 1, Y + 1));
-            }
-
-            return neighbours;
+            return s_map.GetNeighbours<SquareScript>(X, Y, diagonals);
         }
 
         public static void InitFog()

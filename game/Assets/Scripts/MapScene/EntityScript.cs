@@ -16,14 +16,14 @@ namespace Assets.Scripts.MapScene
         #region fields
 
         private static long s_entityId = 0;
-        private static List<Entity> s_killedEntities = new List<Entity>();
+        private static readonly List<Entity> s_killedEntities = new List<Entity>();
         private const int c_startHealth = 15;
         private const int c_startOxygen = 200;
         private const int c_startEnergy = 10;
 
         private readonly long m_id;
 
-        private MovementType m_movementType;
+        private readonly MovementType m_movementType;
 
         protected bool m_alwaysActive;
 
@@ -219,7 +219,7 @@ namespace Assets.Scripts.MapScene
 
         public IEnumerator Act(float timePerMonster)
         {
-            if(Health <= 0)
+            if (Health <= 0)
             {
                 return new EmptyEnumerator();
             }
@@ -307,9 +307,9 @@ namespace Assets.Scripts.MapScene
     {
         #region fields
 
-        private System.Diagnostics.Stopwatch m_playerActionTimer;
+        private readonly System.Diagnostics.Stopwatch m_playerActionTimer;
 
-        private double m_maxEnergy = 20;
+        private readonly double m_maxEnergy;
 
         private bool m_hasFuelCell = false;
 
@@ -341,6 +341,7 @@ namespace Assets.Scripts.MapScene
         public PlayerEntity(double health, double energy, double oxygen, SquareScript location) :
             base(new EntityTemplate("PlayerSprite", health, MovementType.Walking), location)
         {
+            m_maxEnergy = energy;
             Energy = energy;
             Oxygen = oxygen;
             m_playerActionTimer = new System.Diagnostics.Stopwatch();

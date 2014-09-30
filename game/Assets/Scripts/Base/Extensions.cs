@@ -112,10 +112,14 @@ namespace Assets.Scripts.Base
             return Randomiser.ChooseValues(group, amount);
         }
 
-        public static TVal Get<TKey, TVal>(this IDictionary<TKey, TVal> dict, TKey key, string dictionaryName = "")
+        public static TVal Get<TKey, TVal>(this IDictionary<TKey, TVal> dict, TKey key, string dictionaryName = "dictionary")
         {
-            Assert.DictionaryContains(dict, key, dictionaryName);
-            return dict[key];
+            TVal value;
+            if (!dict.TryGetValue(key, out value))
+            {
+                Assert.AssertConditionMet(dict.ContainsKey(key), "Key \'{0}\' not found in {1}".FormatWith(key, dictionaryName));
+            }
+            return value;
         }
 
         // Converts an IEnumerator to IEnumerable
@@ -137,11 +141,21 @@ namespace Assets.Scripts.Base
             return enumerator;
         }
 
+        /// <summary>
+        /// return another enumerable, in a random order.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="group"></param>
+        /// <returns></returns>
         public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> group)
         {
             Assert.NotNull(group, "group");
             return Randomiser.Shuffle(group);
         }
+
+        #endregion IEnumerable
+
+        #region 2d arrays
 
         public static IEnumerable<T> ToEnumerable<T>(this T[,] array)
         {
@@ -151,7 +165,26 @@ namespace Assets.Scripts.Base
             }
         }
 
-        #endregion IEnumerable
+        public static IEnumerable<T> GetNeighbours<T>(this T[,] array, int x, int y, bool diagonals)
+        {
+            List<T> neighbours = new List<T>();
+
+            if (x > 0) neighbours.Add(array[x - 1, y]);
+            if (x < array.GetLength(0) - 1) neighbours.Add(array[x + 1, y]);
+            if (y > 0) neighbours.Add(array[x, y - 1]);
+            if (y < array.GetLength(1) - 1) neighbours.Add(array[x, y + 1]);
+            if (diagonals)
+            {
+                if ((x > 0) && (y > 0)) neighbours.Add(array[x - 1, y - 1]);
+                if ((x < array.GetLength(0) - 1) && (y > 0)) neighbours.Add(array[x + 1, y - 1]);
+                if ((x > 0) && (y < array.GetLength(1))) neighbours.Add(array[x - 1, y + 1]);
+                if ((x < array.GetLength(0) - 1) && (y < array.GetLength(1))) neighbours.Add(array[x + 1, y + 1]);
+            }
+
+            return neighbours;
+        }
+
+        #endregion 2d arrays
 
         #region timing
 

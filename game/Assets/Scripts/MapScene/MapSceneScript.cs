@@ -417,12 +417,14 @@ namespace Assets.Scripts.MapScene
             s_Markers.Clear();
             s_squaresWithEffect.Clear();
             SquareScript.Clear();
+            MapGenerator.BasePopulator<Loot>.Clear();
+            MapGenerator.BasePopulator<MonsterTemplate>.Clear();
         }
 
         private void MapInit()
         {
-            var terrainGenerator = new CellularAutomataCaveMapGenerator();
-            var monsterPopulator = new UniformMonsterPopulator();
+            var terrainGenerator = new PerlinNoiseCaveMapGenerator();
+            var monsterPopulator = new DistanceBasedMonsterPopulator();
             var treasurePopulator = new DistanceAndDensityBasedTreasurePopulator();
             SquareScript.Init(terrainGenerator, monsterPopulator, treasurePopulator);
             Entity.Player.Location.FogOfWar();

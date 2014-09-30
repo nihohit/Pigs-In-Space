@@ -12,8 +12,8 @@ namespace Assets.Scripts.MapScene
     {
         #region fields
 
-        private static List<EnemyEntity> s_activeEntities = new List<EnemyEntity>();
-        private static Dictionary<string, int> s_deadMonsters = new Dictionary<string, int>();
+        private static readonly List<EnemyEntity> s_activeEntities = new List<EnemyEntity>();
+        private static readonly Dictionary<string, int> s_deadMonsters = new Dictionary<string, int>();
 
         #endregion fields
 
@@ -55,11 +55,7 @@ namespace Assets.Scripts.MapScene
 
             // enumerate the actions
             IEnumerator enumerator = new EmptyEnumerator();
-            foreach (var enemy in activeEntities)
-            {
-                enumerator = enemy.Act(timePerMonster).Join(enumerator);
-            }
-            return enumerator;
+            return activeEntities.Aggregate(enumerator, (current, enemy) => enemy.Act(timePerMonster).Join(current));
         }
 
         internal static void Remove(EnemyEntity enemy)
