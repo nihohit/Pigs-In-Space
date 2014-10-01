@@ -48,6 +48,7 @@ namespace Assets.Scripts.MapScene
 
         public void Init()
         {
+            EscapeMode = false;
             m_textureManager = new TextureManager();
             ActionableItem.Init(m_textureManager);
 

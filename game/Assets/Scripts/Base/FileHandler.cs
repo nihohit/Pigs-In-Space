@@ -18,14 +18,6 @@ namespace Assets.Scripts.Base
 
         #region public methods
 
-        public static void Init()
-        {
-            if (s_navigator.Count == 0)
-            {
-                ReadFiles(Enum.GetNames(typeof(FileAccessor)));
-            }
-        }
-
         public static UInt16 GetUintProperty(string str, FileAccessor access)
         {
             return Convert.ToUInt16(GetStringProperty(str, access));
@@ -33,7 +25,7 @@ namespace Assets.Scripts.Base
 
         public static object GetStringProperty(string str, FileAccessor access)
         {
-            Init();
+            CheckAndInit();
             return s_navigator.Get(access.ToString(), "File Handler navigator").Get(str.ToLower(), "{0} dictionary".FormatWith(access));
         }
 
@@ -69,6 +61,17 @@ namespace Assets.Scripts.Base
             foreach (var file in files)
             {
                 ReadFromFile(file);
+            }
+        }
+
+        private static void CheckAndInit()
+        {
+            lock (s_navigator)
+            {
+                if (s_navigator.Count == 0)
+                {
+                    ReadFiles(Enum.GetNames(typeof(FileAccessor)));
+                }
             }
         }
 

@@ -215,17 +215,18 @@ namespace Assets.Scripts.LogicBase
 
         #region Creating units
 
-        private SquareScript ChooseRandomFreeSquare()
-        {
-            return Owner.Location.GetNeighbours().Where(square => square.TraversingCondition == Traversability.Walkable && square.OccupyingEntity == null).ChooseRandomValue();
-        }
-
         private void CreateEnemy()
         {
-            if (Owner.Location.GetNeighbours(true).Any() &&
+            var emptyNeighbours = Owner.Location.GetNeighbours().
+                Where(square => square.TraversingCondition == Traversability.Walkable &&
+                    square.OccupyingEntity == null);
+
+            if (emptyNeighbours.Any() &&
                 Randomiser.ProbabilityCheck(MapSceneScript.EscapeMode ? MaxPower : MinPower))
             {
-                EnemiesManager.CreateEnemy(MonsterTemplateStorage.Instance.GetConfiguration(CreatedMonsterType), ChooseRandomFreeSquare());
+                EnemiesManager.CreateEnemy(
+                    MonsterTemplateStorage.Instance.GetConfiguration(CreatedMonsterType),
+                    emptyNeighbours.ChooseRandomValue());
             }
         }
 
