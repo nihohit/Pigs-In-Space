@@ -1,7 +1,7 @@
-﻿using Assets.Scripts;
-using Assets.Scripts.Base;
+﻿using Assets.Scripts.Base;
 using Assets.Scripts.IntersceneCommunication;
 using Assets.Scripts.LogicBase;
+using Assets.Scripts.MapScene.MapGenerator;
 using Assets.Scripts.UnityBase;
 using System;
 using System.Collections;
@@ -16,9 +16,6 @@ namespace Assets.Scripts.MapScene
     public class MapSceneScript : MonoBehaviour
     {
         #region private members
-
-        private const int c_playStartPositionX = 5;
-        private const int c_playStartPositionY = 5;
 
         private Vector2 CameraMax = new Vector2(0f, 0f);        // The maximum x and y coordinates the camera can have.
         private Vector2 CameraMin = new Vector2(0f, 0f);        // The minimum x and y coordinates the camera can have.
@@ -51,13 +48,13 @@ namespace Assets.Scripts.MapScene
 
         public void Init()
         {
+            EscapeMode = false;
             m_textureManager = new TextureManager();
             ActionableItem.Init(m_textureManager);
 
-            SquareScript.Init();
+            MapInit();
             ScreenSizeInit();
             GUIStyleInit();
-            PlayerInit();
             ChangeGameState(GameState.Ongoing);
         }
 
@@ -421,11 +418,16 @@ namespace Assets.Scripts.MapScene
             s_Markers.Clear();
             s_squaresWithEffect.Clear();
             SquareScript.Clear();
+            MapGenerator.BasePopulator<Loot>.Clear();
+            MapGenerator.BasePopulator<MonsterTemplate>.Clear();
         }
 
-        private void PlayerInit()
+        private void MapInit()
         {
-            Entity.CreatePlayerEntity(c_playStartPositionX, c_playStartPositionY);
+            var terrainGenerator = new PerlinNoiseCaveMapGenerator();
+            var monsterPopulator = new DistanceBasedMonsterPopulator();
+            var treasurePopulator = new DistanceAndDensityBasedTreasurePopulator();
+            SquareScript.Init(terrainGenerator, monsterPopulator, treasurePopulator);
             Entity.Player.Location.FogOfWar();
         }
 

@@ -1,11 +1,10 @@
-﻿using Assets.Scripts;
-using Assets.Scripts.Base;
+﻿using Assets.Scripts.Base;
 using Assets.Scripts.LogicBase;
+using Assets.Scripts.MapScene.MapGenerator;
 using Assets.Scripts.UnityBase;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml;
 using UnityEngine;
 
 namespace Assets.Scripts.MapScene
@@ -23,8 +22,6 @@ namespace Assets.Scripts.MapScene
         #region fields
 
         private static SquareScript[,] s_map;
-        private int m_x, m_y;
-        private Loot m_droppedLoot;
         private TerrainType m_terrainType;
         private FogOfWarType m_fogOfWarType;
         public static SquareScript s_markedSquare;
@@ -34,6 +31,9 @@ namespace Assets.Scripts.MapScene
         private static IUnityMarker s_squareMarker;
         public IUnityMarker m_lootMarker;
         private IUnityMarker m_fogOfWar;
+
+        private const int c_playStartPositionX = 4;
+        private const int c_playStartPositionY = 3;
 
         /// <summary>
         /// Unity marker for effect
@@ -53,7 +53,13 @@ namespace Assets.Scripts.MapScene
 
         public static int Height { get { return s_map.GetLength(1); } }
 
+        public int X { get; private set; }
+
+        public int Y { get; private set; }
+
         public Entity OccupyingEntity { get; set; }
+
+        public Loot DroppedLoot { get; private set; }
 
         public TerrainType TerrainType
         {
@@ -139,54 +145,62 @@ namespace Assets.Scripts.MapScene
             s_map = null;
         }
 
-        public static void Init()
+        public static void Init(
+            ITerrainGenerator terrainGenerator,
+            IMonsterPopulator monsterPopulator,
+            ITreasurePopulator treasurePopulator)
         {
-            LoadFromTMX(@"Maps\testMap3.tmx");
+            s_map = AddCompulsoryTerrainFeatures(terrainGenerator.GenerateMap(40, 40, c_playStartPositionX, c_playStartPositionY));
+
+            Entity.CreatePlayerEntity(c_playStartPositionX, c_playStartPositionY);
+
+            treasurePopulator.PopulateMap(s_map, Enumerable.Range(0, 30).Select(number => new Loot(Randomiser.Next(1, 5), false)));
+
+            var monsters = new List<MonsterTemplate>();
+            for (int i = 0; i < 7; i++)
+            {
+                monsters.Add(MonsterTemplateStorage.Instance.GetConfiguration("Hive"));
+            }
+
+            for (int i = 0; i < 7; i++)
+            {
+                monsters.Add(MonsterTemplateStorage.Instance.GetConfiguration("Slime"));
+            }
+
+            for (int i = 0; i < 25; i++)
+            {
+                monsters.Add(MonsterTemplateStorage.Instance.GetConfiguration("TentacleMonster"));
+            }
+
+            monsterPopulator.PopulateMap(s_map, monsters);
+            InitMarkers();
             InitFog();
+            Entity.Player.Location.FogOfWar();
         }
 
-        public static void LoadFromTMX(string filename)
+        private static SquareScript[,] AddCompulsoryTerrainFeatures(SquareScript[,] squares)
         {
-            s_squareMarker = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("squareSelectionBox"), new Vector2(1000000, 1000000), Quaternion.identity)).GetComponent<MarkerScript>();
-            s_attackMarker = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("AttackMark"), new Vector2(1000000, 1000000), Quaternion.identity)).GetComponent<MarkerScript>();
+            squares[c_playStartPositionX - 2, c_playStartPositionY - 1].TerrainType = TerrainType.Spaceship_Top_Left;
+            squares[c_playStartPositionX - 1, c_playStartPositionY - 1].TerrainType = TerrainType.Spaceship_Top_Right;
+            squares[c_playStartPositionX - 2, c_playStartPositionY].TerrainType = TerrainType.Spaceship_Bottom_Left;
+            squares[c_playStartPositionX - 1, c_playStartPositionY].TerrainType = TerrainType.Spaceship_Bottom_Right;
 
-            var root = new XmlDocument();
-            root.Load(filename);
-            var mapWidth = Int32.Parse(root.SelectSingleNode(@"map/@width").Value);
-            var mapHeight = Int32.Parse(root.SelectSingleNode(@"map/@height").Value);
-            var terrain = root.SelectNodes(@"map/layer[@name='Terrain']/data/tile").Cast<XmlNode>().Select(node => node.Attributes["gid"].Value).ToList();
-            var entities = root.SelectNodes(@"map/layer[@name='Entities']/data/tile").Cast<XmlNode>().Select(node => node.Attributes["gid"].Value).ToList();
-            var markers = root.SelectNodes(@"map/layer[@name='Markers']/data/tile").Cast<XmlNode>().Select(node => node.Attributes["gid"].Value).ToList();
-
-            s_map = new SquareScript[mapWidth, mapHeight];
-            var squareSize = PixelsPerSquare * MapSceneScript.UnitsToPixelsRatio; // 1f
-            var currentPosition = Vector3.zero;
-            for (int j = mapHeight - 1; j >= 0; j--) // invert y axis
-            {
-                for (int i = 0; i < mapWidth; i++)
-                {
-                    TmxManager.HandleTerrain(terrain[j * mapWidth + i], i, j, currentPosition);
-                    TmxManager.HandleEntity(entities[j * mapWidth + i], i, j);
-                    TmxManager.HandleMarker(markers[j * mapWidth + i], i, j);
-                    currentPosition = new Vector3(currentPosition.x + squareSize, currentPosition.y, 0);
-                }
-                currentPosition = new Vector3(0, currentPosition.y + squareSize, 0);
-            }
+            return squares;
         }
 
         public void AddLoot(Loot loot)
         {
-            if (m_droppedLoot == null)
+            if (DroppedLoot == null)
             {
-                m_droppedLoot = loot;
-                var prefabName = (m_droppedLoot.FuelCell) ? "FuelCell" : "Crystals";
+                DroppedLoot = loot;
+                var prefabName = (DroppedLoot.FuelCell) ? "FuelCell" : "Crystals";
                 m_lootMarker = ((GameObject)MonoBehaviour.Instantiate(Resources.Load(prefabName),
                                                                          transform.position,
                                                                      Quaternion.identity)).GetComponent<MarkerScript>();
             }
             else
             {
-                m_droppedLoot.AddLoot(loot);
+                DroppedLoot.AddLoot(loot);
             }
         }
 
@@ -195,15 +209,10 @@ namespace Assets.Scripts.MapScene
             return s_map[x, y];
         }
 
-        public static void SetSquare(SquareScript square, int x, int y)
-        {
-            s_map[x, y] = square;
-        }
-
         public void setLocation(int x, int y)
         {
-            m_y = y;
-            m_x = x;
+            Y = y;
+            X = x;
         }
 
         public Vector2 getWorldLocation()
@@ -213,8 +222,8 @@ namespace Assets.Scripts.MapScene
 
         public SquareScript GetNextSquare(int x, int y)
         {
-            x = Mathf.Min(x + m_x, s_map.GetLength(0) - 1);
-            y = Mathf.Min(y + m_y, s_map.GetLength(1) - 1);
+            x = Mathf.Min(x + X, s_map.GetLength(0) - 1);
+            y = Mathf.Min(y + Y, s_map.GetLength(1) - 1);
             x = Mathf.Max(x, 0);
             y = Mathf.Max(y, 0);
             return GetSquare(x, y);
@@ -222,16 +231,28 @@ namespace Assets.Scripts.MapScene
 
         public Loot TakeLoot()
         {
-            if (m_droppedLoot == null)
+            if (DroppedLoot == null)
             {
                 return null;
             }
 
-            var loot = m_droppedLoot;
-            m_droppedLoot = null;
+            var loot = DroppedLoot;
+            DroppedLoot = null;
             m_lootMarker.DestroyGameObject();
             m_lootMarker = null;
             return loot;
+        }
+
+        // return all squares in range of this square
+        public IEnumerable<SquareScript> MultiplyBySize(int size)
+        {
+            for (int i = Math.Max(0, X - size); i <= Math.Min(SquareScript.Width - 1, X + size); i++)
+            {
+                for (int j = Math.Max(0, Y - size); j <= Math.Min(SquareScript.Height - 1, Y + size); j++)
+                {
+                    yield return SquareScript.GetSquare(i, j);
+                }
+            }
         }
 
         public IEnumerable<SquareScript> GetNeighbours()
@@ -241,21 +262,7 @@ namespace Assets.Scripts.MapScene
 
         public IEnumerable<SquareScript> GetNeighbours(bool diagonals)
         {
-            List<SquareScript> neighbours = new List<SquareScript>();
-
-            if (m_x > 0) neighbours.Add(GetSquare(m_x - 1, m_y));
-            if (m_x < s_map.GetLength(0)) neighbours.Add(GetSquare(m_x + 1, m_y));
-            if (m_y > 0) neighbours.Add(GetSquare(m_x, m_y - 1));
-            if (m_y < s_map.GetLength(1)) neighbours.Add(GetSquare(m_x, m_y + 1));
-            if (diagonals)
-            {
-                if ((m_x > 0) && (m_y > 0)) neighbours.Add(GetSquare(m_x - 1, m_y - 1));
-                if ((m_x < s_map.GetLength(0)) && (m_y > 0)) neighbours.Add(GetSquare(m_x + 1, m_y - 1));
-                if ((m_x > 0) && (m_y < s_map.GetLength(1))) neighbours.Add(GetSquare(m_x - 1, m_y + 1));
-                if ((m_x < s_map.GetLength(0)) && (m_y < s_map.GetLength(1))) neighbours.Add(GetSquare(m_x + 1, m_y + 1));
-            }
-
-            return neighbours;
+            return s_map.GetNeighbours<SquareScript>(X, Y, diagonals);
         }
 
         public static void InitFog()
@@ -330,6 +337,12 @@ namespace Assets.Scripts.MapScene
 
         #region private methods
 
+        private static void InitMarkers()
+        {
+            s_squareMarker = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("squareSelectionBox"), new Vector2(1000000, 1000000), Quaternion.identity)).GetComponent<MarkerScript>();
+            s_attackMarker = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("AttackMark"), new Vector2(1000000, 1000000), Quaternion.identity)).GetComponent<MarkerScript>();
+        }
+
         private void Awake()
         {
             m_fogOfWar = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("FogOfWar"), transform.position, Quaternion.identity)).GetComponent<MarkerScript>();
@@ -385,8 +398,8 @@ namespace Assets.Scripts.MapScene
         private void Start()
         {
             var location = s_map.GetCoordinates(this);
-            m_x = (int)location.x;
-            m_y = (int)location.y;
+            X = (int)location.x;
+            Y = (int)location.y;
         }
 
         // Update is called once per frame
@@ -556,66 +569,4 @@ namespace Assets.Scripts.MapScene
     }
 
     #endregion SpriteManager
-
-    #region TmxManager
-
-    public class TmxManager
-    {
-        public static void HandleTerrain(string gid, int x, int y, Vector3 universalLocation)
-        {
-            var tile = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("SquareTileResource"), universalLocation, Quaternion.identity));
-            var script = tile.GetComponent<SquareScript>();
-            script.setLocation(x, y);
-            SquareScript.SetSquare(script, x, y);
-            switch (gid)
-            {
-                case "0": script.TerrainType = TerrainType.Empty; break;
-                case "1": script.TerrainType = TerrainType.Empty; break;
-                case "2": script.TerrainType = TerrainType.Rock_Bottom_Right_Corner; break;
-                case "3": script.TerrainType = TerrainType.Rock_Bottom_Left_Corner; break;
-                case "4": script.TerrainType = TerrainType.Rock_Top_Right_Corner; break;
-                case "5": script.TerrainType = TerrainType.Rock_Top_Left_Corner; break;
-                case "6":
-                case "7":
-                case "8":
-                case "9": script.TerrainType = TerrainType.Rock_Full; break;
-                case "10": script.TerrainType = TerrainType.Rock_Side_Bottom; break;
-                case "11": script.TerrainType = TerrainType.Rock_Side_Left; break;
-                case "12": script.TerrainType = TerrainType.Rock_Side_Top; break;
-                case "13": script.TerrainType = TerrainType.Rock_Side_Right; break;
-                case "14": script.TerrainType = TerrainType.Rock_Crater; break;
-                case "15": script.TerrainType = TerrainType.Spaceship_Top_Left; break;
-                case "16": script.TerrainType = TerrainType.Spaceship_Top_Right; break;
-                case "17": script.TerrainType = TerrainType.Spaceship_Bottom_Left; break;
-                case "18": script.TerrainType = TerrainType.Spaceship_Bottom_Right; break;
-                case "19": script.TerrainType = TerrainType.Rock_Crystal; break;
-                default: script.TerrainType = TerrainType.Empty; break;
-            }
-        }
-
-        public static void HandleEntity(string gid, int x, int y)
-        {
-            switch (gid)
-            {
-                case "33": SquareScript.GetSquare(x, y).AddLoot(new Loot(16, true)); break;
-                case "34": EnemiesManager.CreateTentacleMonster(x, y); break;
-                case "35": break;
-                case "36": break;
-                case "37": SquareScript.GetSquare(x, y).AddLoot(new Loot(UnityEngine.Random.Range(0, 10), false)); break;
-                case "38": EnemiesManager.CreateHive(x, y); break;
-                case "39": EnemiesManager.CreateSlime(x, y); break;
-            }
-        }
-
-        public static void HandleMarker(string gid, int x, int y)
-        {
-            switch (gid)
-            {
-                case "68": MapSceneScript.SetEvent(() => EnemiesManager.CreateTentacleMonster(x, y), Marker.OnEscape); break;
-                case "74": MapSceneScript.AddGroundEffect(GroundEffect.StandardAcid, x, y); break;
-            }
-        }
-    }
-
-    #endregion TmxManager
 }

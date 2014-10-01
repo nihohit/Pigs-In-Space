@@ -1,5 +1,4 @@
-﻿using Assets.Scripts;
-using Assets.Scripts.Base;
+﻿using Assets.Scripts.Base;
 using Assets.Scripts.LogicBase;
 using Assets.Scripts.MapScene;
 using System.Collections.Generic;

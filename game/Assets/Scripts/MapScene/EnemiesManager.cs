@@ -12,9 +12,8 @@ namespace Assets.Scripts.MapScene
     {
         #region fields
 
-        private static List<EnemyEntity> s_activeEntities = new List<EnemyEntity>();
-        private static Dictionary<string, int> s_deadMonsters = new Dictionary<string, int>();
-        private static MonsterTemplateStorage s_monsterTemplateStorage = new MonsterTemplateStorage("monsters");
+        private static readonly List<EnemyEntity> s_activeEntities = new List<EnemyEntity>();
+        private static readonly Dictionary<string, int> s_deadMonsters = new Dictionary<string, int>();
 
         #endregion fields
 
@@ -56,11 +55,7 @@ namespace Assets.Scripts.MapScene
 
             // enumerate the actions
             IEnumerator enumerator = new EmptyEnumerator();
-            foreach (var enemy in activeEntities)
-            {
-                enumerator = enemy.Act(timePerMonster).Join(enumerator);
-            }
-            return enumerator;
+            return activeEntities.Aggregate(enumerator, (current, enemy) => enemy.Act(timePerMonster).Join(current));
         }
 
         internal static void Remove(EnemyEntity enemy)
@@ -69,38 +64,11 @@ namespace Assets.Scripts.MapScene
             s_activeEntities.Remove(enemy);
         }
 
-        public static EnemyEntity CreateTentacleMonster(int x, int y)
+        public static EnemyEntity CreateEnemy(MonsterTemplate template, SquareScript square)
         {
-            return CreateTentacleMonster(SquareScript.GetSquare(x, y));
-        }
-
-        public static EnemyEntity CreateTentacleMonster(SquareScript square)
-        {
-            var monster = new EnemyEntity(
-                s_monsterTemplateStorage.GetConfiguration("TentacleMonster"),
-                square);
+            var monster = new EnemyEntity(template, square);
             AddEnemy(monster);
             return monster;
-        }
-
-        public static EnemyEntity CreateHive(int x, int y)
-        {
-            var square = SquareScript.GetSquare(x, y);
-            var hive = new EnemyEntity(s_monsterTemplateStorage.GetConfiguration("Hive"), square);
-            AddEnemy(hive);
-            return hive;
-        }
-
-        public static EnemyEntity CreateSlime(int x, int y)
-        {
-            return CreateSlime(SquareScript.GetSquare(x, y));
-        }
-
-        public static EnemyEntity CreateSlime(SquareScript square)
-        {
-            var acidMonster = new EnemyEntity(s_monsterTemplateStorage.GetConfiguration("Slime"), square);
-            AddEnemy(acidMonster);
-            return acidMonster;
         }
 
         #endregion public methods

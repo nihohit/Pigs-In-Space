@@ -5,10 +5,10 @@ namespace Assets.Scripts.LogicBase
 {
     #region ActionableItemStorage
 
-    public class ActionableItemStorage : ConfigurationStorage<ActionableItem>
+    public class ActionableItemStorage : ConfigurationStorage<ActionableItem, ActionableItemStorage>
     {
-        public ActionableItemStorage(string filename)
-            : base(filename)
+        public ActionableItemStorage()
+            : base("monsterItems")
         { }
 
         protected override JSONParser<ActionableItem> GetParser()
@@ -31,7 +31,8 @@ namespace Assets.Scripts.LogicBase
                     TryGetValueOrSetDefaultValue<int>("ShotSAmount", 1),
                     TryGetValueOrSetDefaultValue<float>("ShotSpread", 0),
                     TryGetValueOrSetDefaultValue<int>("EffectSize", 0),
-                    TryGetValueOrSetDefaultValue<string>("ShotType", "slimeball"));
+                    TryGetValueOrSetDefaultValue<string>("ShotType", "slimeball"),
+                    TryGetValueOrSetDefaultValue<string>("CreatedMonsterType", null));
             }
         }
 
@@ -42,10 +43,10 @@ namespace Assets.Scripts.LogicBase
 
     #region EquipmentConfigurationStorage
 
-    public class EquipmentConfigurationStorage : ConfigurationStorage<PlayerEquipment>
+    public class EquipmentConfigurationStorage : ConfigurationStorage<PlayerEquipment, EquipmentConfigurationStorage>
     {
-        public EquipmentConfigurationStorage(string filename)
-            : base(filename)
+        public EquipmentConfigurationStorage()
+            : base("equipment")
         { }
 
         protected override JSONParser<PlayerEquipment> GetParser()
@@ -69,6 +70,7 @@ namespace Assets.Scripts.LogicBase
                     TryGetValueOrSetDefaultValue<float>("ShotSpread", 0),
                     TryGetValueOrSetDefaultValue<int>("EffectSize", 0),
                     TryGetValueOrSetDefaultValue<string>("ShotType", "laser"),
+                    TryGetValueOrSetDefaultValue<string>("CreatedMonsterType", null),
                     TryGetValueAndFail<float>("EnergyCost"),
                     TryGetValueOrSetDefaultValue<Loot>("Cost", null),
                     TryGetValueOrSetDefaultValue<IEnumerable<string>>("Upgrades", null));

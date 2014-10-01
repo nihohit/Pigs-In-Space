@@ -1,5 +1,4 @@
 ﻿using Assets.Scripts.Base;
-using System.Collections.Generic;
 
 namespace Assets.Scripts.LogicBase
 {
@@ -36,10 +35,10 @@ namespace Assets.Scripts.LogicBase
 
     #region MonsterTemplateStorage
 
-    public sealed class MonsterTemplateStorage : ConfigurationStorage<MonsterTemplate>
+    public sealed class MonsterTemplateStorage : ConfigurationStorage<MonsterTemplate, MonsterTemplateStorage>
     {
-        public MonsterTemplateStorage(string filename)
-            : base(filename)
+        public MonsterTemplateStorage()
+            : base("monsters")
         { }
 
         protected override JSONParser<MonsterTemplate> GetParser()

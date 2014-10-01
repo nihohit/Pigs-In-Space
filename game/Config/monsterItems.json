@@ -23,6 +23,7 @@
 	"Name" : "TentacleCreation",
 	"MinPower" :  0.01,
 	"MaxPower" :  0.1, 
-	"EffectType" : 8
+	"EffectType" : 8,
+	"CreatedMonsterType": "TentacleMonster"
 }
 ]

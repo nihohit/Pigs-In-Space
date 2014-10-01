@@ -16,14 +16,14 @@ namespace Assets.Scripts.MapScene
         #region fields
 
         private static long s_entityId = 0;
-        private static List<Entity> s_killedEntities = new List<Entity>();
+        private static readonly List<Entity> s_killedEntities = new List<Entity>();
         private const int c_startHealth = 15;
         private const int c_startOxygen = 200;
-        private const int c_startEnergy = 10;
+        private const int c_startEnergy = 20;
 
         private readonly long m_id;
 
-        private MovementType m_movementType;
+        private readonly MovementType m_movementType;
 
         protected bool m_alwaysActive;
 
@@ -133,7 +133,7 @@ namespace Assets.Scripts.MapScene
         {
             var square = SquareScript.GetSquare(x, y);
             Entity.Player = new PlayerEntity(c_startHealth, c_startEnergy, c_startOxygen, square);
-            Entity.Player.SetEquipment(new EquipmentConfigurationStorage("equipment").GetAllConfigurations());
+            Entity.Player.SetEquipment(EquipmentConfigurationStorage.Instance.GetAllConfigurations());
         }
 
         #endregion static generation methods
@@ -175,8 +175,6 @@ namespace Assets.Scripts.MapScene
     {
         #region fields
 
-        private static ActionableItemStorage s_itemStorage = new ActionableItemStorage("monsterItems");
-
         private TimedSquareEffect m_action;
 
         private ActionableItem m_mainActionItem;
@@ -191,11 +189,11 @@ namespace Assets.Scripts.MapScene
             base(template, location)
         {
             // create a copy of action / destruction items, with this entity as the owner
-            m_mainActionItem = new ActionableItem(s_itemStorage.GetConfiguration(template.ActionItem), this);
+            m_mainActionItem = new ActionableItem(ActionableItemStorage.Instance.GetConfiguration(template.ActionItem), this);
 
             if (template.DestructionItem != null)
             {
-                m_destructionItem = new ActionableItem(s_itemStorage.GetConfiguration(template.DestructionItem), this);
+                m_destructionItem = new ActionableItem(ActionableItemStorage.Instance.GetConfiguration(template.DestructionItem), this);
             }
 
             switch (template.Tactics)
@@ -221,7 +219,7 @@ namespace Assets.Scripts.MapScene
 
         public IEnumerator Act(float timePerMonster)
         {
-            if(Health <= 0)
+            if (Health <= 0)
             {
                 return new EmptyEnumerator();
             }
@@ -311,7 +309,7 @@ namespace Assets.Scripts.MapScene
 
         private System.Diagnostics.Stopwatch m_playerActionTimer;
 
-        private double m_maxEnergy = 20;
+        private readonly double m_maxEnergy;
 
         private bool m_hasFuelCell = false;
 
@@ -326,7 +324,6 @@ namespace Assets.Scripts.MapScene
 
         public double Oxygen { get; private set; }
 
-
         public IEnumerable<SquareScript> LastSeen { get; set; }
 
         public IEnumerable<PlayerEquipment> Equipment { get; private set; }
@@ -336,6 +333,7 @@ namespace Assets.Scripts.MapScene
         public PlayerEquipment RightHandEquipment { get; set; }
 
         public Loot GainedLoot { get; set; }
+
         #endregion Properties
 
         #region constructor
@@ -343,6 +341,7 @@ namespace Assets.Scripts.MapScene
         public PlayerEntity(double health, double energy, double oxygen, SquareScript location) :
             base(new EntityTemplate("PlayerSprite", health, MovementType.Walking), location)
         {
+            m_maxEnergy = energy;
             Energy = energy;
             Oxygen = oxygen;
             m_playerActionTimer = new System.Diagnostics.Stopwatch();
@@ -400,8 +399,7 @@ namespace Assets.Scripts.MapScene
                     yield return enumerator.Current;
                 }
             }
-            Energy++;
-            Energy = Math.Min(Energy, m_maxEnergy);
+            Energy = Math.Min(Energy + 1, m_maxEnergy);
             MapSceneScript.ReduceEffectsDuration();
 
             enumerator = Entity.DestroyKilledEntities();

@@ -31,6 +31,11 @@ namespace Assets.Scripts.Base
             return s_staticRandom.NextDouble();
         }
 
+        public static double NextDouble(double max)
+        {
+            return NextDouble(0, max);
+        }
+
         public static double NextDouble(double min, double max)
         {
             return min + s_staticRandom.NextDouble() * (max - min);
@@ -40,13 +45,14 @@ namespace Assets.Scripts.Base
         public static bool ProbabilityCheck(double chance)
         {
             Assert.EqualOrLesser(chance, 1, "we can't have a probablity higher than 1");
+            Assert.EqualOrGreater(chance, 0, "we can't have a probablity lower than 0");
             return (NextDouble() <= chance);
         }
 
         //choose a single value out of a collection
         public static T ChooseValue<T>(IEnumerable<T> group)
         {
-            Assert.NotNullOrEmpty(group,"group");
+            Assert.NotNullOrEmpty(group, "group");
             T current = default(T);
             int count = 0;
             foreach (T element in group)
@@ -79,8 +85,6 @@ namespace Assets.Scripts.Base
             {
                 int j = s_staticRandom.Next(i, buffer.Count);
                 yield return buffer[j];
-
-                buffer[j] = buffer[i];
             }
         }
 
@@ -88,5 +92,104 @@ namespace Assets.Scripts.Base
         {
             return Next(2) > 0;
         }
+
+        public static IEnumerable<T> ChooseWeightedValues<T>(IDictionary<T, double> dictionary, int amount)
+        {
+            var chooser = new WeightedValuesChooser<T>();
+
+            return chooser.ChooseWeightedValues(dictionary, amount);
+        }
+
+        #region WeightedValuesChooser
+
+        /// This is taken from here https://stackoverflow.com/questions/11775946/select-x-random-elements-from-a-weighted-list-in-c-sharp-without-replacement
+        /// and adapted to a generic case.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        private class WeightedValuesChooser<T>
+        {
+            private List<Node> GenerateHeap(IDictionary<T, double> dictionary)
+            {
+                List<Node> nodes = new List<Node>();
+                nodes.Add(null);
+
+                foreach (var pair in dictionary)
+                {
+                    nodes.Add(new Node(pair.Value, pair.Key, pair.Value));
+                }
+
+                for (int i = nodes.Count - 1; i > 1; i--)
+                {
+                    nodes[i >> 1].TotalWeight += nodes[i].TotalWeight;
+                }
+
+                return nodes;
+            }
+
+            private T PopFromHeap(List<Node> heap)
+            {
+                T card = default(T);
+
+                var gas = Randomiser.NextDouble(heap[1].TotalWeight);
+                int i = 1;
+
+                while (gas >= heap[i].Weight)
+                {
+                    gas -= heap[i].Weight;
+                    i <<= 1;
+
+                    if (gas >= heap[i].TotalWeight)
+                    {
+                        gas -= heap[i].TotalWeight;
+                        i += 1;
+                    }
+                }
+
+                var weight = heap[i].Weight;
+                card = heap[i].Value;
+
+                heap[i].Weight = 0;
+
+                while (i > 0)
+                {
+                    heap[i].TotalWeight -= weight;
+                    i >>= 1;
+                }
+
+                return card;
+            }
+
+            public IEnumerable<T> ChooseWeightedValues(IDictionary<T, double> dictionary, int amount)
+            {
+                List<T> values = new List<T>();
+
+                List<Node> nodesHeap = GenerateHeap(dictionary);
+
+                for (int i = 0; i < amount; i++)
+                {
+                    values.Add(PopFromHeap(nodesHeap));
+                }
+
+                return values;
+            }
+
+            private class Node
+            {
+                public double Weight { get; set; }
+
+                public T Value { get; set; }
+
+                public double TotalWeight { get; set; }
+
+                public Node(double weight, T value, double totalWeight)
+                {
+                    Weight = weight;
+                    Value = value;
+                    TotalWeight = totalWeight;
+                }
+            }
+        }
+
+        #endregion WeightedValuesChooser
     }
 }
