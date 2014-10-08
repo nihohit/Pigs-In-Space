@@ -176,32 +176,114 @@ namespace Assets.Scripts.LogicBase
             if (Effects.HasFlag(EffectTypes.CreateEntity))
             {
                 CreateEnemy();
+                return;
             }
-            else
+
+            var hitSquares = GetHitSquares(square);
+
+            foreach (var hitSquare in hitSquares)
             {
-                // send a shot and act on all the hit squares
-                foreach (var hitSquare in FindHitSquares(square).MultiplyBySize(EffectSize))
+                var hitEntity = hitSquare.OccupyingEntity;
+
+                // push
+                if (Effects.HasFlag(EffectTypes.Push) && (hitEntity != null))
                 {
-                    // mine
-                    if (Effects.HasFlag(EffectTypes.RockBreaking) &&
-                        hitSquare.GetComponent<SpriteRenderer>().sprite == SpriteManager.Rock_Crystal)
-                    {
-                        MineAction(hitSquare);
-                    }
+                    Push(hitEntity, square.transform.position - Owner.Location.transform.position);
+                }
 
-                    // damage entities
-                    if (Effects.HasFlag(EffectTypes.DamageDealing) && (hitSquare.OccupyingEntity != null))
-                    {
-                        hitSquare.OccupyingEntity.Damage(Randomiser.NextDouble(MinPower, MaxPower));
-                    }
+                // heal
+                if (Effects.HasFlag(EffectTypes.Heal) && (hitEntity != null))
+                {
+                    Owner.Damage(-PowerRoll());
+                }
 
-                    // create acid squares
-                    if (Effects.HasFlag(EffectTypes.CreateAcid))
-                    {
-                        MapSceneScript.AddGroundEffect(GroundEffect.StandardAcid, hitSquare);
-                    }
+                // mine
+                if (Effects.HasFlag(EffectTypes.RockBreaking) &&
+                    hitSquare.GetComponent<SpriteRenderer>().sprite == SpriteManager.Rock_Crystal)
+                {
+                    MineAction(hitSquare);
+                }
+
+                // damage entities
+                if (Effects.HasFlag(EffectTypes.DamageDealing) && (hitEntity != null))
+                {
+                    hitEntity.Damage(PowerRoll());
+                }
+
+                // create acid squares
+                if (Effects.HasFlag(EffectTypes.CreateAcid))
+                {
+                    MapSceneScript.AddGroundEffect(GroundEffect.StandardAcid, hitSquare);
                 }
             }
+        }
+
+        private void Push(Entity hitEntity, Vector3 direction)
+        {
+            var differenceVector = Owner.Location.transform.position - hitEntity.Location.transform.position;
+            var remainingPower = (float)PowerRoll() - differenceVector.Distance() / 2;
+            Push(hitEntity, remainingPower, direction);
+        }
+
+        private bool Push(Entity hitEntity, float power, Vector3 direction)
+        {
+            // if there's not enough power to push, don't do anything
+            if (power < 1)
+            {
+                return false;
+            }
+
+            var layerMask = 1 << LayerMask.NameToLayer("Ground");
+
+            // return all colliders thast the ray passes through
+            var rayHits = Physics2D.RaycastAll((Vector2)hitEntity.Location.transform.position, (Vector2)direction, power, layerMask);
+            var moved = false;
+            var first = true;
+
+            foreach (var hitSquare in rayHits.Select(hit => hit.collider.gameObject.GetComponent<SquareScript>()))
+            {
+                // check that this isn't the origin square
+                if (first)
+                {
+                    first = false;
+                    continue;
+                }
+
+                // if hit wall
+                if (hitSquare.TraversingCondition == Traversability.Blocking)
+                {
+                    //Debug.Log("{0} pushed on wall, taking {1} damage.".FormatWith(hitEntity.Name, power));
+                    hitEntity.Damage(power);
+                    return moved || hitEntity.Destroyed();
+                }
+
+                // if pushed onto other entity, push it. if it moved or was destroyed, take its place.
+                if (hitSquare.OccupyingEntity != null)
+                {
+                    //Debug.Log("{0} pushed on {1}, taking {2} damage.".FormatWith(hitEntity.Name, hitSquare.OccupyingEntity.Name, power));
+                    if (Push(hitSquare.OccupyingEntity, power - 1, direction))
+                    {
+                        hitEntity.Location = hitSquare;
+                    }
+                    hitEntity.Damage(power);
+                    return moved || hitEntity.Destroyed();
+                }
+
+                moved = true;
+                hitEntity.Location = hitSquare;
+                power--;
+            }
+
+            return moved;
+        }
+
+        private IEnumerable<SquareScript> GetHitSquares(SquareScript square)
+        {
+            if (Range == 0)
+            {
+                return new[] { Owner.Location };
+            }
+            return FindHitSquares(square).MultiplyBySize(EffectSize);
         }
 
         private IEnumerable<SquareScript> FindHitSquares(SquareScript target)
@@ -231,6 +313,11 @@ namespace Assets.Scripts.LogicBase
         }
 
         #endregion Creating units
+
+        private double PowerRoll()
+        {
+            return Randomiser.NextDouble(MinPower, MaxPower);
+        }
 
         #endregion private methods
     }

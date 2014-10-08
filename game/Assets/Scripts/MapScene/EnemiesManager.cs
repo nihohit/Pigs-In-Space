@@ -19,11 +19,11 @@ namespace Assets.Scripts.MapScene
 
         #region properties
 
-        public static int KilledTentacles { get { return s_deadMonsters["TentacleMonster"]; } }
+        public static int KilledTentacles { get { return s_deadMonsters.TryGetOrDefaultValue("TentacleMonster", 0); } }
 
-        public static int KilledHives { get { return s_deadMonsters["Hive"]; } }
+        public static int KilledHives { get { return s_deadMonsters.TryGetOrDefaultValue("Hive", 0); } }
 
-        public static int KilledSlimes { get { return s_deadMonsters["Slime"]; } }
+        public static int KilledSlimes { get { return s_deadMonsters.TryGetOrDefaultValue("Slime", 0); } }
 
         #endregion properties
 

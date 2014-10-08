@@ -29,6 +29,8 @@ namespace Assets.Scripts.MapScene
 
         private bool m_active;
 
+        private SquareScript m_location;
+
         #endregion fields
 
         #region properties
@@ -37,7 +39,24 @@ namespace Assets.Scripts.MapScene
 
         public double Health { get; private set; }
 
-        public SquareScript Location { get; protected set; }
+        public SquareScript Location
+        {
+            get
+            {
+                return m_location;
+            }
+            set
+            {
+                //Debug.Log("{0} moved to {1}".FormatWith(Name, value));
+                if (m_location != null)
+                {
+                    m_location.OccupyingEntity = null;
+                }
+                m_location = value;
+                Image.Position = Location.transform.position;
+                m_location.OccupyingEntity = this;
+            }
+        }
 
         public IUnityMarker Image { get; protected set; }
 
@@ -62,12 +81,11 @@ namespace Assets.Scripts.MapScene
             TypeOfEntity = template.Name;
             m_movementType = template.MovementType;
             this.Health = template.Health;
-            this.Location = location;
             this.Image = ((GameObject)MonoBehaviour.Instantiate(Resources.Load(template.Name),
                                                             location.transform.position,
                                                             Quaternion.identity)).GetComponent<MarkerScript>();
+            this.Location = location;
             Image.Mark(location.transform.position);
-            Location.OccupyingEntity = this;
         }
 
         #endregion constructor
@@ -77,10 +95,15 @@ namespace Assets.Scripts.MapScene
         public virtual void Damage(double damage)
         {
             Health -= damage;
-            if (Health <= 0)
+            if (Destroyed())
             {
                 s_killedEntities.Add(this);
             }
+        }
+
+        public bool Destroyed()
+        {
+            return Health <= 0;
         }
 
         public static IEnumerator DestroyKilledEntities()
@@ -104,10 +127,7 @@ namespace Assets.Scripts.MapScene
             }
 
             // update all relevant properties
-            Location.OccupyingEntity = null;
-            newLocation.OccupyingEntity = this;
             Location = newLocation;
-            Image.Position = Location.transform.position;
             return true;
         }
 
@@ -138,12 +158,18 @@ namespace Assets.Scripts.MapScene
 
         #endregion static generation methods
 
+        public override string ToString()
+        {
+            return Name;
+        }
+
         #endregion public methods
 
         #region private and protected methods
 
         protected virtual IEnumerator Destroy(float timeToWait)
         {
+            //Debug.Log("Destroy {0}".FormatWith(Name));
             Assert.EqualOrLesser(Health, 0, "Entity {0} was destroyed with {1} health".FormatWith(Name, Health));
             this.Location.OccupyingEntity = null;
             this.Image.DestroyGameObject();
@@ -219,7 +245,7 @@ namespace Assets.Scripts.MapScene
 
         public IEnumerator Act(float timePerMonster)
         {
-            if (Health <= 0)
+            if (Destroyed())
             {
                 return new EmptyEnumerator();
             }
