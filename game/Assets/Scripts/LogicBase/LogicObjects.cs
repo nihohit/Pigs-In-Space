@@ -20,5 +20,7 @@ namespace Assets.Scripts.LogicBase
         Piercing = 4,
         CreateEntity = 8,
         CreateAcid = 16,
+        Push = 32,
+        Heal = 64
     }
 }

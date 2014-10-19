@@ -20,26 +20,6 @@ namespace Assets.Scripts.Base
             return String.Format(str, formattingInfo);
         }
 
-        //try to get a value out of a dictionary, and if it doesn't exist, create it by a given method
-        public static T TryGetOrAdd<T, S>(this IDictionary<S, T> dict, S key, Func<T> itemCreationMethod)
-        {
-            T result;
-            if (!dict.TryGetValue(key, out result))
-            {
-                result = itemCreationMethod();
-                dict.Add(key, result);
-            }
-            return result;
-        }
-
-        //removes from both sets the common elements.
-        public static void ExceptOnBoth<T>(this HashSet<T> thisSet, HashSet<T> otherSet)
-        {
-            thisSet.SymmetricExceptWith(otherSet);
-            otherSet.IntersectWith(thisSet);
-            thisSet.ExceptWith(otherSet);
-        }
-
         //converts degrees to radians
         public static float DegreesToRadians(this float degrees)
         {
@@ -58,9 +38,12 @@ namespace Assets.Scripts.Base
 
         #region IEnumerable
 
-        public static IEnumerable<T> ChooseWeightedValues<T>(this IDictionary<T, double> dictionary, int amount)
+        //removes from both sets the common elements.
+        public static void ExceptOnBoth<T>(this HashSet<T> thisSet, HashSet<T> otherSet)
         {
-            return Randomiser.ChooseWeightedValues(dictionary, amount);
+            thisSet.SymmetricExceptWith(otherSet);
+            otherSet.IntersectWith(thisSet);
+            thisSet.ExceptWith(otherSet);
         }
 
         //returns an enumerable with all values of an enumerator
@@ -112,16 +95,6 @@ namespace Assets.Scripts.Base
             return Randomiser.ChooseValues(group, amount);
         }
 
-        public static TVal Get<TKey, TVal>(this IDictionary<TKey, TVal> dict, TKey key, string dictionaryName = "dictionary")
-        {
-            TVal value;
-            if (!dict.TryGetValue(key, out value))
-            {
-                Assert.AssertConditionMet(dict.ContainsKey(key), "Key \'{0}\' not found in {1}".FormatWith(key, dictionaryName));
-            }
-            return value;
-        }
-
         // Converts an IEnumerator to IEnumerable
         public static IEnumerable<object> ToEnumerable(this IEnumerator enumerator)
         {
@@ -154,6 +127,60 @@ namespace Assets.Scripts.Base
         }
 
         #endregion IEnumerable
+
+        #region dictionaries
+
+        public static IEnumerable<T> ChooseWeightedValues<T>(this IDictionary<T, double> dictionary, int amount)
+        {
+            return Randomiser.ChooseWeightedValues(dictionary, amount);
+        }
+
+        //try to get a value out of a dictionary, and if it doesn't exist, create it by a given method
+        public static T TryGetOrAdd<T, S>(this IDictionary<S, T> dict, S key, Func<T> itemCreationMethod)
+        {
+            T result;
+            if (!dict.TryGetValue(key, out result))
+            {
+                result = itemCreationMethod();
+                dict.Add(key, result);
+            }
+            return result;
+        }
+
+        //try to get a value out of a dictionary, and if it doesn't exist, enter a default value
+        public static T TryGetOrAdd<T, S>(this IDictionary<S, T> dict, S key, T value)
+        {
+            T result;
+            if (!dict.TryGetValue(key, out result))
+            {
+                result = value;
+                dict.Add(key, result);
+            }
+            return result;
+        }
+
+        //try to get a value out of a dictionary, and if it doesn't exist, enter a default value
+        public static T TryGetOrDefaultValue<T, S>(this IDictionary<S, T> dict, S key, T value)
+        {
+            T result;
+            if (!dict.TryGetValue(key, out result))
+            {
+                return value;
+            }
+            return result;
+        }
+
+        public static TVal Get<TKey, TVal>(this IDictionary<TKey, TVal> dict, TKey key, string dictionaryName = "dictionary")
+        {
+            TVal value;
+            if (!dict.TryGetValue(key, out value))
+            {
+                Assert.AssertConditionMet(dict.ContainsKey(key), "Key \'{0}\' not found in {1}".FormatWith(key, dictionaryName));
+            }
+            return value;
+        }
+
+        #endregion
 
         #region 2d arrays
 

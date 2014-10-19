@@ -48,5 +48,21 @@
 	"Range": 10.0, 
 	"EnergyCost" :  8.0,
 	"ShotType" : "rocket",
+},
+{
+	"Name":"magneticRepulsor",
+	"EffectType": 32, 
+	"MinPower" :  5.0,
+	"MaxPower" :  5.0,
+	"Range": 5.0, 
+	"EnergyCost" :  2.0,
+	"ShotType" : "magnet",
+},
+{
+	"Name":"medkit",
+	"EffectType": 64, 
+	"MinPower" :  3.0,
+	"MaxPower" :  5.0,
+	"EnergyCost" :  2.0,
 }
 ]

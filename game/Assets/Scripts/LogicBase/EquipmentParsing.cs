@@ -65,7 +65,7 @@ namespace Assets.Scripts.LogicBase
                     TryGetValueOrSetDefaultValue<EffectTypes>("EffectType", EffectTypes.DamageDealing),
                     TryGetValueAndFail<float>("MinPower"),
                     TryGetValueAndFail<float>("MaxPower"),
-                    TryGetValueAndFail<float>("Range"),
+                    TryGetValueOrSetDefaultValue<float>("Range",0),
                     TryGetValueOrSetDefaultValue<int>("ShotSAmount", 1),
                     TryGetValueOrSetDefaultValue<float>("ShotSpread", 0),
                     TryGetValueOrSetDefaultValue<int>("EffectSize", 0),

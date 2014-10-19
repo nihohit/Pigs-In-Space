@@ -98,6 +98,7 @@ namespace Assets.Scripts.MapScene
                 m_fogOfWar.Visible = !value;
                 if (OccupyingEntity != null)
                 {
+                    //Debug.Log("setting {0}'s visibility to {1} on square {2}".FormatWith(OccupyingEntity, value, this));
                     OccupyingEntity.Image.Visible = value;
                     OccupyingEntity.Active = value;
                 }
@@ -176,16 +177,6 @@ namespace Assets.Scripts.MapScene
             InitMarkers();
             InitFog();
             Entity.Player.Location.FogOfWar();
-        }
-
-        private static SquareScript[,] AddCompulsoryTerrainFeatures(SquareScript[,] squares)
-        {
-            squares[c_playStartPositionX - 2, c_playStartPositionY - 1].TerrainType = TerrainType.Spaceship_Top_Left;
-            squares[c_playStartPositionX - 1, c_playStartPositionY - 1].TerrainType = TerrainType.Spaceship_Top_Right;
-            squares[c_playStartPositionX - 2, c_playStartPositionY].TerrainType = TerrainType.Spaceship_Bottom_Left;
-            squares[c_playStartPositionX - 1, c_playStartPositionY].TerrainType = TerrainType.Spaceship_Bottom_Right;
-
-            return squares;
         }
 
         public void AddLoot(Loot loot)
@@ -333,6 +324,11 @@ namespace Assets.Scripts.MapScene
             Entity.Player.LastSeen = seen;
         }
 
+        public override string ToString()
+        {
+            return "{0}.{1}".FormatWith(X, Y);
+        }
+
         #endregion public methods
 
         #region private methods
@@ -341,6 +337,16 @@ namespace Assets.Scripts.MapScene
         {
             s_squareMarker = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("squareSelectionBox"), new Vector2(1000000, 1000000), Quaternion.identity)).GetComponent<MarkerScript>();
             s_attackMarker = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("AttackMark"), new Vector2(1000000, 1000000), Quaternion.identity)).GetComponent<MarkerScript>();
+        }
+
+        private static SquareScript[,] AddCompulsoryTerrainFeatures(SquareScript[,] squares)
+        {
+            squares[c_playStartPositionX - 2, c_playStartPositionY - 1].TerrainType = TerrainType.Spaceship_Top_Left;
+            squares[c_playStartPositionX - 1, c_playStartPositionY - 1].TerrainType = TerrainType.Spaceship_Top_Right;
+            squares[c_playStartPositionX - 2, c_playStartPositionY].TerrainType = TerrainType.Spaceship_Bottom_Left;
+            squares[c_playStartPositionX - 1, c_playStartPositionY].TerrainType = TerrainType.Spaceship_Bottom_Right;
+
+            return squares;
         }
 
         private void Awake()
