@@ -85,6 +85,7 @@ namespace Assets.Scripts.Base
             {
                 int j = s_staticRandom.Next(i, buffer.Count);
                 yield return buffer[j];
+				buffer[j] = buffer[i];
             }
         }
 
