@@ -22,6 +22,7 @@ namespace Assets.Scripts.MapScene
         private TextureManager m_textureManager;
         private static Dictionary<Action, Marker> s_Markers = new Dictionary<Action, Marker>();
         private static GUIStyle s_guiStyle;
+        private static GUIStyle s_tooltipStyle;
 
         /// <summary>
         /// List of all the squares with an active effect, each turn all these effects durability is reduced
@@ -250,8 +251,6 @@ namespace Assets.Scripts.MapScene
                 currentHeight += heightSliver;
                 foreach (var equipment in Entity.Player.Equipment)
                 {
-                    GUI.color = new Color32(128, 128, 128, 196);
-
                     if (equipment.Equals(Entity.Player.LeftHandEquipment))
                     {
                         GUI.color = new Color32(128, 128, 255, 255);
@@ -261,7 +260,7 @@ namespace Assets.Scripts.MapScene
                         GUI.color = new Color32(255, 128, 128, 255);
                     }
 
-                    if (GUI.Button(new Rect(oneSliver, currentHeight, relativeWidth, heightSliver / 2), m_textureManager.GetTexture(equipment)))
+                    if (GUI.Button(new Rect(oneSliver, currentHeight, relativeWidth, heightSliver / 2), new GUIContent(m_textureManager.GetTexture(equipment), equipment.Name)))
                     {
                         if (Event.current.button == 0)
                         {
@@ -275,8 +274,16 @@ namespace Assets.Scripts.MapScene
                         }
                     }
 
+                    GUI.color = new Color32(128, 128, 128, 196);
+
                     currentHeight += heightSliver / 2;
                 }
+
+                var mousePosition = Input.mousePosition;
+                var tooltipSize = s_tooltipStyle.CalcSize(new GUIContent(GUI.tooltip));
+                GUI.Label(new Rect(mousePosition.x - tooltipSize.x,
+                    Screen.height - tooltipSize.y - mousePosition.y,
+                    tooltipSize.x, tooltipSize.y), GUI.tooltip, s_tooltipStyle);
             }
         }
 
@@ -405,6 +412,16 @@ namespace Assets.Scripts.MapScene
             {
                 fontStyle = FontStyle.Bold,
                 fontSize = 12,
+                normal = new GUIStyleState
+                {
+                    textColor = Color.white,
+                },
+            };
+
+            s_tooltipStyle = new GUIStyle
+            {
+                fontStyle = FontStyle.Bold,
+                fontSize = 20,
                 normal = new GUIStyleState
                 {
                     textColor = Color.white,
