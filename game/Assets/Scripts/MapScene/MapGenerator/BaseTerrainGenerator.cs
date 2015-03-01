@@ -192,7 +192,7 @@ namespace Assets.Scripts.MapScene.MapGenerator
         {
             var squares = new SquareScript[width, height];
 
-            var squareSize = SquareScript.PixelsPerSquare * MapSceneScript.UnitsToPixelsRatio; // 1f
+            var squareSize = SquareScript.PixelsPerSquare * MapSceneScript.c_unitsToPixelsRatio; // 1f
             var currentPosition = Vector3.zero;
 
             for (int j = height - 1; j >= 0; j--) // invert y axis

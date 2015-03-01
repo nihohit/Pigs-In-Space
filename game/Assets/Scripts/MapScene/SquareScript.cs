@@ -114,7 +114,10 @@ namespace Assets.Scripts.MapScene
         /// </summary>
         public GroundEffect GroundEffect
         {
-            get { return m_groundEffect; }
+            get
+            {
+                return m_groundEffect;
+            }
             set
             {
                 if (value.EffectType != GroundEffectType.None)

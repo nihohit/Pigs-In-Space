@@ -11,9 +11,8 @@ namespace Assets.Scripts.UnityBase
     {
         #region fields
 
-        private Dictionary<string, Texture2D> m_knownEquipmentTextures;
-        private Dictionary<string, Texture2D> m_knownShotTextures;
-        private Texture2D m_uiBackground;
+        private readonly Dictionary<string, Sprite> r_knownEquipmentTextures;
+        private readonly Dictionary<string, Sprite> r_knownShotTextures;
 
         #endregion fields
 
@@ -21,33 +20,28 @@ namespace Assets.Scripts.UnityBase
 
         public TextureManager()
         {
-            var textures = Resources.LoadAll<Texture2D>("Sprites/equipment");
-            m_knownEquipmentTextures = textures.ToDictionary(texture => texture.name,
+            var textures = Resources.LoadAll<Sprite>("Sprites/equipment");
+            this.r_knownEquipmentTextures = textures.ToDictionary(texture => texture.name,
                                                             texture => texture);
-            textures = Resources.LoadAll<Texture2D>("Sprites/shots");
-            m_knownShotTextures = textures.ToDictionary(texture => texture.name,
+            textures = Resources.LoadAll<Sprite>("Sprites/shots");
+            this.r_knownShotTextures = textures.ToDictionary(texture => texture.name,
                                                             texture => texture);
-            m_uiBackground = Resources.Load<Texture2D>(@"Sprites/PlayerStateDisplay");
         }
 
         #endregion constructor
 
         #region public methods
 
-        public Texture2D GetTexture(PlayerEquipment equipment)
+        public Sprite GetTexture(PlayerEquipment equipment)
         {
-            return m_knownEquipmentTextures.Get(equipment.Name, "Equipment textures");
+            return this.r_knownEquipmentTextures.Get(equipment.Name, "Equipment textures");
         }
 
         public void ReplaceTexture(ShotScript shot, string shotType)
         {
-            var texture = m_knownShotTextures.Get(shotType, "Shot textures");
-            ReplaceTexture(shot.GetComponent<SpriteRenderer>(), texture, shotType);
-        }
-
-        public Texture2D GetUIBackground()
-        {
-            return m_uiBackground;
+            var sprite = this.r_knownShotTextures.Get(shotType, "Shot textures");
+            shot.GetComponent<SpriteRenderer>().sprite = sprite;
+            shot.name = shotType;
         }
 
         #endregion public methods

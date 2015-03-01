@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace Assets.Scripts.SpaceshipScene
 {
+    using Assets.Scripts.LogicBase;
+    using System;
+
     public class SpaceshipSceneScript : MonoBehaviour
     {
         #region private members
@@ -12,9 +15,21 @@ namespace Assets.Scripts.SpaceshipScene
 
         private EndLevelInfo m_endLevelInfo;
 
-        private static GUIStyle s_guiStyle;
-
         #endregion private members
+
+        #region public methods
+
+        public void QuitGame()
+        {
+            Application.Quit();
+        }
+
+        public void NextLevel()
+        {
+            Application.LoadLevel("MapScene");
+        }
+
+        #endregion public methods
 
         #region Unity methods
 
@@ -24,15 +39,6 @@ namespace Assets.Scripts.SpaceshipScene
             m_endLevelInfo = GlobalState.EndLevel;
             GlobalState.EndLevel = null;
             m_textureManager = new TextureManager();
-            s_guiStyle = new GUIStyle
-            {
-                fontStyle = FontStyle.Bold,
-                fontSize = 12,
-                normal = new GUIStyleState
-                {
-                    textColor = Color.white,
-                },
-            };
         }
 
         // Update is called once per frame
@@ -40,28 +46,20 @@ namespace Assets.Scripts.SpaceshipScene
         {
         }
 
-        private void OnGUI()
+        #endregion Unity methods
+
+        #region private methods
+
+        private Action UpgradeWeapon(PlayerEquipment toTeUpgraded, PlayerEquipment result, Loot Cost)
         {
-            GUI.BeginGroup(new Rect(0, 0, Screen.width, Screen.height));
-            GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), m_textureManager.GetUIBackground(), ScaleMode.StretchToFill);
-            s_guiStyle.fontSize = 32;
-            var message = "Space ship!";
-            GUI.Label(new Rect(110, 45, 60, 60), message, s_guiStyle);
-            s_guiStyle.fontSize = 12;
-
-            //Next level or quit
-            if (GUI.Button(new Rect(110, 350, 150, 30), "Level1"))
-            {
-                Application.LoadLevel("MapScene");
-            }
-
-            if (GUI.Button(new Rect(280, 350, 150, 30), "Quit"))
-            {
-                Application.Quit();
-            }
-            GUI.EndGroup();
+            return () =>
+                {
+                    GlobalState.Player.Equipment.Remove(toTeUpgraded);
+                    GlobalState.Player.Equipment.Add(result);
+                    GlobalState.Player.Loot.RemoveIfEnough(Cost);
+                };
         }
 
-        #endregion Unity methods
+        #endregion private methods
     }
 }

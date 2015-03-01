@@ -8,21 +8,38 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Assets.Scripts.MapScene
 {
+    using UnityEngine.Events;
+    using UnityEngine.EventSystems;
+
     public enum GameState { Ongoing, Won, Lost }
 
     public class MapSceneScript : MonoBehaviour
     {
         #region private members
 
-        private Vector2 CameraMax = new Vector2(0f, 0f);        // The maximum x and y coordinates the camera can have.
-        private Vector2 CameraMin = new Vector2(0f, 0f);        // The minimum x and y coordinates the camera can have.
-        private TextureManager m_textureManager;
-        private static Dictionary<Action, Marker> s_Markers = new Dictionary<Action, Marker>();
-        private static GUIStyle s_guiStyle;
-        private static GUIStyle s_tooltipStyle;
+        private static readonly Dictionary<Action, Marker> sr_markers = new Dictionary<Action, Marker>();
+
+        private static readonly ColorBlock sr_regularColorBlock = new ColorBlock
+        {
+            normalColor = new Color(150, 150, 150),
+            highlightedColor = new Color(255, 255, 255),
+        };
+
+        private static readonly ColorBlock sr_leftClickColorBlock = new ColorBlock
+        {
+            normalColor = new Color(255, 0, 0),
+            highlightedColor = new Color(255, 255, 255),
+        };
+
+        private static readonly ColorBlock sr_rightClickColorBlock = new ColorBlock
+        {
+            normalColor = new Color(0, 255, 0),
+            highlightedColor = new Color(255, 255, 255),
+        };
 
         /// <summary>
         /// List of all the squares with an active effect, each turn all these effects durability is reduced
@@ -30,39 +47,42 @@ namespace Assets.Scripts.MapScene
         private static HashSet<SquareScript> s_squaresWithEffect = new HashSet<SquareScript>();
 
         private static GameState s_gameState = GameState.Ongoing;
-        public const float UnitsToPixelsRatio = 1f / 100f;
-        private bool m_mouseOnUI;
+
+        private Vector2 m_cameraMax = new Vector2(0f, 0f);        // The maximum x and y coordinates the camera can have.
+        private Vector2 m_cameraMin = new Vector2(0f, 0f);        // The minimum x and y coordinates the camera can have.
+        private TextureManager m_textureManager;
+
+        private Text m_healthText;
+        private Text m_energyText;
+        private Text m_oxygenText;
+        private Text m_crystalsText;
+
+        private Button m_leftClickButton;
+        private Button m_rightClickButton;
+        private GameObject m_endGamePanel;
+        private GameObject m_sidebarPanel;
+        private EventSystem m_eventSystem;
+
+        public const float c_unitsToPixelsRatio = 1f / 100f;
         private bool m_equipmentChange;
         private bool m_startCoRoutine = true;
-        private bool m_displayGUI = true;
 
         #endregion private members
 
+        #region properties
+
         public static bool EscapeMode { get; set; }
+
+        #endregion
 
         #region public methods
 
-        public static void ChangeGameState(GameState state)
-        {
-            s_gameState = state;
-        }
-
-        public void Init()
-        {
-            EscapeMode = false;
-            m_textureManager = new TextureManager();
-            ActionableItem.Init(m_textureManager);
-
-            MapInit();
-            ScreenSizeInit();
-            GUIStyleInit();
-            ChangeGameState(GameState.Ongoing);
-        }
+        #region static methods
 
         public static void EnterEscapeMode()
         {
             EscapeMode = true;
-            var escapeGameEvents = s_Markers.Where(entry => entry.Value == Marker.OnEscape).Select(entry => entry.Key);
+            var escapeGameEvents = sr_markers.Where(entry => entry.Value == Marker.OnEscape).Select(entry => entry.Key);
             foreach (var gameEvent in escapeGameEvents)
             {
                 gameEvent();
@@ -71,7 +91,7 @@ namespace Assets.Scripts.MapScene
 
         public static void SetEvent(Action action, Marker marker)
         {
-            s_Markers.Add(action, marker);
+            sr_markers.Add(action, marker);
         }
 
         /// <summary>
@@ -86,6 +106,7 @@ namespace Assets.Scripts.MapScene
                 {
                     squareWithEffect.OccupyingEntity.ApplyGroundEffects();
                 }
+
                 squareWithEffect.GroundEffect.Duration--;
                 if (squareWithEffect.GroundEffect.Duration <= 0)
                 {
@@ -93,6 +114,7 @@ namespace Assets.Scripts.MapScene
                     squareWithEffect.GroundEffect = GroundEffect.NoEffect;
                 }
             }
+
             s_squaresWithEffect = s_squaresWithEffect.Except(toBeRemoved).ToHashSet();
         }
 
@@ -117,13 +139,105 @@ namespace Assets.Scripts.MapScene
             }
         }
 
+        #endregion static methods
+
+        public static void ChangeGameState(GameState state)
+        {
+            s_gameState = state;
+        }
+
+        public void Init()
+        {
+            EscapeMode = false;
+            m_textureManager = new TextureManager();
+            ActionableItem.Init(m_textureManager);
+            if (GlobalState.Player == null)
+            {
+                GlobalState.Player = new PlayerState();
+            }
+
+            GuiInit();
+            MapInit();
+            ScreenSizeInit();
+            ChangeGameState(GameState.Ongoing);
+        }
+
+        public void ToSpaceshipScreen()
+        {
+            GlobalState.EndLevel = new EndLevelInfo(Entity.Player.GainedLoot);
+            ClearData();
+            Application.LoadLevel("SpaceShipScene");
+        }
+
+        private void GuiInit()
+        {
+            m_eventSystem = GameObject.Find("EventSystem").GetComponent<EventSystem>();
+            m_healthText = GameObject.Find("HeartText").GetComponent<Text>();
+            m_energyText = GameObject.Find("EnergyText").GetComponent<Text>();
+            m_oxygenText = GameObject.Find("OxygenText").GetComponent<Text>();
+            m_crystalsText = GameObject.Find("CrystalsText").GetComponent<Text>();
+            m_endGamePanel = GameObject.Find("EndGamePanel");
+            m_endGamePanel.SetActive(false);
+            m_sidebarPanel = GameObject.Find("SidebarPanel");
+            var canvas = GameObject.Find("UICanvas");
+            var equipmentButtons =
+                canvas.GetComponentsInChildren<Button>().Where(button => button.name.Equals("EquipmentButton")).Materialize();
+            int i = 0;
+            var equipment = GlobalState.Player.Equipment;
+
+            foreach (var button in equipmentButtons)
+            {
+                if (i < equipment.Count)
+                {
+                    button.onClick.AddListener(SetEquipment(button, equipment[i]));
+                    var image = button.GetComponent<Image>();
+                    image.sprite = m_textureManager.GetTexture(equipment[i]);
+                    button.name = equipment[i].Name;
+                    i++;
+                }
+                else
+                {
+                    button.DestroyGameObject();
+                }
+            }
+
+            m_leftClickButton = equipmentButtons.First();
+            m_leftClickButton.colors = sr_regularColorBlock;
+
+            m_rightClickButton = equipmentButtons.Skip(1).First();
+            m_rightClickButton.colors = sr_regularColorBlock;
+        }
+
+        private UnityAction SetEquipment(Button button, PlayerEquipment equipment)
+        {
+            return () =>
+                {
+                    if (Input.GetMouseButton(0))
+                    {
+                        Entity.Player.LeftHandEquipment = equipment;
+                        m_leftClickButton.colors = sr_regularColorBlock;
+                        m_leftClickButton = button;
+                        m_leftClickButton.colors = sr_leftClickColorBlock;
+                        m_equipmentChange = true;
+                    }
+                    else if (Input.GetMouseButton(1))
+                    {
+                        Entity.Player.RightHandEquipment = equipment;
+                        m_rightClickButton.colors = sr_regularColorBlock;
+                        m_rightClickButton = button;
+                        m_rightClickButton.colors = sr_rightClickColorBlock;
+                        m_equipmentChange = true;
+                    }
+                };
+        }
+
         #endregion public methods
 
         #region UnityMethods
 
         private void Awake()
         {
-            camera.orthographicSize = (Screen.height * UnitsToPixelsRatio);
+            camera.orthographicSize = Screen.height * c_unitsToPixelsRatio;
         }
 
         // Use this for initialization
@@ -142,162 +256,142 @@ namespace Assets.Scripts.MapScene
                 {
                     StartCoroutine(PlayerAction());
                 }
+
+                m_healthText.text = "{0:0.0}".FormatWith(Entity.Player.Health);
+                m_energyText.text = "{0:0.0}".FormatWith(Entity.Player.Energy);
+                m_oxygenText.text = "{0:0.0}".FormatWith(Entity.Player.Oxygen);
+                m_crystalsText.text = "{0}".FormatWith(Entity.Player.GainedLoot.BlueCrystal);
+                return;
             }
+
+            m_sidebarPanel.SetActive(false);
+            m_endGamePanel.SetActive(true);
         }
 
-        private void OnGUI()
-        {
-            var height = Screen.height;
-            var width = Screen.width;
-            var unit = (float)height / 400;
+        //        private void OnGUI()
+        //        {
+        //            var height = Screen.height;
+        //            var width = Screen.width;
+        //            var unit = (float)height / 400;
+        //
+        //            // load game ending message
+        //            if (s_gameState != GameState.Ongoing && m_displayGUI)
+        //            {
+        //                // boxing the GUI screen
+        //                var widthDivider = width / 7;
+        //                var heightDivider = height / 7;
+        //                var widthMultiplier = 5 * widthDivider;
+        //                var heightMultiplier = 5 * heightDivider;
+        //                GUI.BeginGroup(new Rect(widthDivider, heightDivider, widthMultiplier, heightMultiplier));
+        //                GUI.DrawTexture(new Rect(0, 0, widthMultiplier, heightMultiplier), m_textureManager.GetUIBackground(), ScaleMode.StretchToFill);
+        //
+        //                // placing the main message
+        //                s_guiStyle.fontSize = Convert.ToInt32(32 * unit);
+        //                var message = (s_gameState == GameState.Lost) ? "Game Over" : "You Win :)";
+        //                var messageSize = s_guiStyle.CalcSize(new GUIContent(message));
+        //                var messageLength = messageSize.x;
+        //                var messageHeight = messageSize.y;
+        //                var middleWidth = widthMultiplier / 2;
+        //                var accumulatingHeight = messageHeight * 1.1f;
+        //                GUI.Label(new Rect(middleWidth - messageLength / 2, accumulatingHeight, messageLength, messageHeight), message, s_guiStyle);
+        //                accumulatingHeight += messageHeight * 2;
+        //
+        //                // placing the statistics
+        //                s_guiStyle.fontSize = Convert.ToInt32(15 * unit);
+        //                message = "Crystals collected: {0}".FormatWith((int)Entity.Player.GainedLoot.BlueCrystal);
+        //                messageSize = s_guiStyle.CalcSize(new GUIContent(message));
+        //                messageLength = messageSize.x;
+        //                messageHeight = messageSize.y;
+        //                GUI.Label(new Rect(middleWidth - messageLength / 2, accumulatingHeight, messageLength, messageHeight), message, s_guiStyle);
+        //                accumulatingHeight += messageHeight * 2;
+        //
+        //                message = "Tentacle monsters killed: {0}".FormatWith((int)EnemiesManager.KilledTentacles);
+        //                messageSize = s_guiStyle.CalcSize(new GUIContent(message));
+        //                messageLength = messageSize.x;
+        //                messageHeight = messageSize.y;
+        //                GUI.Label(new Rect(middleWidth - messageLength / 2, accumulatingHeight, messageLength, messageHeight), message, s_guiStyle);
+        //                accumulatingHeight += messageHeight * 2;
+        //
+        //                message = "slimes killed: {0}".FormatWith((int)EnemiesManager.KilledSlimes);
+        //                messageSize = s_guiStyle.CalcSize(new GUIContent(message));
+        //                messageLength = messageSize.x;
+        //                messageHeight = messageSize.y;
+        //                GUI.Label(new Rect(middleWidth - messageLength / 2, accumulatingHeight, messageLength, messageHeight), message, s_guiStyle);
+        //                accumulatingHeight += messageHeight * 2;
+        //
+        //                message = "Hives killed: {0}".FormatWith((int)EnemiesManager.KilledHives);
+        //                messageSize = s_guiStyle.CalcSize(new GUIContent(message));
+        //                messageLength = messageSize.x;
+        //                messageHeight = messageSize.y;
+        //                GUI.Label(new Rect(middleWidth - messageLength / 2, accumulatingHeight, messageLength, messageHeight), message, s_guiStyle);
+        //                accumulatingHeight += messageHeight * 2;
+        //
+        //                if (GUI.Button(new Rect(middleWidth - 80, accumulatingHeight, 160, 30), "Spaceship"))
+        //                {
+        //                    
+        //                }
+        //                GUI.EndGroup();
+        //            }
 
-            // load game ending message
-            if (s_gameState != GameState.Ongoing && m_displayGUI)
-            {
-                // boxing the GUI screen
-                var widthDivider = width / 7;
-                var heightDivider = height / 7;
-                var widthMultiplier = 5 * widthDivider;
-                var heightMultiplier = 5 * heightDivider;
-                GUI.BeginGroup(new Rect(widthDivider, heightDivider, widthMultiplier, heightMultiplier));
-                GUI.DrawTexture(new Rect(0, 0, widthMultiplier, heightMultiplier), m_textureManager.GetUIBackground(), ScaleMode.StretchToFill);
-
-                // placing the main message
-                s_guiStyle.fontSize = Convert.ToInt32(32 * unit);
-                var message = (s_gameState == GameState.Lost) ? "Game Over" : "You Win :)";
-                var messageSize = s_guiStyle.CalcSize(new GUIContent(message));
-                var messageLength = messageSize.x;
-                var messageHeight = messageSize.y;
-                var middleWidth = widthMultiplier / 2;
-                var accumulatingHeight = messageHeight * 1.1f;
-                GUI.Label(new Rect(middleWidth - messageLength / 2, accumulatingHeight, messageLength, messageHeight), message, s_guiStyle);
-                accumulatingHeight += messageHeight * 2;
-
-                // placing the statistics
-                s_guiStyle.fontSize = Convert.ToInt32(15 * unit);
-                message = "Crystals collected: {0}".FormatWith((int)Entity.Player.GainedLoot.BlueCrystal);
-                messageSize = s_guiStyle.CalcSize(new GUIContent(message));
-                messageLength = messageSize.x;
-                messageHeight = messageSize.y;
-                GUI.Label(new Rect(middleWidth - messageLength / 2, accumulatingHeight, messageLength, messageHeight), message, s_guiStyle);
-                accumulatingHeight += messageHeight * 2;
-
-                message = "Tentacle monsters killed: {0}".FormatWith((int)EnemiesManager.KilledTentacles);
-                messageSize = s_guiStyle.CalcSize(new GUIContent(message));
-                messageLength = messageSize.x;
-                messageHeight = messageSize.y;
-                GUI.Label(new Rect(middleWidth - messageLength / 2, accumulatingHeight, messageLength, messageHeight), message, s_guiStyle);
-                accumulatingHeight += messageHeight * 2;
-
-                message = "slimes killed: {0}".FormatWith((int)EnemiesManager.KilledSlimes);
-                messageSize = s_guiStyle.CalcSize(new GUIContent(message));
-                messageLength = messageSize.x;
-                messageHeight = messageSize.y;
-                GUI.Label(new Rect(middleWidth - messageLength / 2, accumulatingHeight, messageLength, messageHeight), message, s_guiStyle);
-                accumulatingHeight += messageHeight * 2;
-
-                message = "Hives killed: {0}".FormatWith((int)EnemiesManager.KilledHives);
-                messageSize = s_guiStyle.CalcSize(new GUIContent(message));
-                messageLength = messageSize.x;
-                messageHeight = messageSize.y;
-                GUI.Label(new Rect(middleWidth - messageLength / 2, accumulatingHeight, messageLength, messageHeight), message, s_guiStyle);
-                accumulatingHeight += messageHeight * 2;
-
-                if (GUI.Button(new Rect(middleWidth - 80, accumulatingHeight, 160, 30), "Spaceship"))
-                {
-                    m_displayGUI = false;
-                    GlobalState.EndLevel = new EndLevelInfo(Entity.Player.GainedLoot);
-                    ClearData();
-                    Application.LoadLevel("SpaceShipScene");
-                }
-                GUI.EndGroup();
-            }
-
-            if (Entity.Player != null)
-            {
-                // define the area of the UI
-                var heightSliver = height / 10;
-                var relativeWidth = heightSliver + s_guiStyle.CalcSize(new GUIContent("8 Letters")).x;
-                var oneSliver = Screen.width - relativeWidth;
-                Rect UIArea = new Rect(oneSliver, 0, 2 * relativeWidth, Screen.height);
-
-                // check whether mouse is over UI
-                m_mouseOnUI = false;
-                if (UIArea.Contains(Input.mousePosition))
-                {
-                    m_mouseOnUI = true;
-                }
-
-                // display stats
-                var heightSize = 24 * unit;
-                var currentHeight = heightSize / 2;
-                DrawSpriteToGUI(SpriteManager.CardiacIcon, new Rect(oneSliver, heightSize / 2, heightSliver, heightSliver));
-                GUI.Label(new Rect(oneSliver + heightSliver, heightSize, relativeWidth, heightSliver), "X {0}".FormatWith((int)Entity.Player.Health), s_guiStyle);
-
-                currentHeight += heightSliver;
-                DrawSpriteToGUI(SpriteManager.LightningIcon, new Rect(oneSliver, currentHeight, heightSliver, heightSliver));
-                GUI.Label(new Rect(oneSliver + heightSliver, currentHeight + heightSliver / 3, relativeWidth, heightSliver), "X {0}".FormatWith((int)Entity.Player.Energy), s_guiStyle);
-
-                currentHeight += heightSliver;
-                DrawSpriteToGUI(SpriteManager.OxygenTank, new Rect(oneSliver, currentHeight, heightSliver, heightSliver));
-                GUI.Label(new Rect(oneSliver + heightSliver, currentHeight + heightSliver / 3, relativeWidth, heightSliver), "X {0}".FormatWith((int)Entity.Player.Oxygen), s_guiStyle);
-
-                currentHeight += heightSliver;
-                DrawSpriteToGUI(SpriteManager.Crystal, new Rect(oneSliver, currentHeight, heightSliver, heightSliver));
-                GUI.Label(new Rect(oneSliver + heightSliver, currentHeight + heightSliver / 3, relativeWidth, heightSliver), "X {0}".FormatWith((int)Entity.Player.GainedLoot.BlueCrystal), s_guiStyle);
-
-                // separate status and weapons
-                // display choosable equipment
-                currentHeight += heightSliver;
-                foreach (var equipment in Entity.Player.Equipment)
-                {
-                    if (equipment.Equals(Entity.Player.LeftHandEquipment))
-                    {
-                        GUI.color = new Color32(128, 128, 255, 255);
-                    }
-                    if (equipment.Equals(Entity.Player.RightHandEquipment))
-                    {
-                        GUI.color = new Color32(255, 128, 128, 255);
-                    }
-
-                    if (GUI.Button(new Rect(oneSliver, currentHeight, relativeWidth, heightSliver / 2), new GUIContent(m_textureManager.GetTexture(equipment), equipment.Name)))
-                    {
-                        if (Event.current.button == 0)
-                        {
-                            Entity.Player.LeftHandEquipment = equipment;
-                            m_equipmentChange = true;
-                        }
-                        else if (Event.current.button == 1)
-                        {
-                            Entity.Player.RightHandEquipment = equipment;
-                            m_equipmentChange = true;
-                        }
-                    }
-
-                    GUI.color = new Color32(128, 128, 128, 196);
-
-                    currentHeight += heightSliver / 2;
-                }
-
-                var mousePosition = Input.mousePosition;
-                var tooltipSize = s_tooltipStyle.CalcSize(new GUIContent(GUI.tooltip));
-                GUI.Label(new Rect(mousePosition.x - tooltipSize.x,
-                    Screen.height - tooltipSize.y - mousePosition.y,
-                    tooltipSize.x, tooltipSize.y), GUI.tooltip, s_tooltipStyle);
-            }
-        }
+        //            if (Entity.Player != null)
+        //            {
+        //                // define the area of the UI
+        //                var heightSliver = height / 10;
+        //                var relativeWidth = heightSliver + s_guiStyle.CalcSize(new GUIContent("8 Letters")).x;
+        //                var oneSliver = Screen.width - relativeWidth;
+        //                Rect UIArea = new Rect(oneSliver, 0, 2 * relativeWidth, Screen.height);
+        //
+        //                // check whether mouse is over UI
+        //                m_mouseOnUI = false;
+        //                if (UIArea.Contains(Input.mousePosition))
+        //                {
+        //                    m_mouseOnUI = true;
+        //                }
+        //
+        //                // separate status and weapons
+        //                // display choosable equipment
+        //                currentHeight += heightSliver;
+        //                foreach (var equipment in GlobalState.Player.Equipment)
+        //                {
+        //                    if (equipment.Equals(Entity.Player.LeftHandEquipment))
+        //                    {
+        //                        GUI.color = new Color32(128, 128, 255, 255);
+        //                    }
+        //                    if (equipment.Equals(Entity.Player.RightHandEquipment))
+        //                    {
+        //                        GUI.color = new Color32(255, 128, 128, 255);
+        //                    }
+        //
+        //                    if (GUI.Button(new Rect(oneSliver, currentHeight, relativeWidth, heightSliver / 2), new GUIContent(m_textureManager.GetTexture(equipment), equipment.Name)))
+        //                    {
+        //                        if (Event.current.button == 0)
+        //                        {
+        //                            Entity.Player.LeftHandEquipment = equipment;
+        //                            m_equipmentChange = true;
+        //                        }
+        //                        else if (Event.current.button == 1)
+        //                        {
+        //                            Entity.Player.RightHandEquipment = equipment;
+        //                            m_equipmentChange = true;
+        //                        }
+        //                    }
+        //
+        //                    GUI.color = new Color32(128, 128, 128, 196);
+        //
+        //                    currentHeight += heightSliver / 2;
+        //                }
+        //
+        //                var mousePosition = Input.mousePosition;
+        //                var tooltipSize = s_tooltipStyle.CalcSize(new GUIContent(GUI.tooltip));
+        //                GUI.Label(new Rect(mousePosition.x - tooltipSize.x,
+        //                    Screen.height - tooltipSize.y - mousePosition.y,
+        //                    tooltipSize.x, tooltipSize.y), GUI.tooltip, s_tooltipStyle);
+        //            }
+        //        }
 
         #endregion UnityMethods
 
         #region private methods
-
-        private void DrawSpriteToGUI(Sprite sprite, Rect position)
-        {
-            Texture t = sprite.texture;
-            Rect tr = sprite.textureRect;
-            Rect r = new Rect(tr.x / t.width, tr.y / t.height, tr.width / t.width, tr.height / t.height);
-            GUI.DrawTextureWithTexCoords(position, t, r);
-        }
 
         private IEnumerator PlayerAction()
         {
@@ -309,23 +403,26 @@ namespace Assets.Scripts.MapScene
             {
                 y = -1;
             }
+
             if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S))
             {
                 y = 1;
             }
+
             if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
             {
                 x = -1;
             }
+
             if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
             {
                 x = 1;
             }
+
             if (x != 0 || y != 0)
             {
                 if (Entity.Player.Move(Entity.Player.Location.GetNextSquare(x, y)))
                 {
-                    //transform.position = new Vector3(m_playerSprite.transform.position.x, m_playerSprite.transform.position.y, transform.position.z);
                     returnedEnumerator = this.WaitAndEndTurn(0, 0.1f);
                 }
             }
@@ -337,12 +434,12 @@ namespace Assets.Scripts.MapScene
                 returnedEnumerator = this.WaitAndEndTurn(0, 0.1f);
             }
 
-            if (Input.GetMouseButtonUp(0) && !m_mouseOnUI)
+            if (Input.GetMouseButtonUp(0) && m_eventSystem.currentSelectedGameObject == null)
             {
                 returnedEnumerator = Entity.Player.LeftHandEquipment.Effect(SquareScript.s_markedSquare, 0.15f);
             }
 
-            if (Input.GetMouseButtonUp(1) && !m_mouseOnUI)
+            if (Input.GetMouseButtonUp(1) && m_eventSystem.currentSelectedGameObject == null)
             {
                 returnedEnumerator = Entity.Player.RightHandEquipment.Effect(SquareScript.s_markedSquare, 0.15f);
             }
@@ -356,27 +453,25 @@ namespace Assets.Scripts.MapScene
 
         private void CameraTrackPlayer()
         {
-            const float xSmooth = 8f; // How smoothly the camera catches up with it's target movement in the x axis.
-            const float ySmooth = 8f; // How smoothly the camera catches up with it's target movement in the y axis.
+            const float c_XSmooth = 8f; // How smoothly the camera catches up with it's target movement in the x axis.
+            const float c_YSmooth = 8f; // How smoothly the camera catches up with it's target movement in the y axis.
 
             // By default the target x and y coordinates of the camera are it's current x and y coordinates.
-            float targetX = transform.position.x;
-            float targetY = transform.position.y;
 
             // If the player has moved beyond the x margin...
             var playerPosition = Entity.Player.Image.Position;
 
             // ... the target x coordinate should be a Lerp between the camera's current x position and the player's current x position.
-            targetX = Mathf.Lerp(transform.position.x, playerPosition.x, xSmooth * Time.deltaTime);
+            float targetX = Mathf.Lerp(this.transform.position.x, playerPosition.x, c_XSmooth * Time.deltaTime);
 
             // The target x coordinates should not be larger than the maximum or smaller than the minimum.
-            targetX = Mathf.Clamp(targetX, CameraMin.x, CameraMax.x);
+            targetX = Mathf.Clamp(targetX, this.m_cameraMin.x, this.m_cameraMax.x);
 
             // ... the target y coordinate should be a Lerp between the camera's current y position and the player's current y position.
-            targetY = Mathf.Lerp(transform.position.y, playerPosition.y, ySmooth * Time.deltaTime);
+            float targetY = Mathf.Lerp(this.transform.position.y, playerPosition.y, c_YSmooth * Time.deltaTime);
 
             // The target y coordinates should not be larger than the maximum or smaller than the minimum.
-            targetY = Mathf.Clamp(targetY, CameraMin.y, CameraMax.y);
+            targetY = Mathf.Clamp(targetY, this.m_cameraMin.y, this.m_cameraMax.y);
 
             // Set the camera's position to the target position with the same z component.
             transform.position = new Vector3(targetX, targetY, transform.position.z);
@@ -384,55 +479,32 @@ namespace Assets.Scripts.MapScene
 
         private void ScreenSizeInit()
         {
-            var squareSize = SquareScript.PixelsPerSquare * MapSceneScript.UnitsToPixelsRatio; // 1f
+            const float c_SquareSize = SquareScript.PixelsPerSquare * MapSceneScript.c_unitsToPixelsRatio; // 1f
 
-            var minCameraX = 0f - squareSize / 2 + camera.orthographicSize * camera.aspect;
-            var maxCameraX = minCameraX + squareSize * SquareScript.Width - 2 * camera.orthographicSize * camera.aspect;
+            var minCameraX = 0f - (c_SquareSize / 2) + (camera.orthographicSize * camera.aspect);
+            var maxCameraX = minCameraX + (c_SquareSize * SquareScript.Width) - (2 * (camera.orthographicSize * camera.aspect));
             if (maxCameraX < minCameraX)
             {
                 // camera not moving in x axis
                 maxCameraX = minCameraX = (maxCameraX + minCameraX) / 2;
             }
 
-            var minCameraY = 0f - squareSize / 2 + camera.orthographicSize;
-            var maxCameraY = minCameraY + squareSize * SquareScript.Height - 2 * camera.orthographicSize;
+            var minCameraY = 0f - (c_SquareSize / 2) + camera.orthographicSize;
+            var maxCameraY = minCameraY + (c_SquareSize * SquareScript.Height) - (2 * camera.orthographicSize);
             if (maxCameraY < minCameraY)
             {
                 // camera not moving in y axis
                 maxCameraY = minCameraY = (maxCameraY + minCameraY) / 2;
             }
 
-            CameraMin = new Vector2(minCameraX, minCameraY);
-            CameraMax = new Vector2(maxCameraX, maxCameraY);
-        }
-
-        private void GUIStyleInit()
-        {
-            s_guiStyle = new GUIStyle
-            {
-                fontStyle = FontStyle.Bold,
-                fontSize = 12,
-                normal = new GUIStyleState
-                {
-                    textColor = Color.white,
-                },
-            };
-
-            s_tooltipStyle = new GUIStyle
-            {
-                fontStyle = FontStyle.Bold,
-                fontSize = 20,
-                normal = new GUIStyleState
-                {
-                    textColor = Color.white,
-                },
-            };
+            this.m_cameraMin = new Vector2(minCameraX, minCameraY);
+            this.m_cameraMax = new Vector2(maxCameraX, maxCameraY);
         }
 
         private void ClearData()
         {
             EnemiesManager.Clear();
-            s_Markers.Clear();
+            sr_markers.Clear();
             s_squaresWithEffect.Clear();
             SquareScript.Clear();
             MapGenerator.BasePopulator<Loot>.Clear();

@@ -9,6 +9,8 @@ using UnityEngine;
 
 namespace Assets.Scripts.MapScene
 {
+    using Assets.Scripts.IntersceneCommunication;
+
     #region Entity
 
     public abstract class Entity
@@ -352,8 +354,6 @@ namespace Assets.Scripts.MapScene
 
         public IEnumerable<SquareScript> LastSeen { get; set; }
 
-        public IEnumerable<PlayerEquipment> Equipment { get; private set; }
-
         public PlayerEquipment LeftHandEquipment { get; set; }
 
         public PlayerEquipment RightHandEquipment { get; set; }
@@ -381,11 +381,10 @@ namespace Assets.Scripts.MapScene
 
         public void SetEquipment(IEnumerable<PlayerEquipment> equipment)
         {
-            Equipment = equipment;
-            Assert.EqualOrLesser(Equipment.Count(), c_maximumEquipmentAmount);
-            Assert.EqualOrGreater(Equipment.Count(), c_minimumEquipmentAmount);
-            LeftHandEquipment = Equipment.First();
-            RightHandEquipment = Equipment.ElementAt(1);
+            Assert.EqualOrLesser(GlobalState.Player.Equipment.Count(), c_maximumEquipmentAmount);
+            Assert.EqualOrGreater(GlobalState.Player.Equipment.Count(), c_minimumEquipmentAmount);
+            LeftHandEquipment = GlobalState.Player.Equipment.First();
+            RightHandEquipment = GlobalState.Player.Equipment.ElementAt(1);
         }
 
         public bool Move(SquareScript newLocation)
