@@ -264,8 +264,15 @@ namespace Assets.Scripts.MapScene
                 return;
             }
 
-            m_sidebarPanel.SetActive(false);
-            m_endGamePanel.SetActive(true);
+            if (!m_endGamePanel.active)
+            {
+                m_sidebarPanel.SetActive(false);
+                m_endGamePanel.SetActive(true);
+                m_endGamePanel.transform.FindChild("TentacleText").GetComponent<Text>().text = "{0} killed".FormatWith(EnemiesManager.KilledTentacles);
+                m_endGamePanel.transform.FindChild("hiveText").GetComponent<Text>().text = "{0} killed".FormatWith(EnemiesManager.KilledHives);
+
+                m_endGamePanel.transform.FindChild("SlimeText").GetComponent<Text>().text = "{0} killed".FormatWith(EnemiesManager.KilledSlimes);
+            }
         }
 
         //        private void OnGUI()
