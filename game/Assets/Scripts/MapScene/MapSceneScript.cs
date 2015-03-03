@@ -26,19 +26,22 @@ namespace Assets.Scripts.MapScene
         private static readonly ColorBlock sr_regularColorBlock = new ColorBlock
         {
             normalColor = new Color(150, 150, 150),
-            highlightedColor = new Color(255, 255, 255),
+            highlightedColor = new Color(0, 0, 0),
+            colorMultiplier = 1,
         };
 
         private static readonly ColorBlock sr_leftClickColorBlock = new ColorBlock
         {
             normalColor = new Color(255, 0, 0),
-            highlightedColor = new Color(255, 255, 255),
+            highlightedColor = new Color(0, 0, 0),
+            colorMultiplier = 1,
         };
 
         private static readonly ColorBlock sr_rightClickColorBlock = new ColorBlock
         {
             normalColor = new Color(0, 255, 0),
-            highlightedColor = new Color(255, 255, 255),
+            highlightedColor = new Color(0, 0, 0),
+            colorMultiplier = 1,
         };
 
         /// <summary>
@@ -202,10 +205,10 @@ namespace Assets.Scripts.MapScene
             }
 
             m_leftClickButton = equipmentButtons.First();
-            m_leftClickButton.colors = sr_regularColorBlock;
+            m_leftClickButton.colors = sr_leftClickColorBlock;
 
             m_rightClickButton = equipmentButtons.Skip(1).First();
-            m_rightClickButton.colors = sr_regularColorBlock;
+            m_rightClickButton.colors = sr_rightClickColorBlock;
         }
 
         private UnityAction SetEquipment(Button button, PlayerEquipment equipment)
