@@ -25,22 +25,26 @@ namespace Assets.Scripts.MapScene
 
         private static readonly ColorBlock sr_regularColorBlock = new ColorBlock
         {
-            normalColor = new Color(150, 150, 150),
+            normalColor = new Color(0.7f, 0.7f, 0.7f),
             highlightedColor = new Color(0, 0, 0),
+            pressedColor = new Color(0.7f, 0.7f, 0.7f),
             colorMultiplier = 1,
+
         };
 
         private static readonly ColorBlock sr_leftClickColorBlock = new ColorBlock
         {
-            normalColor = new Color(255, 0, 0),
+            normalColor = new Color(1, 0, 0),
             highlightedColor = new Color(0, 0, 0),
+            pressedColor = new Color(1, 0, 0),
             colorMultiplier = 1,
         };
 
         private static readonly ColorBlock sr_rightClickColorBlock = new ColorBlock
         {
-            normalColor = new Color(0, 255, 0),
+            normalColor = new Color(0, 1, 0),
             highlightedColor = new Color(0, 0, 0),
+            pressedColor = new Color(0, 1, 0),
             colorMultiplier = 1,
         };
 
@@ -69,6 +73,7 @@ namespace Assets.Scripts.MapScene
         public const float c_unitsToPixelsRatio = 1f / 100f;
         private bool m_equipmentChange;
         private bool m_startCoRoutine = true;
+        private bool m_mouseOverUI = false;
 
         #endregion private members
 
@@ -144,6 +149,16 @@ namespace Assets.Scripts.MapScene
 
         #endregion static methods
 
+        public void MouseEnterUI()
+        {
+            m_mouseOverUI = true;
+        }
+
+        public void MouseExitUI()
+        {
+            m_mouseOverUI = false;
+        }
+
         public static void ChangeGameState(GameState state)
         {
             s_gameState = state;
@@ -192,7 +207,14 @@ namespace Assets.Scripts.MapScene
             {
                 if (i < equipment.Count)
                 {
-                    button.onClick.AddListener(SetEquipment(button, equipment[i]));
+                    var eventTrigger = button.GetComponent<EventTrigger>();
+                    var entry = new EventTrigger.Entry();
+                    entry.eventID = EventTriggerType.PointerClick;
+                    entry.callback = new EventTrigger.TriggerEvent();
+                    entry.callback.AddListener(SetEquipment(button, equipment[i]));
+                    eventTrigger.delegates.Add(entry);
+
+                    button.colors = sr_regularColorBlock;
                     var image = button.GetComponent<Image>();
                     image.sprite = m_textureManager.GetTexture(equipment[i]);
                     button.name = equipment[i].Name;
@@ -211,11 +233,12 @@ namespace Assets.Scripts.MapScene
             m_rightClickButton.colors = sr_rightClickColorBlock;
         }
 
-        private UnityAction SetEquipment(Button button, PlayerEquipment equipment)
+        private UnityAction<BaseEventData> SetEquipment(Button button, PlayerEquipment equipment)
         {
-            return () =>
+            return (BaseEventData eventData) =>
                 {
-                    if (Input.GetMouseButton(0))
+                    var clickEventData = eventData as PointerEventData;
+                    if (clickEventData.button == PointerEventData.InputButton.Left)
                     {
                         Entity.Player.LeftHandEquipment = equipment;
                         m_leftClickButton.colors = sr_regularColorBlock;
@@ -223,7 +246,7 @@ namespace Assets.Scripts.MapScene
                         m_leftClickButton.colors = sr_leftClickColorBlock;
                         m_equipmentChange = true;
                     }
-                    else if (Input.GetMouseButton(1))
+                    else if (clickEventData.button == PointerEventData.InputButton.Right)
                     {
                         Entity.Player.RightHandEquipment = equipment;
                         m_rightClickButton.colors = sr_regularColorBlock;
@@ -240,7 +263,7 @@ namespace Assets.Scripts.MapScene
 
         private void Awake()
         {
-            camera.orthographicSize = Screen.height * c_unitsToPixelsRatio;
+            GetComponent<Camera>().orthographicSize = Screen.height * c_unitsToPixelsRatio;
         }
 
         // Use this for initialization
@@ -267,7 +290,7 @@ namespace Assets.Scripts.MapScene
                 return;
             }
 
-            if (!m_endGamePanel.active)
+            if (!m_endGamePanel.activeSelf)
             {
                 m_sidebarPanel.SetActive(false);
                 m_endGamePanel.SetActive(true);
@@ -444,12 +467,12 @@ namespace Assets.Scripts.MapScene
                 returnedEnumerator = this.WaitAndEndTurn(0, 0.1f);
             }
 
-            if (Input.GetMouseButtonUp(0) && m_eventSystem.currentSelectedGameObject == null)
+            if (Input.GetMouseButtonUp(0) && !m_mouseOverUI)
             {
                 returnedEnumerator = Entity.Player.LeftHandEquipment.Effect(SquareScript.s_markedSquare, 0.15f);
             }
 
-            if (Input.GetMouseButtonUp(1) && m_eventSystem.currentSelectedGameObject == null)
+            if (Input.GetMouseButtonUp(1) && !m_mouseOverUI)
             {
                 returnedEnumerator = Entity.Player.RightHandEquipment.Effect(SquareScript.s_markedSquare, 0.15f);
             }
@@ -491,16 +514,16 @@ namespace Assets.Scripts.MapScene
         {
             const float c_SquareSize = SquareScript.PixelsPerSquare * MapSceneScript.c_unitsToPixelsRatio; // 1f
 
-            var minCameraX = 0f - (c_SquareSize / 2) + (camera.orthographicSize * camera.aspect);
-            var maxCameraX = minCameraX + (c_SquareSize * SquareScript.Width) - (2 * (camera.orthographicSize * camera.aspect));
+            var minCameraX = 0f - (c_SquareSize / 2) + (GetComponent<Camera>().orthographicSize * GetComponent<Camera>().aspect);
+            var maxCameraX = minCameraX + (c_SquareSize * SquareScript.Width) - (2 * (GetComponent<Camera>().orthographicSize * GetComponent<Camera>().aspect));
             if (maxCameraX < minCameraX)
             {
                 // camera not moving in x axis
                 maxCameraX = minCameraX = (maxCameraX + minCameraX) / 2;
             }
 
-            var minCameraY = 0f - (c_SquareSize / 2) + camera.orthographicSize;
-            var maxCameraY = minCameraY + (c_SquareSize * SquareScript.Height) - (2 * camera.orthographicSize);
+            var minCameraY = 0f - (c_SquareSize / 2) + GetComponent<Camera>().orthographicSize;
+            var maxCameraY = minCameraY + (c_SquareSize * SquareScript.Height) - (2 * GetComponent<Camera>().orthographicSize);
             if (maxCameraY < minCameraY)
             {
                 // camera not moving in y axis
