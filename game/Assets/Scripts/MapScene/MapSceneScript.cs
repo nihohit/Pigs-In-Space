@@ -28,6 +28,7 @@ namespace Assets.Scripts.MapScene
             normalColor = new Color(0.7f, 0.7f, 0.7f),
             highlightedColor = new Color(0, 0, 0),
             pressedColor = new Color(0.7f, 0.7f, 0.7f),
+            fadeDuration = 0.1f,
             colorMultiplier = 1,
 
         };
@@ -35,16 +36,18 @@ namespace Assets.Scripts.MapScene
         private static readonly ColorBlock sr_leftClickColorBlock = new ColorBlock
         {
             normalColor = new Color(1, 0, 0),
-            highlightedColor = new Color(0, 0, 0),
+            highlightedColor = new Color(0.5f, 0, 0),
             pressedColor = new Color(1, 0, 0),
+            fadeDuration = 0.1f,
             colorMultiplier = 1,
         };
 
         private static readonly ColorBlock sr_rightClickColorBlock = new ColorBlock
         {
             normalColor = new Color(0, 1, 0),
-            highlightedColor = new Color(0, 0, 0),
+            highlightedColor = new Color(0, 0.5f, 0),
             pressedColor = new Color(0, 1, 0),
+            fadeDuration = 0.1f,
             colorMultiplier = 1,
         };
 
@@ -218,6 +221,10 @@ namespace Assets.Scripts.MapScene
                     var image = button.GetComponent<Image>();
                     image.sprite = m_textureManager.GetTexture(equipment[i]);
                     button.name = equipment[i].Name;
+                    button.navigation = new Navigation
+                    {
+                        mode = Navigation.Mode.None,
+                    };
                     i++;
                 }
                 else
