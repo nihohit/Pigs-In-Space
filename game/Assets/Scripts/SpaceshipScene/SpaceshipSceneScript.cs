@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace Assets.Scripts.SpaceshipScene
 {
+    using Assets.Scripts.Base;
     using Assets.Scripts.LogicBase;
     using System;
 
@@ -29,6 +30,21 @@ namespace Assets.Scripts.SpaceshipScene
             Application.LoadLevel("MapScene");
         }
 
+        public void CreateDigger()
+        {
+            CreateItem("digger");
+        }
+
+        public void CreatePistol()
+        {
+            CreateItem("pistol");
+        }
+
+        public void CreateMedkit()
+        {
+            CreateItem("medkit");
+        }
+
         #endregion public methods
 
         #region Unity methods
@@ -50,14 +66,41 @@ namespace Assets.Scripts.SpaceshipScene
 
         #region private methods
 
-        private Action UpgradeWeapon(PlayerEquipment toTeUpgraded, PlayerEquipment result, Loot Cost)
+        private void UpgradeItem(PlayerEquipment toBeUpgraded, PlayerEquipment result)
         {
-            return () =>
-                {
-                    GlobalState.Player.Equipment.Remove(toTeUpgraded);
-                    GlobalState.Player.Equipment.Add(result);
-                    GlobalState.Player.Loot.RemoveIfEnough(Cost);
-                };
+            CreateItem(result);
+            GlobalState.Player.Equipment.Remove(toBeUpgraded);
+        }
+
+        private void CreateItem(PlayerEquipment result)
+        {
+            Assert.AssertConditionMet(
+                GlobalState.Player.Loot.RemoveIfEnough(result.Cost), 
+                "Can't pay cost for {0}. Cost is {1}, loot is {2}".FormatWith(result.Name, result.Cost, GlobalState.Player.Loot));
+            GlobalState.Player.Equipment.Add(result);
+        }
+
+        private void CreateItem(string itemName)
+        {
+            var item = EquipmentConfigurationStorage.Instance.GetConfiguration(itemName);
+            CreateItem(item);
+            UpdateItemButtons();
+        }
+
+        private void UpdateItemButtons()
+        {
+            UpdateItemCreationButtons();
+            UpdateItemUpgradeButtons();
+        }
+
+        private void UpdateItemUpgradeButtons()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void UpdateItemCreationButtons()
+        {
+            throw new NotImplementedException();
         }
 
         #endregion private methods
