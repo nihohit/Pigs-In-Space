@@ -519,23 +519,33 @@ namespace Assets.Scripts.MapScene
 
         private void ScreenSizeInit()
         {
+			var camera = GetComponent<Camera>();
             const float c_SquareSize = SquareScript.PixelsPerSquare * MapSceneScript.c_unitsToPixelsRatio; // 1f
 
-            var minCameraX = 0f - (c_SquareSize / 2) + (GetComponent<Camera>().orthographicSize * GetComponent<Camera>().aspect);
-            var maxCameraX = minCameraX + (c_SquareSize * SquareScript.Width) - (2 * (GetComponent<Camera>().orthographicSize * GetComponent<Camera>().aspect));
+            var minCameraX = 0f - (c_SquareSize / 2) + (camera.orthographicSize * camera.aspect);
+            var maxCameraX = minCameraX + (c_SquareSize * SquareScript.Width) - (2 * (camera.orthographicSize * camera.aspect));
             if (maxCameraX < minCameraX)
             {
                 // camera not moving in x axis
                 maxCameraX = minCameraX = (maxCameraX + minCameraX) / 2;
             }
 
-            var minCameraY = 0f - (c_SquareSize / 2) + GetComponent<Camera>().orthographicSize;
-            var maxCameraY = minCameraY + (c_SquareSize * SquareScript.Height) - (2 * GetComponent<Camera>().orthographicSize);
+            var minCameraY = 0f - (c_SquareSize / 2) + camera.orthographicSize;
+            var maxCameraY = minCameraY + (c_SquareSize * SquareScript.Height) - (2 * camera.orthographicSize);
             if (maxCameraY < minCameraY)
             {
                 // camera not moving in y axis
                 maxCameraY = minCameraY = (maxCameraY + minCameraY) / 2;
             }
+
+            // this makes sure that the sidebar will be added to the length of the screen
+            // TODO - this isn't exact. When reaching right, the edge of the last square should be right on the edge of the sidebar.
+            var cameraXWidth = maxCameraX - minCameraX;
+            var sidebarWidth = m_sidebarPanel.GetComponent<RectTransform>().rect.width;
+            var canvasWidth = GameObject.Find("UICanvas").GetComponent<RectTransform>().rect.width;
+            var sidebarPartOfScreen = sidebarWidth / canvasWidth;
+            var screenWidth = maxCameraX - minCameraX;
+            maxCameraX = maxCameraX + (screenWidth * sidebarPartOfScreen);
 
             this.m_cameraMin = new Vector2(minCameraX, minCameraY);
             this.m_cameraMax = new Vector2(maxCameraX, maxCameraY);
