@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -9,74 +8,74 @@ namespace Assets.Scripts.Base
     /// </summary>
     public static class Assert
     {
-        public static void NotEqual(object first, object second, string additionalMessage = "")
+        public static void NotEqual(object first, object second, string additionalMessage = "", int stackTraceDepth = 1)
         {
-            AssertConditionMet(!first.Equals(second), additionalMessage);
+            AssertConditionMet(!first.Equals(second), "{0} equals {1}. {2}".FormatWith(first, second, additionalMessage), ++stackTraceDepth);
         }
 
-        public static void EqualOrGreater(double num, double top, string additionalMessage = "")
+        public static void EqualOrGreater(double num, double min, string additionalMessage = "", int stackTraceDepth = 1)
         {
-            AssertConditionMet(num >= top, "{0} is smaller than {1}. {2}".FormatWith(num, top, additionalMessage));
+            AssertConditionMet(num >= min, "{0} is smaller than {1}. {2}".FormatWith(num, min, additionalMessage), ++stackTraceDepth);
         }
 
-        public static void Greater(double num, double top, string additionalMessage = "")
+        public static void Greater(double num, double min, string additionalMessage = "", int stackTraceDepth = 1)
         {
-            AssertConditionMet(num > top, "{0} is smaller than {1}. {2}".FormatWith(num, top, additionalMessage));
+            AssertConditionMet(num > min, "{0} is smaller than {1}. {2}".FormatWith(num, min, additionalMessage), ++stackTraceDepth);
         }
 
-        public static void EqualOrLesser(double num, double top, string additionalMessage = "")
+        public static void EqualOrLesser(double num, double max, string additionalMessage = "", int stackTraceDepth = 1)
         {
-            AssertConditionMet(num <= top, "{0} is larger than {1}. {2}".FormatWith(num, top, additionalMessage));
+            AssertConditionMet(num <= max, "{0} is larger than {1}. {2}".FormatWith(num, max, additionalMessage), ++stackTraceDepth);
         }
 
-        public static void Lesser(double num, double top, string additionalMessage = "")
+        public static void Lesser(double num, double max, string additionalMessage = "", int stackTraceDepth = 1)
         {
-            AssertConditionMet(num < top, "{0} is larger than {1}. {2}".FormatWith(num, top, additionalMessage));
+            AssertConditionMet(num < max, "{0} is larger than {1}. {2}".FormatWith(num, max, additionalMessage), ++stackTraceDepth);
         }
 
-        //to be put where a correct run shouldn't reach
-        public static void UnreachableCode(string message = "")
+        // to be put where a correct run shouldn't reach
+        public static void UnreachableCode(string message = "", int stackTraceDepth = 1)
         {
-            AssertConditionMet(false, "unreachable code: {0}".FormatWith(message));
+            AssertConditionMet(false, "unreachable code: {0}".FormatWith(message), ++stackTraceDepth);
         }
 
-        public static void IsNull(object a, string name, string additionalMessage = "")
+        public static void IsNull(object a, string name, string additionalMessage = "", int stackTraceDepth = 1)
         {
-            AssertConditionMet(a == null, "\'{0}\' isn't null. {1}".FormatWith(name, additionalMessage));
+            AssertConditionMet(a == null, "\'{0}\' isn't null. {1}".FormatWith(name, additionalMessage), ++stackTraceDepth);
         }
 
-        public static void NotNull(object a, string name, string additionalMessage = "")
+        public static void NotNull(object a, string name, string additionalMessage = "", int stackTraceDepth = 1)
         {
-            AssertConditionMet(a != null, "\'{0}\' is null. {1}".FormatWith(name, additionalMessage));
+            AssertConditionMet(a != null, "\'{0}\' is null. {1}".FormatWith(name, additionalMessage), ++stackTraceDepth);
         }
 
-        public static void NotNullOrEmpty<T>(IEnumerable<T> a, string name, string additionalMessage = "")
+        public static void NotNullOrEmpty<T>(IEnumerable<T> a, string name, string additionalMessage = "", int stackTraceDepth = 1)
         {
-            AssertConditionMet(a != null || !a.Any(), "\'{0}\' is null or empty. {1}".FormatWith(name, additionalMessage));
+            AssertConditionMet(a != null && a.Any(), "\'{0}\' is null or empty. {1}".FormatWith(name, additionalMessage), ++stackTraceDepth);
         }
 
-        internal static void NotNullOrEmpty(string name, string variableName)
+        public static void StringNotNullOrEmpty(string str, string variableName, string additionalMessage = "", int stackTraceDepth = 1)
         {
-            AssertConditionMet(!String.IsNullOrEmpty(name), "\'{0}\' was null or empty".FormatWith(variableName));
+            AssertConditionMet(!string.IsNullOrEmpty(str), "\'{0}\' is null or empty. {1}".FormatWith(variableName, additionalMessage), ++stackTraceDepth);
         }
 
-        public static void StringNotNullOrEmpty(string a, string name, string additionalMessage = "")
+        public static void AreEqual(object a, object b, string additionalMessage = "", int stackTraceDepth = 1)
         {
-            AssertConditionMet(a != null || !a.Equals(string.Empty), "\'{0}\' is null or empty. {1}".FormatWith(name, additionalMessage));
+            AssertConditionMet(a.Equals(b), "{0} isn't equal to {1}. {2}".FormatWith(a, b, additionalMessage), ++stackTraceDepth);
         }
 
-        public static void AreEqual(object a, object b, string additionalMessage = "")
-        {
-            AssertConditionMet(a.Equals(b), "{0} isn't equal to {1}. {2}".FormatWith(a, b, additionalMessage));
-        }
-
-        //the core assert check
-        public static void AssertConditionMet(bool condition, string message)
+        // the core assert check
+        public static void AssertConditionMet(bool condition, string message, int stackTraceDepth = 1)
         {
             if (!condition)
             {
-                throw new AssertedException(message);
+                throw new AssertedException(message, stackTraceDepth);
             }
+        }
+
+        public static void IsEmpty<T>(IEnumerable<T> list, string variableName, string additionalMessage = "", int stackTraceDepth = 1)
+        {
+            AssertConditionMet(list.None(), "{0} wasn't empty. {1}".FormatWith(variableName, additionalMessage), ++stackTraceDepth);
         }
     }
 }

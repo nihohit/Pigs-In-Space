@@ -24,7 +24,7 @@ namespace Assets.Scripts.IntersceneCommunication
         public PlayerState()
         {
             Loot = new Loot();
-            Equipment = new List<PlayerEquipment>(EquipmentConfigurationStorage.Instance.GetAllConfigurations().ChooseRandomValues(5));
+            Equipment = new List<PlayerEquipment>();
         }
 
         #endregion constructor

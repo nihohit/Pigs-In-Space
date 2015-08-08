@@ -10,7 +10,7 @@
 	"MinPower" :  1.0,
 	"MaxPower" :  2.0, 
 	"Range": 5.0,
-	"ShotSAmount" : 3,
+	"ShotsAmount" : 3,
 	"ShotSpread" : 1.5,
 	"EffectType" : 17
 },

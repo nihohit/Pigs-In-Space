@@ -155,7 +155,7 @@ namespace Assets.Scripts.MapScene
         {
             var square = SquareScript.GetSquare(x, y);
             Entity.Player = new PlayerEntity(c_startHealth, c_startEnergy, c_startOxygen, square);
-            Entity.Player.SetEquipment(EquipmentConfigurationStorage.Instance.GetAllConfigurations());
+            Entity.Player.SetEquipment(GlobalState.Instance.Configurations.Equipment.GetAllConfigurations());
         }
 
         #endregion static generation methods
@@ -217,11 +217,11 @@ namespace Assets.Scripts.MapScene
             base(template, location)
         {
             // create a copy of action / destruction items, with this entity as the owner
-            m_mainActionItem = new ActionableItem(ActionableItemStorage.Instance.GetConfiguration(template.ActionItem), this);
+            m_mainActionItem = new ActionableItem(GlobalState.Instance.Configurations.MonsterEquipment.GetConfiguration(template.ActionItem), this);
 
             if (template.DestructionItem != null)
             {
-                m_destructionItem = new ActionableItem(ActionableItemStorage.Instance.GetConfiguration(template.DestructionItem), this);
+                m_destructionItem = new ActionableItem(GlobalState.Instance.Configurations.MonsterEquipment.GetConfiguration(template.DestructionItem), this);
             }
 
             switch (template.Tactics)
@@ -381,10 +381,10 @@ namespace Assets.Scripts.MapScene
 
         public void SetEquipment(IEnumerable<PlayerEquipment> equipment)
         {
-            Assert.EqualOrLesser(GlobalState.Player.Equipment.Count(), c_maximumEquipmentAmount);
-            Assert.EqualOrGreater(GlobalState.Player.Equipment.Count(), c_minimumEquipmentAmount);
-            LeftHandEquipment = GlobalState.Player.Equipment.First();
-            RightHandEquipment = GlobalState.Player.Equipment.ElementAt(1);
+            Assert.EqualOrLesser(GlobalState.Instance.Player.Equipment.Count(), c_maximumEquipmentAmount);
+            Assert.EqualOrGreater(GlobalState.Instance.Player.Equipment.Count(), c_minimumEquipmentAmount);
+            LeftHandEquipment = GlobalState.Instance.Player.Equipment.First();
+            RightHandEquipment = GlobalState.Instance.Player.Equipment.ElementAt(1);
         }
 
         public bool Move(SquareScript newLocation)

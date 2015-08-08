@@ -1,7 +1,10 @@
 ﻿using Assets.Scripts.Base;
+using Assets.Scripts.LogicBase;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Assets.Scripts.UnityBase
 {
@@ -11,16 +14,18 @@ namespace Assets.Scripts.UnityBase
     /// A clickable box that offers a selection of possible items when clicked, and saves the chosen item.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class SelectionBox<T> : SimpleButton where T : class
+    public abstract class SelectionBox<T> : MonoBehaviour where T : class
     {
         #region fields
+
+        protected static ITextureHandler<T> s_textureHandler;
+
+        protected static object s_sharedLock = new object();
 
         // the selected item
         private T m_selectedItem;
 
-        protected IUnityMarker m_markedTexture;
-
-        protected static ITextureHandler<T> s_textureHandler;
+        protected Image m_image;
 
         #endregion fields
 
@@ -29,7 +34,10 @@ namespace Assets.Scripts.UnityBase
         // when an item is selected, all displayed options must be removed and the box's visual need to be updated.
         public virtual T SelectedItem
         {
-            get { return m_selectedItem; }
+            get
+            {
+                return m_selectedItem;
+            }
             set
             {
                 m_selectedItem = value;
@@ -39,20 +47,38 @@ namespace Assets.Scripts.UnityBase
 
         #endregion properties
 
+        #region public methods
+
+        public virtual void Awake()
+        {
+            m_image = transform.FindChild("Image").GetComponent<Image>();
+            // gameObject.GetComponent<Button>().onClick.AddListener(this.ClickedOn);
+        }
+
+        #endregion public methods
+
         #region private methods
 
         protected virtual void UpdateVisuals(T item)
         {
             if (item == null)
             {
-                m_markedTexture.Unmark();
+                if (m_image != null)
+                {
+                    m_image.enabled = false;
+                }
             }
             else
             {
-                var renderer = m_markedTexture.Renderer;
-                s_textureHandler.UpdateMarkerTexture(item, renderer);
-                m_markedTexture.Mark(transform.position);
-                m_markedTexture.Scale = new Vector3(0.1f, 0.1f, 0.1f);
+                m_image.enabled = true;
+                var texture = s_textureHandler.GetTexture(item);
+
+                m_image.sprite = Sprite.Create(
+                    texture,
+                    m_image.sprite.rect,
+                    m_image.sprite.bounds.center);
+
+                m_image.sprite.name = texture.name;
             }
         }
 
@@ -70,12 +96,6 @@ namespace Assets.Scripts.UnityBase
         // a list of all available items
         protected static List<T> s_selectableOptions;
 
-        // marks whether the mouse is still over the item.
-        private bool m_mouseHover;
-
-        // The displayed items
-        private ButtonCluster m_buttons;
-
         // serves to prevent a click from registering twice
         private int m_frameCounter;
 
@@ -86,10 +106,22 @@ namespace Assets.Scripts.UnityBase
         // when an item is selected, all displayed options must be removed and the box's visual need to be updated.
         public override T SelectedItem
         {
-            get { return base.SelectedItem; }
+            get
+            {
+                return base.SelectedItem;
+            }
+
             set
             {
-                s_selectableOptions.Remove(value);
+                if (value != null)
+                {
+                    s_selectableOptions.Remove(value);
+                }
+
+                if (base.SelectedItem != null)
+                {
+                    s_selectableOptions.Add(base.SelectedItem);
+                }
 
                 base.SelectedItem = value;
                 RemoveButtons();
@@ -100,11 +132,16 @@ namespace Assets.Scripts.UnityBase
 
         #region public methods
 
-        public virtual void Awake()
+        // sets all possible selection options
+        public static void Init(List<T> items, ITextureHandler<T> textureHandler)
         {
-            ClickableAction = ClickedOn;
-            OnMouseExitAction = () => m_mouseHover = false;
-            OnMouseOverAction = () => m_mouseHover = true;
+            if (s_textureHandler != null)
+            {
+                return;
+            }
+
+            s_selectableOptions = items;
+            s_textureHandler = textureHandler;
         }
 
         // Update is called once per frame
@@ -116,71 +153,79 @@ namespace Assets.Scripts.UnityBase
             }
             else
             {
-                //if the mouse is pressed and not on me, remove selection
-                if (Input.GetMouseButtonDown(0) && !m_mouseHover)
+                // if the mouse is pressed and not on me, remove selection
+                if (Input.GetMouseButtonDown(0))
                 {
                     RemoveButtons();
                 }
             }
         }
 
-        // sets all possible selection options
-        public static void Init(List<T> items)
+        public void ClickedOn()
         {
-            s_selectableOptions = items;
+            Debug.Log(gameObject.name + " clicked on");
+            RemoveButtons();
+            CreateButtons();
+            m_frameCounter = 5;
         }
 
         #endregion public methods
 
         #region private method
 
-        private void ClickedOn()
+        private void CreateButtons()
         {
-            RemoveButtons();
-            m_buttons = new ButtonCluster(CreateButtons().Materialize());
-            m_frameCounter = 5;
-        }
+            var currentPosition = m_image.rectTransform.position;
+            var currentWorldPosition = Camera.main.ScreenToWorldPoint(new Vector3(currentPosition.x, currentPosition.y, -Camera.main.transform.position.z));
 
-        private IEnumerable<IUnityButton> CreateButtons()
-        {
-            var mousePosition = Input.mousePosition;
-            var currentPosition = Camera.main.ScreenToWorldPoint(new Vector3(mousePosition.x, mousePosition.y, -Camera.main.transform.position.z));
-            var buttomPartOfScreen = currentPosition.y > Camera.main.transform.position.y;
+            var bottomPartOfScreen = currentWorldPosition.y > Camera.main.transform.position.y;
 
-            IUnityButton button;
-            currentPosition = CreateButton(null, currentPosition, out button, buttomPartOfScreen);
-            yield return button;
+            var choices = s_selectableOptions.Distinct();
 
-            var choices = s_selectableOptions.Select(ent => ent).Distinct();
+            currentPosition = CreateButton(null, currentPosition, bottomPartOfScreen);
+
             // reverse the list if in the bottom part of the screen
-            foreach (var item in buttomPartOfScreen ? choices.Reverse() : choices)
+            foreach (var item in bottomPartOfScreen ? choices.Reverse() : choices)
             {
-                currentPosition = CreateButton(item, currentPosition, out button, buttomPartOfScreen);
-                yield return button;
+                currentPosition = CreateButton(item, currentPosition, bottomPartOfScreen);
             }
         }
 
-        // initializes a button, place it in its location, and return the updated location for the next button
-        private Vector3 CreateButton(T item, Vector3 currentPosition, out IUnityButton button, bool buttonsGoingDown)
+        // initializes a button, place it in its location, and return the updated LocationScript for the next button
+        private Vector3 CreateButton(T item, Vector3 currentPosition, bool buttonsGoingDown)
         {
-            var buttonObject = ((GameObject)Instantiate(Resources.Load("CircularButton"), currentPosition, Quaternion.identity));
-            button = buttonObject.GetComponent<SimpleButton>();
-            button.Scale = new Vector3(0.1f, 0.1f, 0.1f);
-            TextureHandler.ReplaceTexture(button.Renderer, GetTexture(item), "selection button");
-            button.ClickableAction = () => SelectedItem = item;
-            if (buttonsGoingDown)
-            {
-                return new Vector3(currentPosition.x, currentPosition.y - 0.2f * buttonObject.GetComponent<CircleCollider2D>().radius, 0);
-            }
-            return new Vector3(currentPosition.x, currentPosition.y + 0.2f * buttonObject.GetComponent<CircleCollider2D>().radius, 0);
+            var button = UnityHelper.Instantiate<Button>(currentPosition);
+            button.onClick.AddListener(() => Debug.Log("button clicked"));
+            button.transform.parent = gameObject.transform.parent;
+            var image = button.transform.FindChild("Image").GetComponent<Image>();
+            var scale = button.GetComponent<RectTransform>().localScale;
+            button.GetComponent<RectTransform>().localScale = Vector3.one;
+
+            var texture = GetTexture(item);
+            button.onClick.AddListener(() => SelectedItem = item);
+            button.name = texture.name + "Button";
+            image.sprite = Sprite.Create(
+                    texture,
+                    image.sprite.rect,
+                    image.sprite.bounds.center);
+
+            image.sprite.name = texture.name;
+
+            return new Vector3(
+                currentPosition.x,
+                buttonsGoingDown ?
+                    currentPosition.y - (button.GetComponent<RectTransform>().rect.height / scale.y) :
+                    currentPosition.y + (button.GetComponent<RectTransform>().rect.height / scale.y),
+                0);
         }
 
         private void RemoveButtons()
         {
-            if (m_buttons != null)
+            var buttons = transform.parent.GetComponentsInChildren<Button>().Where(button => button.name.Contains("Button"));
+
+            foreach (var button in buttons)
             {
-                m_buttons.DestroyCluster();
-                m_buttons = null;
+                button.DestroyGameObject(0.2f);
             }
         }
 

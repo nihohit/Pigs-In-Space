@@ -8,7 +8,7 @@ namespace Assets.Scripts.IntersceneCommunication
     {
         #region properties
 
-        public static Loot GainedLoot { get; private set; }
+        public Loot GainedLoot { get; private set; }
 
         #endregion properties
 

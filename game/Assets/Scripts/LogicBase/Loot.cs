@@ -1,5 +1,7 @@
 ﻿namespace Assets.Scripts.LogicBase
 {
+    using Scripts.Base;
+
     public class Loot
     {
         public int BlueCrystal { get; set; }
@@ -35,6 +37,11 @@
         public bool IsEnoughToCover(Loot cost)
         {
             return BlueCrystal > cost.BlueCrystal;
+        }
+
+        public override string ToString()
+        {
+            return "Blue crystal: {0}, Fuel cell: {1}".FormatWith(BlueCrystal, FuelCell);
         }
     }
 }

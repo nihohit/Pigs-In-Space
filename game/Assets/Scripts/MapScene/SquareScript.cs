@@ -1,4 +1,5 @@
 ﻿using Assets.Scripts.Base;
+using Assets.Scripts.IntersceneCommunication;
 using Assets.Scripts.LogicBase;
 using Assets.Scripts.MapScene.MapGenerator;
 using Assets.Scripts.UnityBase;
@@ -163,17 +164,17 @@ namespace Assets.Scripts.MapScene
             var monsters = new List<MonsterTemplate>();
             for (int i = 0; i < 7; i++)
             {
-                monsters.Add(MonsterTemplateStorage.Instance.GetConfiguration("Hive"));
+                monsters.Add(GlobalState.Instance.Configurations.Monsters.GetConfiguration("Hive"));
             }
 
             for (int i = 0; i < 7; i++)
             {
-                monsters.Add(MonsterTemplateStorage.Instance.GetConfiguration("Slime"));
+                monsters.Add(GlobalState.Instance.Configurations.Monsters.GetConfiguration("Slime"));
             }
 
             for (int i = 0; i < 25; i++)
             {
-                monsters.Add(MonsterTemplateStorage.Instance.GetConfiguration("TentacleMonster"));
+                monsters.Add(GlobalState.Instance.Configurations.Monsters.GetConfiguration("TentacleMonster"));
             }
 
             monsterPopulator.PopulateMap(s_map, monsters);
@@ -354,10 +355,10 @@ namespace Assets.Scripts.MapScene
 
         private void Awake()
         {
-            m_fogOfWar = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("FogOfWar"), transform.position, Quaternion.identity)).GetComponent<MarkerScript>();
+            m_fogOfWar = UnityHelper.Instantiate<MarkerScript>(transform.position, "FogOfWar");
             FogOfWarType = FogOfWarType.Full;
 
-            m_squareEffect = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("EmptyMarker"), transform.position, Quaternion.identity)).GetComponent<MarkerScript>();
+            m_squareEffect = UnityHelper.Instantiate<MarkerScript>(transform.position, "EmptyMarker");
             GroundEffect = GroundEffect.NoEffect;
 
             Visible = true;

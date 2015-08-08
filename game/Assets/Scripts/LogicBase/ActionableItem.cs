@@ -1,4 +1,6 @@
 ﻿using Assets.Scripts.Base;
+using Assets.Scripts.Base.JsonParsing;
+using Assets.Scripts.IntersceneCommunication;
 using Assets.Scripts.MapScene;
 using Assets.Scripts.UnityBase;
 using System.Collections;
@@ -11,7 +13,7 @@ namespace Assets.Scripts.LogicBase
     #region ActionableItem
 
     // represent an item that can affect squares
-    public class ActionableItem : IIdentifiable
+    public class ActionableItem : IIdentifiable<string>
     {
         #region private fields
 
@@ -62,19 +64,24 @@ namespace Assets.Scripts.LogicBase
 
         // copy constructor, used in order to create a new item for a new owner
         public ActionableItem(ActionableItem other, Entity owner)
-            : this(other.Name, other.Effects, other.MinPower, other.MaxPower,
-            other.Range, owner, other.ShotsAmount, other.ShotSpread, other.EffectSize, other.ShotType, other.CreatedMonsterType)
-        { }
-
-        // constructor without an owner
-        public ActionableItem(string name, EffectTypes type, double minPower, double maxPower,
-            float range, int shotsAmount, float shotSpread, int effectSize, string shotType, string createdMonsterType)
-            : this(name, type, minPower, maxPower, range, null, shotsAmount, shotSpread, effectSize, shotType, createdMonsterType)
+            : this(other.Name, owner, other.Effects, other.MinPower, other.MaxPower,
+            other.Range, other.ShotsAmount, other.ShotSpread, other.EffectSize, other.ShotType, other.CreatedMonsterType)
         { }
 
         // full constructor
-        public ActionableItem(string name, EffectTypes type, double minPower, double maxPower,
-            float range, Entity owner, int shotsAmount, float shotSpread, int effectSize, string shotType, string createdMonsterType)
+        [ChosenConstructorForParsing]
+        public ActionableItem(
+            string name,
+            Entity owner = null,
+            EffectTypes effectType = EffectTypes.DamageDealing,
+            double minPower = 0,
+            double maxPower = 0,
+            float range = 0,
+            int shotsAmount = 1,
+            float shotSpread = 0,
+            int effectSize = 0,
+            string shotType = "slimeball",
+            string createdMonsterType = null)
         {
             Assert.NotNullOrEmpty(name, "Equipment name");
             Assert.EqualOrGreater(maxPower, minPower, "Equipment {0}'s MaxPower is lower than MinPower.".FormatWith(name));
@@ -84,7 +91,7 @@ namespace Assets.Scripts.LogicBase
             Assert.EqualOrGreater(effectSize, 0, "Equipment {0}'s effect size".FormatWith(name));
 
             Range = range;
-            Effects = type;
+            Effects = effectType;
             ShotsAmount = shotsAmount;
             ShotSpread = shotSpread;
             MinPower = minPower;
@@ -307,7 +314,7 @@ namespace Assets.Scripts.LogicBase
                 Randomiser.ProbabilityCheck(MapSceneScript.EscapeMode ? MaxPower : MinPower))
             {
                 EnemiesManager.CreateEnemy(
-                    MonsterTemplateStorage.Instance.GetConfiguration(CreatedMonsterType),
+                    GlobalState.Instance.Configurations.Monsters.GetConfiguration(CreatedMonsterType),
                     emptyNeighbours.ChooseRandomValue());
             }
         }
@@ -365,10 +372,21 @@ namespace Assets.Scripts.LogicBase
 
         #region constructors
 
-        public PlayerEquipment(string name, EffectTypes type, double minPower, double maxPower, float range, int shotsAmount,
-            float shotSpread, int effectSize, string shotType, string createdMonsterType, double energyCost, Loot cost,
-            IEnumerable<string> upgrades) :
-            base(name, type, minPower, maxPower, range, Entity.Player, shotsAmount, shotSpread, effectSize, shotType, createdMonsterType)
+        public PlayerEquipment(
+            string name,
+            double minPower,
+            double maxPower,
+            double energyCost,
+            EffectTypes effectType = EffectTypes.DamageDealing,
+            float range = 0,
+            int shotsAmount = 1,
+            float shotSpread = 0,
+            int effectSize = 0,
+            string shotType = "laser",
+            string createdMonsterType = null,
+            Loot cost = null,
+            IEnumerable<string> upgrades = null) :
+            base(name, Entity.Player, effectType, minPower, maxPower, range, shotsAmount, shotSpread, effectSize, shotType, createdMonsterType)
         {
             Cost = cost;
             EnergyCost = energyCost;

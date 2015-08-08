@@ -172,10 +172,6 @@ namespace Assets.Scripts.MapScene
             EscapeMode = false;
             m_textureManager = new TextureManager();
             ActionableItem.Init(m_textureManager);
-            if (GlobalState.Player == null)
-            {
-                GlobalState.Player = new PlayerState();
-            }
 
             GuiInit();
             MapInit();
@@ -185,7 +181,7 @@ namespace Assets.Scripts.MapScene
 
         public void ToSpaceshipScreen()
         {
-            GlobalState.EndLevel = new EndLevelInfo(Entity.Player.GainedLoot);
+            GlobalState.Instance.EndLevel = new EndLevelInfo(Entity.Player.GainedLoot);
             ClearData();
             Application.LoadLevel("SpaceShipScene");
         }
@@ -204,7 +200,7 @@ namespace Assets.Scripts.MapScene
             var equipmentButtons =
                 canvas.GetComponentsInChildren<Button>().Where(button => button.name.Equals("EquipmentButton")).Materialize();
             int i = 0;
-            var equipment = GlobalState.Player.Equipment;
+            var equipment = GlobalState.Instance.Player.Equipment;
 
             foreach (var button in equipmentButtons)
             {
@@ -215,7 +211,7 @@ namespace Assets.Scripts.MapScene
                     entry.eventID = EventTriggerType.PointerClick;
                     entry.callback = new EventTrigger.TriggerEvent();
                     entry.callback.AddListener(SetEquipment(button, equipment[i]));
-                    eventTrigger.delegates.Add(entry);
+                    eventTrigger.triggers.Add(entry);
 
                     button.colors = sr_regularColorBlock;
                     var image = button.GetComponent<Image>();
@@ -540,7 +536,6 @@ namespace Assets.Scripts.MapScene
 
             // this makes sure that the sidebar will be added to the length of the screen
             // TODO - this isn't exact. When reaching right, the edge of the last square should be right on the edge of the sidebar.
-            var cameraXWidth = maxCameraX - minCameraX;
             var sidebarWidth = m_sidebarPanel.GetComponent<RectTransform>().rect.width;
             var canvasWidth = GameObject.Find("UICanvas").GetComponent<RectTransform>().rect.width;
             var sidebarPartOfScreen = sidebarWidth / canvasWidth;

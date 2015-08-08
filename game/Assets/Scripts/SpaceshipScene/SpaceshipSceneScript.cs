@@ -12,10 +12,6 @@ namespace Assets.Scripts.SpaceshipScene
     {
         #region private members
 
-        private TextureManager m_textureManager;
-
-        private EndLevelInfo m_endLevelInfo;
-
         #endregion private members
 
         #region public methods
@@ -52,9 +48,7 @@ namespace Assets.Scripts.SpaceshipScene
         // Use this for initialization
         private void Start()
         {
-            m_endLevelInfo = GlobalState.EndLevel;
-            GlobalState.EndLevel = null;
-            m_textureManager = new TextureManager();
+            HandleLastLevel();
         }
 
         // Update is called once per frame
@@ -69,20 +63,20 @@ namespace Assets.Scripts.SpaceshipScene
         private void UpgradeItem(PlayerEquipment toBeUpgraded, PlayerEquipment result)
         {
             CreateItem(result);
-            GlobalState.Player.Equipment.Remove(toBeUpgraded);
+            GlobalState.Instance.Player.Equipment.Remove(toBeUpgraded);
         }
 
         private void CreateItem(PlayerEquipment result)
         {
             Assert.AssertConditionMet(
-                GlobalState.Player.Loot.RemoveIfEnough(result.Cost), 
-                "Can't pay cost for {0}. Cost is {1}, loot is {2}".FormatWith(result.Name, result.Cost, GlobalState.Player.Loot));
-            GlobalState.Player.Equipment.Add(result);
+                GlobalState.Instance.Player.Loot.RemoveIfEnough(result.Cost),
+                "Can't pay cost for {0}. Cost is {1}, loot is {2}".FormatWith(result.Name, result.Cost, GlobalState.Instance.Player.Loot));
+            GlobalState.Instance.Player.Equipment.Add(result);
         }
 
         private void CreateItem(string itemName)
         {
-            var item = EquipmentConfigurationStorage.Instance.GetConfiguration(itemName);
+            var item = GlobalState.Instance.Configurations.Equipment.GetConfiguration(itemName);
             CreateItem(item);
             UpdateItemButtons();
         }
@@ -101,6 +95,15 @@ namespace Assets.Scripts.SpaceshipScene
         private void UpdateItemCreationButtons()
         {
             throw new NotImplementedException();
+        }
+
+        private void HandleLastLevel()
+        {
+            if (GlobalState.Instance.EndLevel != null)
+            {
+                GlobalState.Instance.Player.Loot.AddLoot(GlobalState.Instance.EndLevel.GainedLoot);
+                GlobalState.Instance.EndLevel = null;
+            }
         }
 
         #endregion private methods

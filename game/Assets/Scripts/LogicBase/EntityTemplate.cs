@@ -4,7 +4,7 @@ namespace Assets.Scripts.LogicBase
 {
     #region EntityTemplate
 
-    public class EntityTemplate : IIdentifiable
+    public class EntityTemplate : IIdentifiable<string>
     {
         #region properties
 

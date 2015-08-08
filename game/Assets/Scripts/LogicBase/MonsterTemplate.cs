@@ -2,9 +2,7 @@
 
 namespace Assets.Scripts.LogicBase
 {
-    #region MonsterTemplate
-
-    public class MonsterTemplate : EntityTemplate, IIdentifiable
+    public class MonsterTemplate : EntityTemplate, IIdentifiable<string>
     {
         #region properties
 
@@ -18,8 +16,13 @@ namespace Assets.Scripts.LogicBase
 
         #region constructor
 
-        public MonsterTemplate(string name, double health, MovementType movementType,
-            EntityTactics tactics, string actionItem, string destructionItem)
+        public MonsterTemplate(
+            string name,
+            double health,
+            string actionItem,
+            MovementType movementType = MovementType.Walking,
+            EntityTactics tactics = EntityTactics.ActInRange,
+            string destructionItem = null)
             : base(name, health, movementType)
         {
             Assert.NotNullOrEmpty(actionItem, "{0} action item".FormatWith(name));
@@ -30,36 +33,4 @@ namespace Assets.Scripts.LogicBase
 
         #endregion constructor
     }
-
-    #endregion MonsterTemplate
-
-    #region MonsterTemplateStorage
-
-    public sealed class MonsterTemplateStorage : ConfigurationStorage<MonsterTemplate, MonsterTemplateStorage>
-    {
-        public MonsterTemplateStorage()
-            : base("monsters")
-        { }
-
-        protected override JSONParser<MonsterTemplate> GetParser()
-        {
-            return new MonsterJSONParser();
-        }
-
-        private sealed class MonsterJSONParser : JSONParser<MonsterTemplate>
-        {
-            protected override MonsterTemplate ConvertCurrentItemToObject()
-            {
-                return new MonsterTemplate(
-                    TryGetValueAndFail<string>("Name"),
-                    TryGetValueAndFail<float>("Health"),
-                    TryGetValueOrSetDefaultValue<MovementType>("MovementType", MovementType.Walking),
-                    TryGetValueOrSetDefaultValue<EntityTactics>("Tactics", EntityTactics.ActInRange),
-                    TryGetValueAndFail<string>("ActionItem"),
-                    TryGetValueOrSetDefaultValue<string>("DestructionItem", null));
-            }
-        }
-    }
-
-    #endregion MonsterTemplateStorage
 }

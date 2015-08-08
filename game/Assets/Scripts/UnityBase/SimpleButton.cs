@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using UnityEngine;
 
 namespace Assets.Scripts.UnityBase
@@ -35,19 +36,19 @@ namespace Assets.Scripts.UnityBase
 
         public override void Mark()
         {
-            Mark(this.transform.position);
+            Mark(transform.position);
         }
 
         public override void Mark(Vector3 position)
         {
             base.Mark(position);
-            this.GetComponent<Collider2D>().enabled = true;
+            GetComponent<Collider2D>().enabled = true;
         }
 
         public override void Unmark()
         {
             base.Unmark();
-            this.GetComponent<Collider2D>().enabled = false;
+            GetComponent<Collider2D>().enabled = false;
         }
 
         #endregion overrides
@@ -59,27 +60,41 @@ namespace Assets.Scripts.UnityBase
         // to see if there's a higher layer collider the click was aimed for.
         protected Action CheckIfClickIsOnUI(Action action)
         {
+            return CheckIfClickIsOnLayer(action, "AddedUI");
+        }
+
+        // This method is necessary due to a known Unity bug - sometimes a click is received
+        // By a collider in a lower layer. This function sets a default check,
+        // to see if there's a higher layer collider the click was aimed for.
+        protected Action CheckIfClickIsOnLayer(Action action, string layer)
+        {
             return () =>
                 {
                     //TODO - check if the Unity bug which makes this necessary is fixed, and remove this.
                     // Store the point where the user has clicked as a Vector3
                     var mousePosition = Input.mousePosition;
                     var clickPosition = Camera.main.ScreenToWorldPoint(new Vector3(mousePosition.x, mousePosition.y, -Camera.main.transform.position.z));
-                    // Retrieve all raycast hits from the click position and store them in an array called "hits"
-                    var rayHits = Physics2D.RaycastAll(clickPosition, new Vector2(0, 0));
-                    foreach (var rayHit in rayHits)
+
+                    var layerMask = LayerMask.NameToLayer(layer);
+
+                    var UIOnPoint = ObjectOnPoint(clickPosition, layerMask);
+
+                    if (UIOnPoint != null)
                     {
-                        var clickedComponent = rayHit.collider.gameObject;
-                        var layerMask = LayerMask.NameToLayer("AddedUI");
-                        if (clickedComponent.layer == layerMask)
-                        {
-                            var button = clickedComponent.GetComponent<SimpleButton>();
-                            button.ClickableAction();
-                            return;
-                        }
+                        var button = UIOnPoint.GetComponent<SimpleButton>();
+                        button.ClickableAction();
+                        return;
                     }
                     action();
                 };
+        }
+
+        //returns an object on a layer, in a certain point
+        protected GameObject ObjectOnPoint(Vector3 point, Int32 layerMask)
+        {
+            var rayHits = Physics2D.RaycastAll(point, new Vector2(0, 0));
+            return rayHits.Select(rayHit => rayHit.collider.gameObject).
+                FirstOrDefault(gameObject => gameObject.layer == layerMask);
         }
 
         private void OnMouseOver()

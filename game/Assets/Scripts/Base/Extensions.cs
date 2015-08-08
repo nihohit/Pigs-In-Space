@@ -5,9 +5,9 @@ using System.Linq;
 
 namespace Assets.Scripts.Base
 {
-    public interface IIdentifiable
+    public interface IIdentifiable<out T>
     {
-        string Name { get; }
+        T Name { get; }
     }
 
     /// <summary>
@@ -15,20 +15,52 @@ namespace Assets.Scripts.Base
     /// </summary>
     public static class MyExtensions
     {
-        public static String FormatWith(this string str, params object[] formattingInfo)
-        {
-            return String.Format(str, formattingInfo);
-        }
-
-        //converts degrees to radians
-        public static float DegreesToRadians(this float degrees)
-        {
-            return (float)Math.PI * degrees / 180;
-        }
-
         public static bool ProbabilityCheck(this double chance)
         {
             return Randomiser.ProbabilityCheck(chance);
+        }
+
+        public static T SafeCast<T>(this object obj, string name) where T : class
+        {
+            var result = obj as T;
+
+            Assert.NotNull(result, name, "Tried to cast {0} to {1}".FormatWith(obj, typeof(T)), 3);
+
+            return result;
+        }
+
+        public static string FormatWith(this string str, params object[] formattingInfo)
+        {
+            return string.Format(str, formattingInfo);
+        }
+
+        // try to get a value out of a dictionary, and if it doesn't exist, create it by a given method
+        public static TValue TryGetOrAdd<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, Func<TValue> itemCreationMethod)
+        {
+            TValue result;
+            if (dict.TryGetValue(key, out result))
+            {
+                return result;
+            }
+
+            result = itemCreationMethod();
+            dict.Add(key, result);
+
+            return result;
+        }
+
+        // removes from both sets the common elements.
+        public static void ExceptOnBoth<T>(this HashSet<T> thisSet, HashSet<T> otherSet)
+        {
+            thisSet.SymmetricExceptWith(otherSet);
+            otherSet.IntersectWith(thisSet);
+            thisSet.ExceptWith(otherSet);
+        }
+
+        // converts degrees to radians
+        public static float DegreesToRadians(this float degrees)
+        {
+            return (float)Math.PI * degrees / 180;
         }
 
         public static bool HasFlag(this Enum value, Enum flag)
@@ -38,15 +70,12 @@ namespace Assets.Scripts.Base
 
         #region IEnumerable
 
-        //removes from both sets the common elements.
-        public static void ExceptOnBoth<T>(this HashSet<T> thisSet, HashSet<T> otherSet)
+        public static IEnumerable<T> Duplicate<T>(this IEnumerable<T> enumerable)
         {
-            thisSet.SymmetricExceptWith(otherSet);
-            otherSet.IntersectWith(thisSet);
-            thisSet.ExceptWith(otherSet);
+            return enumerable.Select(item => item).Materialize();
         }
 
-        //returns an enumerable with all values of an enumerator
+        // returns an enumerable with all values of an enumerator
         public static IEnumerable<T> GetValues<T>()
         {
             return (T[])Enum.GetValues(typeof(T));
@@ -57,41 +86,57 @@ namespace Assets.Scripts.Base
             return new HashSet<T>(source);
         }
 
-        //this function ensures that a given enumeration materializes
+        public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> group)
+        {
+            Assert.NotNull(group, "group");
+            return Randomiser.Shuffle(group);
+        }
+
+        // this function ensures that a given enumeration materializes
         public static IEnumerable<T> Materialize<T>(this IEnumerable<T> enumerable)
         {
-            if (enumerable is ICollection<T>) return enumerable;
+            if (enumerable is ICollection<T>)
+            {
+                return enumerable;
+            }
+
             return enumerable.ToList();
         }
 
         public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T> op)
         {
-            if (enumerable != null)
+            if (enumerable == null)
             {
-                foreach (var val in enumerable)
-                {
-                    op(val);
-                }
+                return;
+            }
+
+            foreach (var val in enumerable)
+            {
+                op(val);
             }
         }
 
         public static bool None<T>(this IEnumerable<T> enumerable, Func<T, bool> op)
         {
+            Assert.NotNull(enumerable, "enumerable");
             return !enumerable.Any(op);
         }
 
         public static bool None<T>(this IEnumerable<T> enumerable)
         {
+            Assert.NotNull(enumerable, "enumerable");
             return !enumerable.Any();
         }
 
         public static T ChooseRandomValue<T>(this IEnumerable<T> group)
         {
+            Assert.NotNull(group, "group");
             return Randomiser.ChooseValue(group);
         }
 
         public static IEnumerable<T> ChooseRandomValues<T>(this IEnumerable<T> group, int amount)
         {
+            Assert.NotNull(group, "group");
             return Randomiser.ChooseValues(group, amount);
         }
 
@@ -111,19 +156,13 @@ namespace Assets.Scripts.Base
             {
                 return enumerator.ToEnumerable().Union(other.ToEnumerable()).GetEnumerator();
             }
+
             return enumerator;
         }
 
-        /// <summary>
-        /// return another enumerable, in a random order.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="group"></param>
-        /// <returns></returns>
-        public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> group)
+        public static string ToJoinedString<T>(this IEnumerable<T> enumerable, string separator)
         {
-            Assert.NotNull(group, "group");
-            return Randomiser.Shuffle(group);
+            return string.Join(separator, enumerable.Select(item => item.ToString()).ToArray());
         }
 
         #endregion IEnumerable
@@ -212,32 +251,6 @@ namespace Assets.Scripts.Base
         }
 
         #endregion 2d arrays
-
-        #region timing
-
-        public static void StartTiming(this IIdentifiable timer, string operation)
-        {
-            Timer.StartTiming(timer.Name, operation);
-        }
-
-        public static void StopTiming(this IIdentifiable timer, string operation)
-        {
-            Timer.StopTiming(timer.Name, operation);
-        }
-
-        //Time a single action in debug mode
-        public static void TimedAction(this IIdentifiable timer, string operation, Action action)
-        {
-#if DEBUG
-            Timer.StartTiming(timer.Name, operation);
-#endif
-            action();
-#if DEBUG
-            Timer.StopTiming(timer.Name, operation);
-#endif
-        }
-
-        #endregion timing
     }
 
     /// <summary>
@@ -246,22 +259,22 @@ namespace Assets.Scripts.Base
     /// </summary>
     public static class Hasher
     {
-        private static int InitialHash = 53; // Prime number
-        private static int Multiplier = 29; // Different prime number
+        private const int c_initialHash = 53; // Prime number
+        private const int c_multiplier = 29; // Different prime number
 
         public static int GetHashCode(params object[] values)
         {
-            unchecked // Overflow is fine, just wrap
+            unchecked
             {
-                int hash = InitialHash;
+                // Overflow is fine, just wrap
+                int hash = c_initialHash;
 
                 if (values != null)
                 {
-                    foreach (var currentObject in values)
-                    {
-                        hash = hash * Multiplier
-                                + (currentObject != null ? currentObject.GetHashCode() : 0);
-                    }
+                    hash = values.Aggregate(
+                        hash,
+                        (current, currentObject) =>
+                            (current * c_multiplier) + (currentObject != null ? currentObject.GetHashCode() : 0));
                 }
 
                 return hash;
@@ -273,7 +286,7 @@ namespace Assets.Scripts.Base
     {
         public object Current
         {
-            get { throw new UnreachableCodeException("Shoudln't call current from empty enumerator."); }
+            get { throw new UnreachableCodeException(); }
         }
 
         public bool MoveNext()
@@ -282,6 +295,7 @@ namespace Assets.Scripts.Base
         }
 
         public void Reset()
-        { }
+        {
+        }
     }
 }

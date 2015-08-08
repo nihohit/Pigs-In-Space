@@ -1,13 +1,29 @@
-﻿namespace Assets.Scripts.IntersceneCommunication
+﻿using Assets.Scripts.Base;
+using Assets.Scripts.LogicBase;
+using System.Collections.Generic;
+namespace Assets.Scripts.IntersceneCommunication
 {
-    #region GlobalState
-
-    public static class GlobalState
+    public class GlobalState
     {
-        public static EndLevelInfo EndLevel { get; set; }
+        public EndLevelInfo EndLevel { get; set; }
 
-        public static PlayerState Player { get; set; }
+        public PlayerState Player { get; set; }
+
+        public Configurations Configurations { get; set; }
+
+        public static GlobalState Instance
+        {
+            get
+            {
+                return Singleton<GlobalState>.Instance;
+            }
+        }
+
+        private GlobalState()
+        {
+            Configurations = new Configurations();
+            Player = new PlayerState();
+            Player.Equipment.AddRange(Configurations.Equipment.GetAllConfigurations().ChooseRandomValues(5));
+        }
     }
-
-    #endregion GlobalState
 }
