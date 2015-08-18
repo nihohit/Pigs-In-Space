@@ -12,7 +12,7 @@
         {
         }
 
-        public Loot(int blueCrystal, bool fuelCell)
+        public Loot(int blueCrystal, bool fuelCell = false)
         {
             BlueCrystal = blueCrystal;
             FuelCell = fuelCell;
@@ -36,7 +36,7 @@
 
         public bool IsEnoughToCover(Loot cost)
         {
-            return BlueCrystal > cost.BlueCrystal;
+            return BlueCrystal >= cost.BlueCrystal;
         }
 
         public override string ToString()

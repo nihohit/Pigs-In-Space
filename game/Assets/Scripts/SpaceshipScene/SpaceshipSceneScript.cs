@@ -7,10 +7,15 @@ namespace Assets.Scripts.SpaceshipScene
     using Assets.Scripts.Base;
     using Assets.Scripts.LogicBase;
     using System;
+    using System.Collections.Generic;
+    using UnityEngine.UI;
+    using System.Linq;
 
     public class SpaceshipSceneScript : MonoBehaviour
     {
         #region private members
+
+        private IEnumerable<Button> m_itemCreationButtons;
 
         #endregion private members
 
@@ -49,6 +54,7 @@ namespace Assets.Scripts.SpaceshipScene
         private void Start()
         {
             HandleLastLevel();
+            GuiInit();
         }
 
         // Update is called once per frame
@@ -59,6 +65,13 @@ namespace Assets.Scripts.SpaceshipScene
         #endregion Unity methods
 
         #region private methods
+
+        private void GuiInit()
+        {
+            var canvas = GameObject.Find("Canvas");
+            m_itemCreationButtons =
+                canvas.GetComponentsInChildren<Button>().Where(button => button.name.Contains("Create")).Materialize();
+        }
 
         private void UpgradeItem(PlayerEquipment toBeUpgraded, PlayerEquipment result)
         {
@@ -89,12 +102,17 @@ namespace Assets.Scripts.SpaceshipScene
 
         private void UpdateItemUpgradeButtons()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         private void UpdateItemCreationButtons()
         {
-            throw new NotImplementedException();
+            foreach (var button in m_itemCreationButtons)
+            {
+                var itemName = button.name.Substring(7);
+                button.gameObject.SetActive(!
+                    GlobalState.Instance.Player.Equipment.Any(item => item.Name.Equals(itemName, StringComparison.InvariantCultureIgnoreCase)));
+            }
         }
 
         private void HandleLastLevel()

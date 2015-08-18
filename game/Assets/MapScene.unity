@@ -781,6 +781,7 @@ GameObject:
   - 222: {fileID: 585000232}
   - 114: {fileID: 585000231}
   - 114: {fileID: 585000230}
+  - 114: {fileID: 585000233}
   m_Layer: 5
   m_Name: EquipmentButton
   m_TagString: Untagged
@@ -873,6 +874,25 @@ CanvasRenderer:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 585000228}
+--- !u!114 &585000233
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 585000228}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1862395651, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Delegates:
+  - eventID: 4
+    callback:
+      m_PersistentCalls:
+        m_Calls: []
+      m_TypeName: UnityEngine.EventSystems.EventTrigger+TriggerEvent, UnityEngine.UI,
+        Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+  delegates: []
 --- !u!1 &681869860
 GameObject:
   m_ObjectHideFlags: 0
@@ -1242,6 +1262,7 @@ GameObject:
   - 222: {fileID: 1136965580}
   - 114: {fileID: 1136965579}
   - 114: {fileID: 1136965578}
+  - 114: {fileID: 1136965581}
   m_Layer: 5
   m_Name: EquipmentButton
   m_TagString: Untagged
@@ -1334,6 +1355,25 @@ CanvasRenderer:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1136965576}
+--- !u!114 &1136965581
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1136965576}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1862395651, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Delegates:
+  - eventID: 4
+    callback:
+      m_PersistentCalls:
+        m_Calls: []
+      m_TypeName: UnityEngine.EventSystems.EventTrigger+TriggerEvent, UnityEngine.UI,
+        Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+  delegates: []
 --- !u!1 &1265507948
 GameObject:
   m_ObjectHideFlags: 0
@@ -1829,6 +1869,7 @@ GameObject:
   - 222: {fileID: 1567154704}
   - 114: {fileID: 1567154703}
   - 114: {fileID: 1567154702}
+  - 114: {fileID: 1567154705}
   m_Layer: 5
   m_Name: EquipmentButton
   m_TagString: Untagged
@@ -1921,6 +1962,25 @@ CanvasRenderer:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1567154700}
+--- !u!114 &1567154705
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1567154700}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1862395651, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Delegates:
+  - eventID: 4
+    callback:
+      m_PersistentCalls:
+        m_Calls: []
+      m_TypeName: UnityEngine.EventSystems.EventTrigger+TriggerEvent, UnityEngine.UI,
+        Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+  delegates: []
 --- !u!1 &1590884094
 GameObject:
   m_ObjectHideFlags: 0
@@ -2215,6 +2275,7 @@ GameObject:
   - 222: {fileID: 1776953837}
   - 114: {fileID: 1776953836}
   - 114: {fileID: 1776953835}
+  - 114: {fileID: 1776953838}
   m_Layer: 5
   m_Name: EquipmentButton
   m_TagString: Untagged
@@ -2307,6 +2368,25 @@ CanvasRenderer:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1776953833}
+--- !u!114 &1776953838
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1776953833}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1862395651, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Delegates:
+  - eventID: 4
+    callback:
+      m_PersistentCalls:
+        m_Calls: []
+      m_TypeName: UnityEngine.EventSystems.EventTrigger+TriggerEvent, UnityEngine.UI,
+        Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+  delegates: []
 --- !u!1 &1828359390
 GameObject:
   m_ObjectHideFlags: 0

@@ -388,7 +388,7 @@ namespace Assets.Scripts.LogicBase
             IEnumerable<string> upgrades = null) :
             base(name, Entity.Player, effectType, minPower, maxPower, range, shotsAmount, shotSpread, effectSize, shotType, createdMonsterType)
         {
-            Cost = cost;
+            Cost = cost ?? new Loot(1);
             EnergyCost = energyCost;
             PossibleUpgrades = upgrades;
             Name = name;

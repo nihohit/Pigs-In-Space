@@ -7,8 +7,6 @@ namespace Assets.Scripts.IntersceneCommunication
     using Assets.Scripts.Base;
     using Assets.Scripts.LogicBase;
 
-    #region PlayerState
-
     public class PlayerState
     {
         #region properties
@@ -23,12 +21,10 @@ namespace Assets.Scripts.IntersceneCommunication
 
         public PlayerState()
         {
-            Loot = new Loot();
+            Loot = new Loot(3);
             Equipment = new List<PlayerEquipment>();
         }
 
         #endregion constructor
     }
-
-    #endregion PlayerState
 }
