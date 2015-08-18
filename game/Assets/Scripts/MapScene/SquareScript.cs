@@ -157,6 +157,8 @@ namespace Assets.Scripts.MapScene
         {
             s_map = AddCompulsoryTerrainFeatures(terrainGenerator.GenerateMap(40, 40, c_playStartPositionX, c_playStartPositionY));
 
+            s_map.ToEnumerable<SquareScript>().SetAsChildren("Board");
+
             Entity.CreatePlayerEntity(c_playStartPositionX, c_playStartPositionY);
 
             treasurePopulator.PopulateMap(s_map, Enumerable.Range(0, 30).Select(number => new Loot(Randomiser.Next(1, 5), false)));
@@ -189,9 +191,13 @@ namespace Assets.Scripts.MapScene
             {
                 DroppedLoot = loot;
                 var prefabName = (DroppedLoot.FuelCell) ? "FuelCell" : "Crystals";
-                m_lootMarker = ((GameObject)MonoBehaviour.Instantiate(Resources.Load(prefabName),
-                                                                         transform.position,
-                                                                     Quaternion.identity)).GetComponent<MarkerScript>();
+                var lootMarker = ((GameObject)MonoBehaviour.Instantiate(
+                    Resources.Load(prefabName),
+                    transform.position,
+                    Quaternion.identity)).GetComponent<MarkerScript>();
+                m_lootMarker = lootMarker;
+
+                lootMarker.transform.SetParent(this.transform);
             }
             else
             {
@@ -208,6 +214,7 @@ namespace Assets.Scripts.MapScene
         {
             Y = y;
             X = x;
+            this.name = "{0}.{1}".FormatWith(x, y);
         }
 
         public Vector2 getWorldLocation()
@@ -355,10 +362,15 @@ namespace Assets.Scripts.MapScene
 
         private void Awake()
         {
-            m_fogOfWar = UnityHelper.Instantiate<MarkerScript>(transform.position, "FogOfWar");
+            var fogOfWar = UnityHelper.Instantiate<MarkerScript>(transform.position, "FogOfWar");
+            m_fogOfWar = fogOfWar;
+            fogOfWar.transform.SetParent(this.transform);
             FogOfWarType = FogOfWarType.Full;
 
-            m_squareEffect = UnityHelper.Instantiate<MarkerScript>(transform.position, "EmptyMarker");
+            var squareEffect = UnityHelper.Instantiate<MarkerScript>(transform.position, "EmptyMarker");
+            m_squareEffect = squareEffect;
+            squareEffect.transform.SetParent(this.transform);
+
             GroundEffect = GroundEffect.NoEffect;
 
             Visible = true;

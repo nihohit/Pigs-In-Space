@@ -4,6 +4,7 @@ using Assets.Scripts.UnityBase;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace Assets.Scripts.MapScene
 {
@@ -14,6 +15,7 @@ namespace Assets.Scripts.MapScene
 
         private static readonly List<EnemyEntity> s_activeEntities = new List<EnemyEntity>();
         private static readonly Dictionary<string, int> s_deadMonsters = new Dictionary<string, int>();
+        private static GameObject m_enemiesSpritesParent;
 
         #endregion fields
 
@@ -33,6 +35,7 @@ namespace Assets.Scripts.MapScene
         {
             s_activeEntities.Clear();
             s_deadMonsters.Clear();
+            m_enemiesSpritesParent = new GameObject("Enemies");
         }
 
         public static void AddEnemy(EnemyEntity enemy)
@@ -42,6 +45,7 @@ namespace Assets.Scripts.MapScene
                 s_deadMonsters[enemy.TypeOfEntity] = 0;
             }
             s_activeEntities.Add(enemy);
+            ((MarkerScript)enemy.Image).transform.SetParent(m_enemiesSpritesParent.transform);
         }
 
         // return an enumerator of all monsters' actions

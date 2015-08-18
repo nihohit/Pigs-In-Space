@@ -172,6 +172,7 @@ namespace Assets.Scripts.MapScene
             EscapeMode = false;
             m_textureManager = new TextureManager();
             ActionableItem.Init(m_textureManager);
+            ClearData();
 
             GuiInit();
             MapInit();
@@ -182,7 +183,6 @@ namespace Assets.Scripts.MapScene
         public void ToSpaceshipScreen()
         {
             GlobalState.Instance.EndLevel = new EndLevelInfo(Entity.Player.GainedLoot);
-            ClearData();
             Application.LoadLevel("SpaceShipScene");
         }
 
@@ -515,7 +515,7 @@ namespace Assets.Scripts.MapScene
 
         private void ScreenSizeInit()
         {
-			var camera = GetComponent<Camera>();
+            var camera = GetComponent<Camera>();
             const float c_SquareSize = SquareScript.PixelsPerSquare * MapSceneScript.c_unitsToPixelsRatio; // 1f
 
             var minCameraX = 0f - (c_SquareSize / 2) + (camera.orthographicSize * camera.aspect);

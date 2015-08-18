@@ -11,6 +11,17 @@ namespace Assets.Scripts.UnityBase
     /// </summary>
     public static class UnityExtensions
     {
+        public static GameObject SetAsChildren<T>(this IEnumerable<T> objects, string parentName) where T : MonoBehaviour
+        {
+            var parentObject = new GameObject(parentName);
+            foreach (var obj in objects)
+            {
+                obj.transform.SetParent(parentObject.transform);
+            }
+
+            return parentObject;
+        }
+
         public static Vector3 LerpAngle(this Vector3 direction, Vector3 other, float time)
         {
             return new Vector3(0, 0, Mathf.LerpAngle(direction.z, other.z, time));
