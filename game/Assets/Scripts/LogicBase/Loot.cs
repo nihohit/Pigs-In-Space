@@ -1,5 +1,6 @@
 ﻿namespace Assets.Scripts.LogicBase
 {
+    using Assets.Scripts.Base.JsonParsing;
     using Scripts.Base;
 
     public class Loot
@@ -12,6 +13,7 @@
         {
         }
 
+        [ChosenConstructorForParsing]
         public Loot(int blueCrystal, bool fuelCell = false)
         {
             BlueCrystal = blueCrystal;

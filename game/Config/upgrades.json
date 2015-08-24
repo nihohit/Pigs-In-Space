@@ -1,0 +1,62 @@
+[
+{
+	"Name":"pistol",
+	"Cost" :  
+		{
+			"BlueCrystal" : 1.0
+		},
+},
+{
+	"Name":"digger",
+	"Cost":  
+		{
+			"BlueCrystal" : 1.0
+		},
+},
+{
+	"Name":"rifle",
+	"Cost":  
+		{
+			"BlueCrystal" : 2.0
+		},
+	"From": "pistol",
+},
+{
+	"Name":"machinegun",
+	"Cost":  
+		{
+			"BlueCrystal" : 3.0
+		},
+	"From": "rifle",
+},
+{
+	"Name":"railgun",
+	"Cost":  
+		{
+			"BlueCrystal" : 2.0
+		},
+	"From": "rifle",
+},
+{
+	"Name":"rocketlauncher",
+	"Cost":  
+		{
+			"BlueCrystal" : 3.0
+		},
+	"From": "railgun",
+},
+{
+	"Name":"magneticRepulsor",
+	"Cost" :  
+		{
+			"BlueCrystal" : 1.0
+		},
+},
+{
+	"Name":"medkit",
+	"Cost":  
+		{
+			"BlueCrystal" : 1.0
+		},
+}
+]

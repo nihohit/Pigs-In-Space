@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace Assets.Scripts.UnityBase
 {
@@ -11,6 +14,22 @@ namespace Assets.Scripts.UnityBase
     /// </summary>
     public static class UnityExtensions
     {
+        public static void SetButtonFunctionality(this Button button, Action action)
+        {
+            button.SetButtonFunctionality((BaseEventData eventData) => action());
+        }
+
+        public static void SetButtonFunctionality(this Button button, UnityAction<BaseEventData> action)
+        {
+            var eventTrigger = button.GetComponent<EventTrigger>();
+            eventTrigger.triggers.Clear();
+            var entry = new EventTrigger.Entry();
+            entry.eventID = EventTriggerType.PointerClick;
+            entry.callback = new EventTrigger.TriggerEvent();
+            entry.callback.AddListener(action);
+            eventTrigger.triggers.Add(entry);
+        }
+
         public static GameObject SetAsChildren<T>(this IEnumerable<T> objects, string parentName) where T : MonoBehaviour
         {
             var parentObject = new GameObject(parentName);

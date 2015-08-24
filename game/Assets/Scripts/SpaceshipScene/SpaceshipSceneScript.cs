@@ -1,6 +1,4 @@
-﻿using Assets.Scripts.IntersceneCommunication;
-using Assets.Scripts.UnityBase;
-using UnityEngine;
+﻿
 
 namespace Assets.Scripts.SpaceshipScene
 {
@@ -10,12 +8,23 @@ namespace Assets.Scripts.SpaceshipScene
     using System.Collections.Generic;
     using UnityEngine.UI;
     using System.Linq;
+    using Assets.Scripts.IntersceneCommunication;
+    using Assets.Scripts.UnityBase;
+    using UnityEngine;
+    using UnityEngine.EventSystems;
+    using UnityEngine.Events;
 
     public class SpaceshipSceneScript : MonoBehaviour
     {
         #region private members
 
-        private IEnumerable<Button> m_itemCreationButtons;
+        private List<Button> m_itemCreationButtons;
+
+        private List<EquipmentSlot> m_equipmentSlots;
+
+        private List<UpgradeOption> m_initialEquipment;
+
+        private Dictionary<string, List<UpgradeOption>> m_upgradeOptions;
 
         #endregion private members
 
@@ -31,19 +40,13 @@ namespace Assets.Scripts.SpaceshipScene
             Application.LoadLevel("MapScene");
         }
 
-        public void CreateDigger()
+        public void UpgradeItem(UpgradeOption upgradeOption)
         {
-            CreateItem("digger");
-        }
-
-        public void CreatePistol()
-        {
-            CreateItem("pistol");
-        }
-
-        public void CreateMedkit()
-        {
-            CreateItem("medkit");
+            Assert.StringNotNullOrEmpty(upgradeOption.From, "upgradeOption.From");
+            Assert.AssertConditionMet(GlobalState.Instance.Player.Equipment.Any(item => item.Name.Equals(upgradeOption.From, StringComparison.InvariantCultureIgnoreCase)), "No {0} found to upgrade".FormatWith(upgradeOption.From));
+            var toBeUpgraded = GlobalState.Instance.Configurations.Equipment.GetConfiguration(upgradeOption.From);
+            GlobalState.Instance.Player.Equipment.Remove(toBeUpgraded);
+            CreateItem(upgradeOption);
         }
 
         #endregion public methods
@@ -54,7 +57,9 @@ namespace Assets.Scripts.SpaceshipScene
         private void Start()
         {
             HandleLastLevel();
+            StoreItemConfigurations();
             GuiInit();
+            EquipmentSlot.Scene = this;
         }
 
         // Update is called once per frame
@@ -66,32 +71,41 @@ namespace Assets.Scripts.SpaceshipScene
 
         #region private methods
 
+        private void StoreItemConfigurations()
+        {
+            var upgradeOptions = GlobalState.Instance.Configurations.Upgrades.GetAllConfigurations().ToList();
+            var equipment = GlobalState.Instance.Configurations.Equipment.GetAllConfigurations().ToList();
+
+            m_initialEquipment = upgradeOptions.Where(upgrade => string.IsNullOrEmpty(upgrade.From)).ToList();
+            m_upgradeOptions = equipment.Select(equipmentPiece => equipmentPiece.Name)
+                .ToDictionary(
+                    equipmentPieceName => equipmentPieceName,
+                    equipmentPieceName => upgradeOptions.Where(option => equipmentPieceName.Equals(option.From)).ToList());
+        }
+
         private void GuiInit()
         {
             var canvas = GameObject.Find("Canvas");
             m_itemCreationButtons =
-                canvas.GetComponentsInChildren<Button>().Where(button => button.name.Contains("Create")).Materialize();
+                canvas.GetComponentsInChildren<Button>().Where(button => button.name.Contains("CreateButton")).ToList();
+            m_equipmentSlots = canvas.GetComponentsInChildren<EquipmentSlot>().ToList();
+
+            UpdateItemButtons();
         }
 
-        private void UpgradeItem(PlayerEquipment toBeUpgraded, PlayerEquipment result)
+        private void CreateItem(UpgradeOption upgradeOption)
         {
-            CreateItem(result);
-            GlobalState.Instance.Player.Equipment.Remove(toBeUpgraded);
+            var item = GlobalState.Instance.Configurations.Equipment.GetConfiguration(upgradeOption.Name);
+            CreateItem(item, upgradeOption.Cost);
+            UpdateItemButtons();
         }
 
-        private void CreateItem(PlayerEquipment result)
+        private void CreateItem(PlayerEquipment result, Loot cost)
         {
             Assert.AssertConditionMet(
-                GlobalState.Instance.Player.Loot.RemoveIfEnough(result.Cost),
-                "Can't pay cost for {0}. Cost is {1}, loot is {2}".FormatWith(result.Name, result.Cost, GlobalState.Instance.Player.Loot));
+                GlobalState.Instance.Player.Loot.RemoveIfEnough(cost),
+                "Can't pay cost for {0}. Cost is {1}, loot is {2}".FormatWith(result.Name, cost, GlobalState.Instance.Player.Loot));
             GlobalState.Instance.Player.Equipment.Add(result);
-        }
-
-        private void CreateItem(string itemName)
-        {
-            var item = GlobalState.Instance.Configurations.Equipment.GetConfiguration(itemName);
-            CreateItem(item);
-            UpdateItemButtons();
         }
 
         private void UpdateItemButtons()
@@ -102,17 +116,29 @@ namespace Assets.Scripts.SpaceshipScene
 
         private void UpdateItemUpgradeButtons()
         {
-            //throw new NotImplementedException();
+            var equipment = GlobalState.Instance.Player.Equipment;
+            UnityHelper.SetFunctionalityForFirstItems<EquipmentSlot, PlayerEquipment>(
+                m_equipmentSlots,
+                equipment,
+                (slot, equipmentPiece) => slot.SetEquipment(equipmentPiece, m_upgradeOptions.Get(equipmentPiece.Name)));
         }
 
         private void UpdateItemCreationButtons()
         {
-            foreach (var button in m_itemCreationButtons)
-            {
-                var itemName = button.name.Substring(7);
-                button.gameObject.SetActive(!
-                    GlobalState.Instance.Player.Equipment.Any(item => item.Name.Equals(itemName, StringComparison.InvariantCultureIgnoreCase)));
-            }
+            var freeToCreate = m_initialEquipment.Where(item => GlobalState.Instance.Player.Equipment.None(equipment => equipment.Name.Equals(item.Name, StringComparison.InvariantCultureIgnoreCase))).ToList();
+
+            UnityHelper.SetFunctionalityForFirstItems<Button, UpgradeOption>(
+                m_itemCreationButtons,
+                freeToCreate,
+                (button, upgrade) =>
+                {
+                    button.GetComponentInChildren<Text>().text = "Create {0}".FormatWith(upgrade.Name);
+                    button.interactable = GlobalState.Instance.Player.Loot.IsEnoughToCover(upgrade.Cost);
+                    if (button.interactable)
+                    {
+                        button.SetButtonFunctionality(() => CreateItem(upgrade));
+                    }
+                });
         }
 
         private void HandleLastLevel()

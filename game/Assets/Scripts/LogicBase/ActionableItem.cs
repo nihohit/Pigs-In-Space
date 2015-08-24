@@ -17,8 +17,6 @@ namespace Assets.Scripts.LogicBase
     {
         #region private fields
 
-        private static TextureManager s_textureManager;
-
         private int m_hash;
 
         #endregion private fields
@@ -105,11 +103,6 @@ namespace Assets.Scripts.LogicBase
             m_hash = Hasher.GetHashCode(Range, MinPower, MaxPower, ShotsAmount, ShotSpread, EffectSize, EffectSize, ShotType, CreatedMonsterType);
         }
 
-        public static void Init(TextureManager manager)
-        {
-            s_textureManager = manager;
-        }
-
         #endregion constructors
 
         #region public methods
@@ -144,7 +137,8 @@ namespace Assets.Scripts.LogicBase
                 ShotsAmount == item.ShotsAmount &&
                 ShotSpread == item.ShotSpread &&
                 Effects == item.Effects &&
-                Owner.Equals(item.Owner) &&
+                ((Owner == null && item.Owner == null) ||
+                Owner.Equals(item.Owner)) &&
                 EffectSize == item.EffectSize &&
                 ShotType.Equals(item.ShotType);
         }
@@ -297,7 +291,7 @@ namespace Assets.Scripts.LogicBase
         {
             var shot = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("shot"), Owner.Location.transform.position, Quaternion.identity));
             var ShotScript = shot.GetComponent<ShotScript>();
-            s_textureManager.ReplaceTexture(ShotScript, ShotType);
+            GlobalState.Instance.TextureManager.ReplaceTexture(ShotScript, ShotType);
             ShotScript.Init(target, Owner.Location, Range, Effects.HasFlag(EffectTypes.Piercing), EffectSize, ShotSpread);
             return ShotScript.HitSquares;
         }
@@ -340,12 +334,6 @@ namespace Assets.Scripts.LogicBase
 
         #region properties
 
-        public Loot Cost { get; private set; }
-
-        // the names of the possible upgrades to each equipment piece.
-        // That actual equipment configuration can be pulled from the configuration storage using these names
-        public IEnumerable<string> PossibleUpgrades { get; private set; }
-
         public double EnergyCost { get; private set; }
 
         public override Entity Owner
@@ -383,16 +371,12 @@ namespace Assets.Scripts.LogicBase
             float shotSpread = 0,
             int effectSize = 0,
             string shotType = "laser",
-            string createdMonsterType = null,
-            Loot cost = null,
-            IEnumerable<string> upgrades = null) :
+            string createdMonsterType = null) :
             base(name, Entity.Player, effectType, minPower, maxPower, range, shotsAmount, shotSpread, effectSize, shotType, createdMonsterType)
         {
-            Cost = cost ?? new Loot(1);
             EnergyCost = energyCost;
-            PossibleUpgrades = upgrades;
             Name = name;
-            m_hash = Hasher.GetHashCode(base.GetHashCode(), Name, Cost, EnergyCost);
+            m_hash = Hasher.GetHashCode(base.GetHashCode(), Name, EnergyCost);
         }
 
         #endregion constructors
@@ -401,7 +385,7 @@ namespace Assets.Scripts.LogicBase
 
         public override string ToString()
         {
-            return "{0} {1} Cost: {2} EnergyCost: {3} ".FormatWith(Name, base.ToString(), Cost, EnergyCost);
+            return "{0} {1} EnergyCost: {2}".FormatWith(Name, base.ToString(), EnergyCost);
         }
 
         public override bool Equals(object obj)
@@ -422,4 +406,29 @@ namespace Assets.Scripts.LogicBase
     }
 
     #endregion PlayerEquipment
+
+    #region UpgradeOption
+
+    public class UpgradeOption : IIdentifiable<string>
+    {
+        public string From { get; private set; }
+
+        public string Name { get; private set; }
+
+        public Loot Cost { get; private set; }
+
+        public UpgradeOption(Loot cost, string name, string from = null)
+        {
+            From = from;
+            Name = name;
+            Cost = cost;
+        }
+
+        public override string ToString()
+        {
+            return "{0} : {1}".FormatWith(From != null ? "{0} => {1}".FormatWith(From, Name) : Name, Cost);
+        }
+    }
+
+    #endregion
 }

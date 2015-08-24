@@ -13,8 +13,9 @@
         private ConfigurationStorage<MonsterTemplate> m_monsters;
         private ConfigurationStorage<PlayerEquipment> m_equipment;
         private ConfigurationStorage<ActionableItem> m_monsterEquipment;
+        private ConfigurationStorage<UpgradeOption> m_upgrades;
 
-        #endregion fields  
+        #endregion fields
 
         #region properties
 
@@ -54,6 +55,19 @@
                 }
 
                 return m_monsterEquipment;
+            }
+        }
+
+        public ConfigurationStorage<UpgradeOption> Upgrades
+        {
+            get
+            {
+                if (m_upgrades == null)
+                {
+                    m_upgrades = new ConfigurationStorage<UpgradeOption>("upgrades");
+                }
+
+                return m_upgrades;
             }
         }
 

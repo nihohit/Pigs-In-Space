@@ -60,7 +60,6 @@ namespace Assets.Scripts.MapScene
 
         private Vector2 m_cameraMax = new Vector2(0f, 0f);        // The maximum x and y coordinates the camera can have.
         private Vector2 m_cameraMin = new Vector2(0f, 0f);        // The minimum x and y coordinates the camera can have.
-        private TextureManager m_textureManager;
 
         private Text m_healthText;
         private Text m_energyText;
@@ -71,7 +70,6 @@ namespace Assets.Scripts.MapScene
         private Button m_rightClickButton;
         private GameObject m_endGamePanel;
         private GameObject m_sidebarPanel;
-        private EventSystem m_eventSystem;
 
         public const float c_unitsToPixelsRatio = 1f / 100f;
         private bool m_equipmentChange;
@@ -170,8 +168,6 @@ namespace Assets.Scripts.MapScene
         public void Init()
         {
             EscapeMode = false;
-            m_textureManager = new TextureManager();
-            ActionableItem.Init(m_textureManager);
             ClearData();
 
             GuiInit();
@@ -188,7 +184,6 @@ namespace Assets.Scripts.MapScene
 
         private void GuiInit()
         {
-            m_eventSystem = GameObject.Find("EventSystem").GetComponent<EventSystem>();
             m_healthText = GameObject.Find("HeartText").GetComponent<Text>();
             m_energyText = GameObject.Find("EnergyText").GetComponent<Text>();
             m_oxygenText = GameObject.Find("OxygenText").GetComponent<Text>();
@@ -198,36 +193,26 @@ namespace Assets.Scripts.MapScene
             m_sidebarPanel = GameObject.Find("SidebarPanel");
             var canvas = GameObject.Find("UICanvas");
             var equipmentButtons =
-                canvas.GetComponentsInChildren<Button>().Where(button => button.name.Equals("EquipmentButton")).Materialize();
-            int i = 0;
+                canvas.GetComponentsInChildren<Button>().Where(button => button.name.Equals("EquipmentButton")).ToList();
+
             var equipment = GlobalState.Instance.Player.Equipment;
 
-            foreach (var button in equipmentButtons)
-            {
-                if (i < equipment.Count)
+            UnityHelper.SetFunctionalityForFirstItems<Button, PlayerEquipment>(
+                equipmentButtons,
+                equipment,
+                (button, equipmentPiece) =>
                 {
-                    var eventTrigger = button.GetComponent<EventTrigger>();
-                    var entry = new EventTrigger.Entry();
-                    entry.eventID = EventTriggerType.PointerClick;
-                    entry.callback = new EventTrigger.TriggerEvent();
-                    entry.callback.AddListener(SetEquipment(button, equipment[i]));
-                    eventTrigger.triggers.Add(entry);
+                    button.SetButtonFunctionality(SetEquipment(button, equipmentPiece));
 
                     button.colors = sr_regularColorBlock;
                     var image = button.GetComponent<Image>();
-                    image.sprite = m_textureManager.GetTexture(equipment[i]);
-                    button.name = equipment[i].Name;
+                    image.sprite = GlobalState.Instance.TextureManager.GetTexture(equipmentPiece);
+                    button.name = equipmentPiece.Name;
                     button.navigation = new Navigation
                     {
                         mode = Navigation.Mode.None,
                     };
-                    i++;
-                }
-                else
-                {
-                    button.DestroyGameObject();
-                }
-            }
+                });
 
             m_leftClickButton = equipmentButtons.First();
             m_leftClickButton.colors = sr_leftClickColorBlock;

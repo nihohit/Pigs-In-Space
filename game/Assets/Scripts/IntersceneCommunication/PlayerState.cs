@@ -21,7 +21,7 @@ namespace Assets.Scripts.IntersceneCommunication
 
         public PlayerState()
         {
-            Loot = new Loot(3);
+            Loot = new Loot(1);
             Equipment = new List<PlayerEquipment>();
         }
 
