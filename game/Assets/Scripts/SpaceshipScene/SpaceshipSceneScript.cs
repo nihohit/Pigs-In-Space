@@ -133,7 +133,7 @@ namespace Assets.Scripts.SpaceshipScene
                 (button, upgrade) =>
                 {
                     button.GetComponentInChildren<Text>().text = "Create {0}".FormatWith(upgrade.Name);
-                    button.interactable = GlobalState.Instance.Player.Loot.IsEnoughToCover(upgrade.Cost);
+                    button.interactable = GlobalState.Instance.Player.Loot.IsEnoughToCover(upgrade.Cost) && m_equipmentSlots.Any(slot => !slot.isActiveAndEnabled);
                     if (button.interactable)
                     {
                         button.SetButtonFunctionality(() => CreateItem(upgrade));

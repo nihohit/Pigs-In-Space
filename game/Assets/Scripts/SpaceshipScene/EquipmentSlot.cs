@@ -28,7 +28,7 @@ namespace Assets.Scripts.SpaceshipScene
 
             UnityHelper.SetFunctionalityForFirstItems<Button, UpgradeOption>(
                 upgradeButtons,
-                upgradeOptions,
+                upgradeOptions.Where(upgrade => GlobalState.Instance.Player.Equipment.None(item => item.Name.Equals(upgrade.Name))).ToList(),
                 (button, upgrade) =>
                 {
                     button.GetComponentInChildren<Text>().text = "Create {0}".FormatWith(upgrade.Name);
