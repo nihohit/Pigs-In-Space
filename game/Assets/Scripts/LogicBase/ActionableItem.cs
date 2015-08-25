@@ -212,7 +212,7 @@ namespace Assets.Scripts.LogicBase
                 }
 
                 // create acid squares
-                if (Effects.HasFlag(EffectTypes.CreateAcid))
+                if (Effects.HasFlag(EffectTypes.CreateLocalEffect))
                 {
                     MapSceneScript.AddGroundEffect(GroundEffect.StandardAcid, hitSquare);
                 }
@@ -364,9 +364,9 @@ namespace Assets.Scripts.LogicBase
 
         public PlayerEquipment(
             string name,
-            double minPower,
-            double maxPower,
             double energyCost,
+            double minPower = 0.0,
+            double maxPower = 0.0,
             EffectTypes effectType = EffectTypes.DamageDealing,
             float range = 0,
             int shotsAmount = 1,

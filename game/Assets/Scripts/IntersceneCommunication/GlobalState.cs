@@ -26,7 +26,7 @@ namespace Assets.Scripts.IntersceneCommunication
         {
             Configurations = new Configurations();
             Player = new PlayerState();
-            Player.Equipment.AddRange(Configurations.Equipment.GetAllConfigurations().ChooseRandomValues(5));
+            Player.Equipment.Add(Configurations.Equipment.GetConfiguration("pistol"));
             TextureManager = new TextureManager();
         }
     }

@@ -53,7 +53,22 @@
 		},
 },
 {
+	"Name":"StrongRepulsor",
+	"From" : "magneticRepulsor",
+	"Cost" :  
+		{
+			"BlueCrystal" : 2.0
+		},
+},
+{
 	"Name":"medkit",
+	"Cost":  
+		{
+			"BlueCrystal" : 1.0
+		},
+},
+{
+	"Name":"AcidSpitter",
 	"Cost":  
 		{
 			"BlueCrystal" : 1.0

@@ -26,8 +26,8 @@
 	"MinPower" :  3.0,
 	"MaxPower" :  5.0, 
 	"Range": 7.0, 
-    "ShotSAmount" :  5,
-    "ShotSpread" :  1.0, 
+	"ShotSAmount" :  5,
+	"ShotSpread" :  1.0, 
 	"EnergyCost" :  4.0,
 },
 {
@@ -52,10 +52,19 @@
 {
 	"Name":"magneticRepulsor",
 	"EffectType": 32, 
-	"MinPower" :  5.0,
-	"MaxPower" :  5.0,
+	"MinPower" :  4.0,
+	"MaxPower" :  4.0,
 	"Range": 5.0, 
 	"EnergyCost" :  2.0,
+	"ShotType" : "magnet",
+},
+{
+	"Name":"StrongRepulsor",
+	"EffectType": 32, 
+	"MinPower" :  8.0,
+	"MaxPower" :  8.0,
+	"Range": 6.0, 
+	"EnergyCost" :  3.0,
 	"ShotType" : "magnet",
 },
 {
@@ -64,5 +73,13 @@
 	"MinPower" :  3.0,
 	"MaxPower" :  5.0,
 	"EnergyCost" :  2.0,
-}
+},
+{
+	"Name":"AcidSpitter",
+	"EffectType": 16,  
+	"MinPower" :  2.0,
+	"MaxPower" :  3.0,
+	"Range": 7.0, 
+	"EnergyCost" :  2.0,
+},
 ]
