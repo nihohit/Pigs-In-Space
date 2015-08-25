@@ -110,8 +110,8 @@ namespace Assets.Scripts.SpaceshipScene
 
         private void UpdateItemButtons()
         {
-            UpdateItemCreationButtons();
             UpdateItemUpgradeButtons();
+            UpdateItemCreationButtons();
         }
 
         private void UpdateItemUpgradeButtons()
@@ -127,13 +127,15 @@ namespace Assets.Scripts.SpaceshipScene
         {
             var freeToCreate = m_initialEquipment.Where(item => GlobalState.Instance.Player.Equipment.None(equipment => equipment.Name.Equals(item.Name, StringComparison.InvariantCultureIgnoreCase))).ToList();
 
+            var freeUpgradeSlots = m_equipmentSlots.Any(slot => !slot.gameObject.active);
+
             UnityHelper.SetFunctionalityForFirstItems<Button, UpgradeOption>(
                 m_itemCreationButtons,
                 freeToCreate,
                 (button, upgrade) =>
                 {
                     button.GetComponentInChildren<Text>().text = "Create {0}".FormatWith(upgrade.Name);
-                    button.interactable = GlobalState.Instance.Player.Loot.IsEnoughToCover(upgrade.Cost) && m_equipmentSlots.Any(slot => !slot.isActiveAndEnabled);
+                    button.interactable = GlobalState.Instance.Player.Loot.IsEnoughToCover(upgrade.Cost) && freeUpgradeSlots;
                     if (button.interactable)
                     {
                         button.SetButtonFunctionality(() => CreateItem(upgrade));
