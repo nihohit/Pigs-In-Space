@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Assets.Scripts.UnityBase
@@ -20,6 +21,8 @@ namespace Assets.Scripts.UnityBase
         SpriteRenderer Renderer { get; }
 
         bool Visible { get; set; }
+
+        void BeginMove(IEnumerable<MoveOrder> orders, float movementSpeed, bool withRotation = false, bool continueMovement = false);
     }
 
     public interface IUnityButton : IUnityMarker

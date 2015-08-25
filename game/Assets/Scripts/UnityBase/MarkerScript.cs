@@ -87,12 +87,15 @@ namespace Assets.Scripts.UnityBase
             UnityEngine.Object.Destroy(gameObject);
         }
 
-        public void BeginMove(IEnumerable<MoveOrder> orders, float movementSpeed, bool withRotation)
+        public void BeginMove(IEnumerable<MoveOrder> orders, float movementSpeed, bool withRotation, bool continueMovement = false)
         {
             // ensure that the marker isn't currently in motion
-            Assert.IsNull(m_currentOrder, "m_currentOrder");
-            Assert.IsEmpty(m_movementRoute, "m_movementRoute");
-            Assert.NotNullOrEmpty(orders, "orders");
+            if (!continueMovement)
+            {
+                Assert.IsNull(m_currentOrder, "m_currentOrder");
+                Assert.IsEmpty(m_movementRoute, "m_movementRoute");
+                Assert.NotNullOrEmpty(orders, "orders");
+            }
             Assert.Greater(movementSpeed, 0);
 
             m_moveSpeed = movementSpeed;
@@ -101,7 +104,8 @@ namespace Assets.Scripts.UnityBase
             {
                 m_movementRoute.Enqueue(order);
             }
-            m_currentOrder = m_movementRoute.Dequeue();
+
+            m_currentOrder = m_currentOrder ?? m_movementRoute.Dequeue();
         }
 
         // runs on every frame
@@ -116,7 +120,10 @@ namespace Assets.Scripts.UnityBase
                     transform.position = m_currentOrder.Point;
                     var currentOrder = m_currentOrder;
                     m_currentOrder = m_movementRoute.Any() ? m_movementRoute.Dequeue() : null;
-                    currentOrder.ArrivalCallback();
+                    if (currentOrder.ArrivalCallback != null)
+                    {
+                        currentOrder.ArrivalCallback();
+                    }
                 }
             }
         }

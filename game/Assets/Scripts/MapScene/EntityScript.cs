@@ -53,9 +53,11 @@ namespace Assets.Scripts.MapScene
                 if (m_location != null)
                 {
                     m_location.OccupyingEntity = null;
+                    var movementSpeed = 10 * m_location.transform.position.Distance(value.transform.position);
+                    Image.BeginMove(new[] { new MoveOrder(value.transform.position) }, movementSpeed, false);
                 }
+
                 m_location = value;
-                Image.Position = Location.transform.position;
                 m_location.OccupyingEntity = this;
             }
         }

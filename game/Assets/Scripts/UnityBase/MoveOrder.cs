@@ -3,8 +3,6 @@ using UnityEngine;
 
 namespace Assets.Scripts.UnityBase
 {
-    #region MoveOrder
-
     public class MoveOrder
     {
         #region properties
@@ -17,7 +15,7 @@ namespace Assets.Scripts.UnityBase
 
         #region constructors
 
-        public MoveOrder(Vector3 point, Action callback)
+        public MoveOrder(Vector3 point, Action callback = null)
         {
             Point = point;
             ArrivalCallback = callback;
@@ -25,6 +23,4 @@ namespace Assets.Scripts.UnityBase
 
         #endregion constructors
     }
-
-    #endregion MoveOrder
 }

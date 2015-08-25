@@ -240,7 +240,7 @@ namespace Assets.Scripts.LogicBase
             var rayHits = Physics2D.RaycastAll((Vector2)hitEntity.Location.transform.position, (Vector2)direction, power, layerMask);
             var moved = false;
             var first = true;
-
+            SquareScript finalLocation = hitEntity.Location;
             foreach (var hitSquare in rayHits.Select(hit => hit.collider.gameObject.GetComponent<SquareScript>()))
             {
                 // check that this isn't the origin square
@@ -264,17 +264,19 @@ namespace Assets.Scripts.LogicBase
                     //Debug.Log("{0} pushed on {1}, taking {2} damage.".FormatWith(hitEntity.Name, hitSquare.OccupyingEntity.Name, power));
                     if (Push(hitSquare.OccupyingEntity, power - 1, direction))
                     {
-                        hitEntity.Location = hitSquare;
+                        finalLocation = hitSquare;
                     }
                     hitEntity.Damage(power);
                     return moved || hitEntity.Destroyed();
                 }
 
                 moved = true;
-                hitEntity.Location = hitSquare;
+                finalLocation = hitSquare;
                 power--;
             }
 
+
+            hitEntity.Location = finalLocation;
             return moved;
         }
 
