@@ -73,5 +73,37 @@
 		{
 			"BlueCrystal" : 1.0
 		},
+},
+{
+	"Name":"AcidLauncher"
+	"From":"AcidSpitter",
+	"Cost":  
+		{
+			"BlueCrystal" : 2.0
+		},
+},
+{
+	"Name":"AcidSprayer"
+	"From":"AcidSpitter",
+	"Cost":  
+		{
+			"BlueCrystal" : 2.0
+		},
+},
+{
+	"From":"AcidLauncher"
+	"Name":"AcidBomber",
+	"Cost":  
+		{
+			"BlueCrystal" : 3.0
+		},
+},
+{
+	"From":"AcidSprayer"
+	"Name":"AcidDeluge",
+	"Cost":  
+		{
+			"BlueCrystal" : 3.0
+		},
 }
 ]
