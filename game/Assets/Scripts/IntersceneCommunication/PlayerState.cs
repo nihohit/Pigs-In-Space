@@ -15,14 +15,23 @@ namespace Assets.Scripts.IntersceneCommunication
 
         public Loot Loot { get; private set; }
 
+        public int Health { get; private set; }
+
+        public int Energy { get; private set; }
+
+        public int Oxygen { get; private set; }
+
         #endregion properties
 
         #region constructor
 
-        public PlayerState()
+        public PlayerState(int health, int energy, int oxygen, int crystals)
         {
-            Loot = new Loot(3);
+            Loot = new Loot(crystals);
             Equipment = new List<PlayerEquipment>();
+            Health = health;
+            Oxygen = oxygen;
+            Energy = energy;
         }
 
         #endregion constructor

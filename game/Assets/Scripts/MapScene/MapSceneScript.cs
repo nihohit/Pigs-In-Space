@@ -182,6 +182,12 @@ namespace Assets.Scripts.MapScene
             Application.LoadLevel("SpaceShipScene");
         }
 
+        public void StartNewGame()
+        {
+            GlobalState.Instance.EndGame();
+            Application.LoadLevel("StartScene");
+        }
+
         private void GuiInit()
         {
             m_healthText = GameObject.Find("HeartText").GetComponent<Text>();
@@ -286,6 +292,17 @@ namespace Assets.Scripts.MapScene
                 m_endGamePanel.transform.FindChild("hiveText").GetComponent<Text>().text = "{0} killed".FormatWith(EnemiesManager.KilledHives);
 
                 m_endGamePanel.transform.FindChild("SlimeText").GetComponent<Text>().text = "{0} killed".FormatWith(EnemiesManager.KilledSlimes);
+                var textResult = m_endGamePanel.GetComponentsInChildren<Text>().First(text => text.name.Equals("ResultText"));
+
+                if (s_gameState == GameState.Lost)
+                {
+                    textResult.text = "You lost";
+                    m_endGamePanel.GetComponentsInChildren<Button>().First(button => button.name.Equals("SpaceshipButton")).gameObject.SetActive(false);
+                }
+                else
+                {
+                    textResult.text = "You won!";
+                }
             }
         }
 

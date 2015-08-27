@@ -56,7 +56,6 @@ namespace Assets.Scripts.MapScene.MapGenerator
                 Select(pair => pair.Key).
                 ChooseRandomValue();
             chosenSquare.AddLoot(new Loot(0, true));
-            chosenSquare.TerrainType = TerrainType.Fuel_Cell;
         }
     }
 

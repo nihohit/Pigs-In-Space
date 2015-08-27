@@ -99,6 +99,8 @@ namespace Assets.Scripts.MapScene
         public virtual void Damage(double damage)
         {
             Health -= damage;
+            Health = Math.Max(Health, 0);
+            Health = Math.Min(Health, GlobalState.Instance.Player.Health);
             if (Destroyed())
             {
                 s_killedEntities.Add(this);
@@ -156,8 +158,11 @@ namespace Assets.Scripts.MapScene
         public static void CreatePlayerEntity(int x, int y)
         {
             var square = SquareScript.GetSquare(x, y);
-            Entity.Player = new PlayerEntity(c_startHealth, c_startEnergy, c_startOxygen, square);
-            Entity.Player.SetEquipment(GlobalState.Instance.Configurations.Equipment.GetAllConfigurations());
+            Entity.Player = new PlayerEntity(
+                GlobalState.Instance.Player.Health,
+                GlobalState.Instance.Player.Energy,
+                GlobalState.Instance.Player.Oxygen, square);
+            Entity.Player.SetEquipment();
         }
 
         #endregion static generation methods
@@ -381,7 +386,7 @@ namespace Assets.Scripts.MapScene
 
         #region public methods
 
-        public void SetEquipment(IEnumerable<PlayerEquipment> equipment)
+        public void SetEquipment()
         {
             Assert.EqualOrLesser(GlobalState.Instance.Player.Equipment.Count(), c_maximumEquipmentAmount);
             Assert.EqualOrGreater(GlobalState.Instance.Player.Equipment.Count(), c_minimumEquipmentAmount);

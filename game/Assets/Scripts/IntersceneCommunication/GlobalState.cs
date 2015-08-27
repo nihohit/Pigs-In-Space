@@ -25,9 +25,18 @@ namespace Assets.Scripts.IntersceneCommunication
         private GlobalState()
         {
             Configurations = new Configurations();
-            Player = new PlayerState();
-            Player.Equipment.Add(Configurations.Equipment.GetConfiguration("pistol"));
             TextureManager = new TextureManager();
+        }
+
+        public void StartNewPlayer(int health, int energy, int oxygen, int crystals)
+        {
+            Player = new PlayerState(health, energy, oxygen, crystals);
+            Player.Equipment.Add(Configurations.Equipment.GetConfiguration("pistol"));
+        }
+
+        public void EndGame()
+        {
+            Player = null;
         }
     }
 }
