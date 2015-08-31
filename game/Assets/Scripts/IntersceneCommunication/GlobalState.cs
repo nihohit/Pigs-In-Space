@@ -32,6 +32,7 @@ namespace Assets.Scripts.IntersceneCommunication
         {
             Player = new PlayerState(health, energy, oxygen, crystals);
             Player.Equipment.Add(Configurations.Equipment.GetConfiguration("pistol"));
+            Player.Equipment.Add(Configurations.Equipment.GetConfiguration("digger"));
         }
 
         public void EndGame()

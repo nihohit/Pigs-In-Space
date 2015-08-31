@@ -306,127 +306,6 @@ namespace Assets.Scripts.MapScene
             }
         }
 
-        //        private void OnGUI()
-        //        {
-        //            var height = Screen.height;
-        //            var width = Screen.width;
-        //            var unit = (float)height / 400;
-        //
-        //            // load game ending message
-        //            if (s_gameState != GameState.Ongoing && m_displayGUI)
-        //            {
-        //                // boxing the GUI screen
-        //                var widthDivider = width / 7;
-        //                var heightDivider = height / 7;
-        //                var widthMultiplier = 5 * widthDivider;
-        //                var heightMultiplier = 5 * heightDivider;
-        //                GUI.BeginGroup(new Rect(widthDivider, heightDivider, widthMultiplier, heightMultiplier));
-        //                GUI.DrawTexture(new Rect(0, 0, widthMultiplier, heightMultiplier), m_textureManager.GetUIBackground(), ScaleMode.StretchToFill);
-        //
-        //                // placing the main message
-        //                s_guiStyle.fontSize = Convert.ToInt32(32 * unit);
-        //                var message = (s_gameState == GameState.Lost) ? "Game Over" : "You Win :)";
-        //                var messageSize = s_guiStyle.CalcSize(new GUIContent(message));
-        //                var messageLength = messageSize.x;
-        //                var messageHeight = messageSize.y;
-        //                var middleWidth = widthMultiplier / 2;
-        //                var accumulatingHeight = messageHeight * 1.1f;
-        //                GUI.Label(new Rect(middleWidth - messageLength / 2, accumulatingHeight, messageLength, messageHeight), message, s_guiStyle);
-        //                accumulatingHeight += messageHeight * 2;
-        //
-        //                // placing the statistics
-        //                s_guiStyle.fontSize = Convert.ToInt32(15 * unit);
-        //                message = "Crystals collected: {0}".FormatWith((int)Entity.Player.GainedLoot.BlueCrystal);
-        //                messageSize = s_guiStyle.CalcSize(new GUIContent(message));
-        //                messageLength = messageSize.x;
-        //                messageHeight = messageSize.y;
-        //                GUI.Label(new Rect(middleWidth - messageLength / 2, accumulatingHeight, messageLength, messageHeight), message, s_guiStyle);
-        //                accumulatingHeight += messageHeight * 2;
-        //
-        //                message = "Tentacle monsters killed: {0}".FormatWith((int)EnemiesManager.KilledTentacles);
-        //                messageSize = s_guiStyle.CalcSize(new GUIContent(message));
-        //                messageLength = messageSize.x;
-        //                messageHeight = messageSize.y;
-        //                GUI.Label(new Rect(middleWidth - messageLength / 2, accumulatingHeight, messageLength, messageHeight), message, s_guiStyle);
-        //                accumulatingHeight += messageHeight * 2;
-        //
-        //                message = "slimes killed: {0}".FormatWith((int)EnemiesManager.KilledSlimes);
-        //                messageSize = s_guiStyle.CalcSize(new GUIContent(message));
-        //                messageLength = messageSize.x;
-        //                messageHeight = messageSize.y;
-        //                GUI.Label(new Rect(middleWidth - messageLength / 2, accumulatingHeight, messageLength, messageHeight), message, s_guiStyle);
-        //                accumulatingHeight += messageHeight * 2;
-        //
-        //                message = "Hives killed: {0}".FormatWith((int)EnemiesManager.KilledHives);
-        //                messageSize = s_guiStyle.CalcSize(new GUIContent(message));
-        //                messageLength = messageSize.x;
-        //                messageHeight = messageSize.y;
-        //                GUI.Label(new Rect(middleWidth - messageLength / 2, accumulatingHeight, messageLength, messageHeight), message, s_guiStyle);
-        //                accumulatingHeight += messageHeight * 2;
-        //
-        //                if (GUI.Button(new Rect(middleWidth - 80, accumulatingHeight, 160, 30), "Spaceship"))
-        //                {
-        //                    
-        //                }
-        //                GUI.EndGroup();
-        //            }
-
-        //            if (Entity.Player != null)
-        //            {
-        //                // define the area of the UI
-        //                var heightSliver = height / 10;
-        //                var relativeWidth = heightSliver + s_guiStyle.CalcSize(new GUIContent("8 Letters")).x;
-        //                var oneSliver = Screen.width - relativeWidth;
-        //                Rect UIArea = new Rect(oneSliver, 0, 2 * relativeWidth, Screen.height);
-        //
-        //                // check whether mouse is over UI
-        //                m_mouseOnUI = false;
-        //                if (UIArea.Contains(Input.mousePosition))
-        //                {
-        //                    m_mouseOnUI = true;
-        //                }
-        //
-        //                // separate status and weapons
-        //                // display choosable equipment
-        //                currentHeight += heightSliver;
-        //                foreach (var equipment in GlobalState.Player.Equipment)
-        //                {
-        //                    if (equipment.Equals(Entity.Player.LeftHandEquipment))
-        //                    {
-        //                        GUI.color = new Color32(128, 128, 255, 255);
-        //                    }
-        //                    if (equipment.Equals(Entity.Player.RightHandEquipment))
-        //                    {
-        //                        GUI.color = new Color32(255, 128, 128, 255);
-        //                    }
-        //
-        //                    if (GUI.Button(new Rect(oneSliver, currentHeight, relativeWidth, heightSliver / 2), new GUIContent(m_textureManager.GetTexture(equipment), equipment.Name)))
-        //                    {
-        //                        if (Event.current.button == 0)
-        //                        {
-        //                            Entity.Player.LeftHandEquipment = equipment;
-        //                            m_equipmentChange = true;
-        //                        }
-        //                        else if (Event.current.button == 1)
-        //                        {
-        //                            Entity.Player.RightHandEquipment = equipment;
-        //                            m_equipmentChange = true;
-        //                        }
-        //                    }
-        //
-        //                    GUI.color = new Color32(128, 128, 128, 196);
-        //
-        //                    currentHeight += heightSliver / 2;
-        //                }
-        //
-        //                var mousePosition = Input.mousePosition;
-        //                var tooltipSize = s_tooltipStyle.CalcSize(new GUIContent(GUI.tooltip));
-        //                GUI.Label(new Rect(mousePosition.x - tooltipSize.x,
-        //                    Screen.height - tooltipSize.y - mousePosition.y,
-        //                    tooltipSize.x, tooltipSize.y), GUI.tooltip, s_tooltipStyle);
-        //            }
-        //        }
-
         #endregion UnityMethods
 
         #region private methods
@@ -437,22 +316,22 @@ namespace Assets.Scripts.MapScene
             IEnumerator returnedEnumerator = new EmptyEnumerator();
             var x = 0;
             var y = 0;
-            if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W))
+            if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W))
             {
                 y = -1;
             }
 
-            if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S))
+            if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S))
             {
                 y = 1;
             }
 
-            if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
+            if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
             {
                 x = -1;
             }
 
-            if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
+            if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
             {
                 x = 1;
             }
@@ -472,12 +351,12 @@ namespace Assets.Scripts.MapScene
                 returnedEnumerator = this.WaitAndEndTurn(0, 0.1f);
             }
 
-            if (Input.GetMouseButtonUp(0) && !m_mouseOverUI)
+            if (Input.GetMouseButtonDown(0) && !m_mouseOverUI)
             {
                 returnedEnumerator = Entity.Player.LeftHandEquipment.Effect(SquareScript.s_markedSquare, 0.15f);
             }
 
-            if (Input.GetMouseButtonUp(1) && !m_mouseOverUI)
+            if (Input.GetMouseButtonDown(1) && !m_mouseOverUI)
             {
                 returnedEnumerator = Entity.Player.RightHandEquipment.Effect(SquareScript.s_markedSquare, 0.15f);
             }

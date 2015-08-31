@@ -32,7 +32,7 @@ namespace Assets.Scripts.SpaceshipScene
 
         public void QuitGame()
         {
-            Application.Quit();
+            Application.LoadLevel("StartScene");
         }
 
         public void NextLevel()
