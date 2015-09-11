@@ -127,7 +127,7 @@ namespace Assets.Scripts.SpaceshipScene
         {
             var freeToCreate = m_initialEquipment.Where(item => GlobalState.Instance.Player.Equipment.None(equipment => equipment.Name.Equals(item.Name, StringComparison.InvariantCultureIgnoreCase))).ToList();
 
-            var freeUpgradeSlots = m_equipmentSlots.Any(slot => !slot.gameObject.active);
+            var freeUpgradeSlots = m_equipmentSlots.Any(slot => !slot.gameObject.activeSelf);
 
             UnityHelper.SetFunctionalityForFirstItems<Button, UpgradeOption>(
                 m_itemCreationButtons,
