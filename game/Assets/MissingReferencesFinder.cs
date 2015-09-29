@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 using System.Linq;
-using UnityEditor;
+/*using UnityEditor;
 using UnityEngine;
 
 public class MissingReferencesFinder : MonoBehaviour
@@ -83,4 +83,4 @@ public class MissingReferencesFinder : MonoBehaviour
             ? go.name
                 : FullPath(go.transform.parent.gameObject) + "/" + go.name;
     }
-}
+}*/
