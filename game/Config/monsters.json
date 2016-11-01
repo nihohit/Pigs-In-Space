@@ -1,7 +1,7 @@
 [
 {
 	"Name":"TentacleMonster",
-	"Health" : 10.0,
+	"Health" : 1.0,
 	"ActionItem" : "TentacleSwipe",
 },
 {
@@ -13,7 +13,7 @@
 },
 {
 	"Name":"Slime",
-	"Health" : 10.0,
+	"Health" : 3.0,
 	"ActionItem" : "AcidSpit",
 	"DestructionItem" : "AcidExplosion"
 }
