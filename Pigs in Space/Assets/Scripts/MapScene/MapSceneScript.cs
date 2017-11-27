@@ -14,6 +14,7 @@ namespace Assets.Scripts.MapScene
 {
     using UnityEngine.Events;
     using UnityEngine.EventSystems;
+    using UnityEngine.SceneManagement;
 
     public enum GameState { Ongoing, Won, Lost }
 
@@ -179,7 +180,7 @@ namespace Assets.Scripts.MapScene
         public void ToSpaceshipScreen()
         {
             GlobalState.Instance.EndLevel = new EndLevelInfo(Entity.Player.GainedLoot);
-            Application.LoadLevel("SpaceShipScene");
+            SceneManager.LoadScene("SpaceShipScene");
         }
 
         public void StartNewGame()
@@ -288,10 +289,10 @@ namespace Assets.Scripts.MapScene
             {
                 m_sidebarPanel.SetActive(false);
                 m_endGamePanel.SetActive(true);
-                m_endGamePanel.transform.FindChild("TentacleText").GetComponent<Text>().text = "{0} killed".FormatWith(EnemiesManager.KilledTentacles);
-                m_endGamePanel.transform.FindChild("hiveText").GetComponent<Text>().text = "{0} killed".FormatWith(EnemiesManager.KilledHives);
+                m_endGamePanel.transform.Find("TentacleText").GetComponent<Text>().text = "{0} killed".FormatWith(EnemiesManager.KilledTentacles);
+                m_endGamePanel.transform.Find("hiveText").GetComponent<Text>().text = "{0} killed".FormatWith(EnemiesManager.KilledHives);
 
-                m_endGamePanel.transform.FindChild("SlimeText").GetComponent<Text>().text = "{0} killed".FormatWith(EnemiesManager.KilledSlimes);
+                m_endGamePanel.transform.Find("SlimeText").GetComponent<Text>().text = "{0} killed".FormatWith(EnemiesManager.KilledSlimes);
                 var textResult = m_endGamePanel.GetComponentsInChildren<Text>().First(text => text.name.Equals("ResultText"));
 
                 if (s_gameState == GameState.Lost)

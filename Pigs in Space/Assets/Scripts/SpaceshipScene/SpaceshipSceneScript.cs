@@ -13,6 +13,7 @@ namespace Assets.Scripts.SpaceshipScene
     using UnityEngine;
     using UnityEngine.EventSystems;
     using UnityEngine.Events;
+    using UnityEngine.SceneManagement;
 
     public class SpaceshipSceneScript : MonoBehaviour
     {
@@ -32,12 +33,12 @@ namespace Assets.Scripts.SpaceshipScene
 
         public void QuitGame()
         {
-            Application.LoadLevel("StartScene");
+            SceneManager.LoadScene("StartScene");
         }
 
         public void NextLevel()
         {
-            Application.LoadLevel("MapScene");
+            SceneManager.LoadScene("MapScene");
         }
 
         public void UpgradeItem(UpgradeOption upgradeOption)
