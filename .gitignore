@@ -45,3 +45,5 @@ game/UnityVS.game.sln.DotSettings
 *.orig
 *.orig*
 *.bak*
+/Pigs in Space/.vs/
+/Pigs in Space/Executable/
