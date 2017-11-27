@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Assets.Scripts.Base
 {
@@ -48,7 +49,9 @@ namespace Assets.Scripts.Base
             var dict = new Dictionary<string, string>();
             sr_navigator.Add(str, dict);
             char[] delimiters = { '=' };
-            string[] text = System.IO.File.ReadAllLines("config/{0}.ini".FormatWith(str));
+            Debug.Log("Config/{0}".FormatWith(str));
+            TextAsset targetFile = Resources.Load<TextAsset>("Config/{0}".FormatWith(str));
+            string[] text = targetFile.text.Split('\n');
             foreach (string entry in text)
             {
                 string[] temp = entry.Split(delimiters);

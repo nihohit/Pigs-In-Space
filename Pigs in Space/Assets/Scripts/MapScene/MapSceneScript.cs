@@ -186,7 +186,7 @@ namespace Assets.Scripts.MapScene
         public void StartNewGame()
         {
             GlobalState.Instance.EndGame();
-            Application.LoadLevel("StartScene");
+            SceneManager.LoadScene("StartScene");
         }
 
         private void GuiInit()

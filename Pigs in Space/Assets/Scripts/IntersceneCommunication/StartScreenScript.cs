@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine.UI;
 using System.Linq;
 using Assets.Scripts.IntersceneCommunication;
+using UnityEngine.SceneManagement;
 
 public class StartScreenScript : MonoBehaviour 
 {
@@ -41,7 +42,7 @@ public class StartScreenScript : MonoBehaviour
     public void StartGame()
     {
         GlobalState.Instance.StartNewPlayer((int)healthSlider.value, (int)energySlider.value, (int)oxygenSlider.value, (int)crystalsSlider.value);
-        Application.LoadLevel("SpaceshipScene");
+        SceneManager.LoadScene("SpaceshipScene");
     }
 
 	// Use this for initialization
